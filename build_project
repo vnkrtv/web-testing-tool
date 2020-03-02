@@ -1,0 +1,7 @@
+#!/bin/bash
+
+echo "=======================================Start preparing Docker environment======================================="
+sudo /bin/bash ./project_update .
+echo "====================================Start building Quizer Docker container=================================="
+sudo docker build -t quizer docker
+echo "=======================Project successfully has been build. Enter 'docker-compose up' to run it======================"

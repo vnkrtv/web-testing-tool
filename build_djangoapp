@@ -1,0 +1,39 @@
+#!/bin/bash
+source ./venv/bin/activate 2>/dev/null
+if [ "$?" -eq "1" ]
+then
+    echo "Error on activating venv. Have you created it? (python3 -m venv venv)"
+    exit 1
+fi
+mkdir tmp
+cp -r quizer tmp/quizer
+rm -r quizer
+echo "===========================================Start loading requirements==========================================="
+pip install --no-cache-dir -r requirements.txt
+echo "=========================================Successfully loaded requeirments======================================="
+django-admin startproject quizer
+cd quizer
+python manage.py startapp main
+cd ..
+rm -r quizer
+cp -r tmp/quizer quizer
+rm -r tmp
+echo "===========================================Initialized django app==============================================="
+echo "===========================================Enter configuration data:============================================"
+
+read -p "Mongo host: " MDB_HOST
+if [ "${MDB_HOST}" == "" ]
+then
+    MDB_HOST="localhost"
+fi
+
+read -p "Mongo port: " MDB_PORT
+if [ "${MDB_PORT}" == "" ]
+then
+    MDB_PORT="27017"
+fi
+
+rm ./quizer/config/config.json 2>/dev/null
+CONFIG="{\"mdb_host\": \"${MDB_HOST}\", \"mdb_port\": ${MDB_PORT}}"
+echo "${CONFIG}" >> ./quizer/config/config.json 2>/dev/null
+echo "===================================Initialized configuration file config.json===================================="

@@ -1,0 +1,16 @@
+{% extends "main/wrapper.html" %}
+
+{% block content %}
+	<div class="column">
+		{% for test in tests %}
+			<div class='jumbotron'>
+	 			<p>{{ test.name }}</p>
+	 			<div class="col-md-6 offset-md-4">
+	                <button type="submit" class="btn btn-primary">
+	                    Приступить
+	                </button>
+	            </div>
+	 		</div>
+		{% endfor %}
+	</div>
+{% endblock %}

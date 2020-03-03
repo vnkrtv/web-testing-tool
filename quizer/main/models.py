@@ -15,11 +15,12 @@ class Option(models.Model):
 
 
 class Test(models.Model):
-    test_theme = models.CharField('Тема теста', max_length=200)
+    name = models.CharField('Тема теста', max_length=200)
+    description = models.TextField('Описание теста', default="")
     #tasks = ListField(EmbeddedField('Task'), default={})
 
     def __str__(self):
-        return self.test_theme
+        return self.name
 
     class Meta:
         verbose_name = 'Тест'
@@ -27,8 +28,8 @@ class Test(models.Model):
 
 
 class Task(models.Model):
-    task = models.ForeignKey(Test, name='Тест', on_delete=models.CASCADE)
-    question = models.TextField('Формулировка вопроса', max_length=200)
+    task = models.ForeignKey(Test, on_delete=models.CASCADE)
+    question = models.CharField('Формулировка вопроса', max_length=200)
     options_1 = EmbeddedField(Option, name='Вариант 1', default={})
     options_2 = EmbeddedField(Option, name='Вариант 2', default={})
     options_3 = EmbeddedField(Option, name='Вариант 3', default={})

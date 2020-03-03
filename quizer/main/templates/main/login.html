@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Fonts -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" href="Favicon.png">
+
+    <!-- Bootstrap CSS -->
+    {% load static %}
+	<link rel="stylesheet" href="{% static 'main/css/sidebar.css' %}">
+	<link rel="stylesheet" href="{% static 'main/css/bootstrap.min.css' %}">
+
+    <title>Quizer</title>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-light navbar-laravel">
+    <div class="container">
+        <a class="navbar-brand" href="#">Quizer</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+    </div>
+</nav>
+
+<main class="login-form">
+    <div class="cotainer">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">Зайти в систему</div>
+                    <div class="card-body">
+                        <form action="{% url 'main:index' %}" method="post">
+                            {% csrf_token %}
+                            <div class="form-group row">
+                                <label for="account" class="col-md-4 col-form-label text-md-right">Учетная запись</label>
+                                <div class="col-md-6">
+                                    <input type="text" id="account" class="form-control" name="account" required autofocus>
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <label for="group" class="col-md-4 col-form-label text-md-right">Группа</label>
+                                <div class="col-md-6">
+                                    <input type="text" id="group" class="form-control" name="group" required>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 offset-md-4">
+                                <button type="submit" class="btn btn-primary">
+                                    Авторизироваться
+                                </button>
+                            </div>
+                    </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+
+</main>
+
+
+
+
+
+
+
+</body>
+</html>

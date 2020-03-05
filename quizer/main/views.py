@@ -2,6 +2,7 @@ from django.shortcuts import render
 from .models import Test, Task
 import random
 
+
 def login(request):
     return render(request, 'main/login.html')
 

@@ -9,4 +9,5 @@ urlpatterns = [
     url(r'^tests/$', views.get_tests, name='tests'),
     url(r'^marks/$', views.get_marks, name='marks'),
     url(r'^run_test/$', views.run_test, name='run_test'),
+    url(r'^test_result/$', views.test_result, name='test_result'),
 ]

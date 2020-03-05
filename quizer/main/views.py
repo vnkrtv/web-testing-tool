@@ -23,8 +23,11 @@ def get_marks(request):
 
 
 def run_test(request):
-    test = Test.objects.filter(name=request.POST['test_name'])
+    test = Test.objects.filter(name=request.POST['test_name'])[0]
     tasks = Task.objects.filter(test__name=test.name)
-    random.choice(tasks, k=test.tasks_num)
-    info = {}
-    return render(request, 'main/runTest.html', info)
+    tasks = random.choices(tasks, k=test.tasks_num)
+    return render(request, 'main/runTest.html', {'tasks': tasks})
+
+
+def test_result(request):
+    return render(request, 'main/testResult.html')

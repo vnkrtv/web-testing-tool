@@ -28,7 +28,7 @@ class Test(models.Model):
 
 
 class Task(models.Model):
-    task = models.ForeignKey(Test, verbose_name='Тест', on_delete=models.CASCADE)
+    test = models.ForeignKey(Test, verbose_name='Тест', on_delete=models.CASCADE)
     question = models.CharField('Формулировка вопроса', max_length=200)
     options_1 = EmbeddedField(Option, verbose_name='Вариант 1', default={})
     options_2 = EmbeddedField(Option, verbose_name='Вариант 2', default={})

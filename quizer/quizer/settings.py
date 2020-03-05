@@ -82,7 +82,7 @@ WSGI_APPLICATION = 'quizer.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'djongo',
-        'NAME': 'mongo_db',
+        'NAME': 'db',
         # 'HOST' : 'mongodb://<dbuser>:<dbpassword>@ds259144.mlab.com:59144/<db-name>',
         # 'USER' : '<dbuser>',
         # 'PASSWORD' : '<dbpassword>',

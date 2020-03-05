@@ -30,10 +30,10 @@ class Test(models.Model):
 class Task(models.Model):
     task = models.ForeignKey(Test, on_delete=models.CASCADE)
     question = models.CharField('Формулировка вопроса', max_length=200)
-    options_1 = EmbeddedField(Option, name='Вариант 1', default={})
-    options_2 = EmbeddedField(Option, name='Вариант 2', default={})
-    options_3 = EmbeddedField(Option, name='Вариант 3', default={})
-    options_4 = EmbeddedField(Option, name='Вариант 4', default={})
+    options_1 = EmbeddedField(Option, verbose_name='Вариант 1', default={})
+    options_2 = EmbeddedField(Option, verbose_name='Вариант 2', default={})
+    options_3 = EmbeddedField(Option, verbose_name='Вариант 3', default={})
+    options_4 = EmbeddedField(Option, verbose_name='Вариант 4', default={})
 
     def __str__(self):
         return self.question

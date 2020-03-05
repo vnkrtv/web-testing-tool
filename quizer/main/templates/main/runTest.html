@@ -1,0 +1,42 @@
+{% extends "main/wrapper.html" %}
+
+{% block content %}
+    <form action="{% url 'main:test_result' %}" method="post">
+        {% csrf_token %}
+	    {% for task in tasks %}
+		 	<span class="d-block p-2 bg-primary text-white">{{ task.question }}</span>
+		 		<table class="table table-striped table-dark">
+		            <tbody>
+		                <tr>
+		                    <td>{{ task.option_1.option }}</td>
+		                    <label for='task_{{ forloop.counter }}_1'>
+		                    	<td><input type="checkbox" id='task_{{ forloop.counter }}_1' name='task_{{ forloop.counter }}_1'></td>
+		                    </label>
+		                </tr>
+		                <tr>
+		                    <td>{{ task.option_2.option }}</td>
+		                    <label for='task_{{ forloop.counter }}_2'>
+		                    	<td><input type="checkbox" id='task_{{ forloop.counter }}_2' name='task_{{ forloop.counter }}_2'></td>
+		                    </label>
+		                </tr>
+		                <tr>
+		                    <td>{{ task.option_3.option }}</td>
+		                    <label for='task_{{ forloop.counter }}_3'>
+		                    	<td><input type="checkbox" id='task_{{ forloop.counter }}_3' name='task_{{ forloop.counter }}_3'></td>
+		                    </label>
+		                </tr>
+		                <tr>
+		                    <td>{{ task.options_4.option }}</td>
+		                    <label for='task_{{ forloop.counter }}_4'>
+		                    	<td><input type="checkbox" id='task_{{ forloop.counter }}_4' name='task_{{ forloop.counter }}_4'></td>
+		                    </label>
+		                </tr>
+		            </tbody>
+		    </table>
+		    <br>
+	 	{% endfor %}
+        <span class="d-block p-2 bg-primary text-white">
+            <input type="submit" class="btn btn-dark btn-sm" value="Закончить тест">
+        </span>
+    </form>
+{% endblock %}

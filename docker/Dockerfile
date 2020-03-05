@@ -1,7 +1,6 @@
 FROM python:latest
 WORKDIR /app
 COPY requirements.txt /app/requirements.txt
-WORKDIR /app
 RUN pip install --no-cache-dir -r requirements.txt /
  && django-admin.py startproject quizer /
  && python quizer/manage.py startapp main /

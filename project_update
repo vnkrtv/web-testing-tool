@@ -8,7 +8,7 @@ fi
 
 if [ "$1" == "default" ]
 then
-    PROJECT_DIR="/home/leadness/Stude/Quizer"
+    PROJECT_DIR="/home/leadness/Study/Quizer"
     echo "Project directory: ${PROJECT_DIR}"
 else
     if [ -d "$1" ]
@@ -32,8 +32,8 @@ cp "${PROJECT_DIR}/requirements.txt" "./docker/requirements.txt"
 cp -r "${PROJECT_DIR}/quizer" "./docker/quizer"
 rm -r "./docker/quizer/__pycache__"
 
-rm "./docker/quizer/config/config.json"
-rm "./docker/quizer/config/default_config.json"
+rm "./docker/quizer/config/config.json" 2> /dev/null
+rm "./docker/quizer/config/default_config.json" 2> /dev/null
 
 CONFIG="{\"mdb_host\": \"mongo\", \"mdb_port\": 27017}"
 echo "${CONFIG}" >> "./docker/quizer/config/config.json"

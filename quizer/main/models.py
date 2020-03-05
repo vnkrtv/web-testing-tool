@@ -17,7 +17,7 @@ class Option(models.Model):
 class Test(models.Model):
     name = models.CharField('Тема теста', max_length=200)
     description = models.TextField('Описание теста', default="")
-    #tasks = ListField(EmbeddedField('Task'), default={})
+    tasks_num = models.IntegerField('Количество заданий в тесте', default=0)
 
     def __str__(self):
         return self.name
@@ -28,7 +28,7 @@ class Test(models.Model):
 
 
 class Task(models.Model):
-    task = models.ForeignKey(Test, on_delete=models.CASCADE)
+    task = models.ForeignKey(Test, verbose_name='Тест', on_delete=models.CASCADE)
     question = models.CharField('Формулировка вопроса', max_length=200)
     options_1 = EmbeddedField(Option, verbose_name='Вариант 1', default={})
     options_2 = EmbeddedField(Option, verbose_name='Вариант 2', default={})

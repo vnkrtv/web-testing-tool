@@ -1,16 +1,21 @@
 {% extends "main/wrapper.html" %}
 
 {% block content %}
-	<div class="column">
-		{% for test in tests %}
-			<div class='jumbotron'>
-	 			<p>{{ test.name }}</p>
-	 			<div class="col-md-6 offset-md-4">
-	                <button type="submit" class="btn btn-primary">
-	                    Приступить
-	                </button>
-	            </div>
-	 		</div>
-		{% endfor %}
-	</div>
+	<form action="{% url 'main:run_test' %}" method="post">
+        {% csrf_token %}
+		<div class="column">
+			{% for test in tests %}
+				<div class='jumbotron'>
+					<label for='test_name'>
+						<input type="hidden" name="test_name" id="test_name" value="{{ test.name }}">
+					</label>
+		 			<div class="col-md-6 offset-md-4">
+		                <button type="submit" class="btn btn-primary">
+		                    Приступить
+		                </button>
+		            </div>
+		 		</div>
+			{% endfor %}
+		</div>
+    </form>
 {% endblock %}

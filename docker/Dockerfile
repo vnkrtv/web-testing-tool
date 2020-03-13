@@ -23,13 +23,13 @@ RUN mkdir -p /data/db
 RUN mkdir -p /data/code
 
 # Expose port #27017 from the container to the host
-# EXPOSE 27017
 
 # Set /usr/bin/mongod as the dockerized entry-point application
 
 COPY requirements.txt /app/requirements.txt
-
-RUN pip install --no-cache-dir -r requirements.txt \
+WORKDIR /app
+RUN apt-get install -y python3-pip \
+ && pip3 install --no-cache-dir -r requirements.txt \
  && django-admin.py startproject quizer \
  && python3 quizer/manage.py startapp main \
  && python3 quizer/manage.py migrate \
@@ -37,5 +37,7 @@ RUN pip install --no-cache-dir -r requirements.txt \
  && echo "from django.contrib.auth.models import User; User.objects.create_superuser('admin', '', 'admin')" | python3 quizer/manage.py shell
 
 COPY quizer /app/quizer
+COPY entry_commands.sh /entry_commands.sh
 
-ENTRYPOINT ["python3", "/app/quizer/manage.py", "runserver", "0.0.0.0:8000", "--noreload"]
+EXPOSE 8000
+ENTRYPOINT ["/entry_commands.sh"]

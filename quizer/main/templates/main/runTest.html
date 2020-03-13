@@ -1,8 +1,29 @@
 {% extends "main/wrapper.html" %}
 
 {% block content %}
+	<script type="text/javascript">
+		var ticks = 5;
+
+		function letsGo() {
+		  if(ticks<0) {
+		       document.getElementById("time").innerHTML ='Время вышло!';
+		       document.getElementById("stop_button").click();      
+		       return;
+		  }
+
+		  document.getElementById("time").innerHTML='Времени осталось: ' + ticks + ' c';
+		  ticks--;
+		  setTimeout(letsGo,1000);
+		}
+	</script>
+	<span class="d-block p-2 bg-primary text-white">
+        <div id="time" type="text" class="btn btn-dark btn-sm"></div>
+    </span>
+    <script type="text/javascript">letsGo();</script>
+    <br>
+    <br>
     <form action="{% url 'main:test_result' %}" method="post">
-        {% csrf_token %}
+		{% csrf_token %}
 	    {% for task in tasks %}
 		 	<span class="d-block p-2 bg-primary text-white">{{ forloop.counter }}. {{ task.question }}</span>
 		 		<table class="table table-striped table-dark">
@@ -36,7 +57,7 @@
 		    <br>
 	 	{% endfor %}
         <span class="d-block p-2 bg-primary text-white">
-            <input type="submit" class="btn btn-dark btn-sm" value="Закончить тест">
+            <input id='stop_button' type="submit" class="btn btn-dark btn-sm" value="Закончить тест">
         </span>
     </form>
 {% endblock %}

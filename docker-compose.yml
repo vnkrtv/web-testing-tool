@@ -1,18 +1,19 @@
 version: '3'
 
 services:
-  web-app:
+  quizer:
     image: quizer:latest
+    depends_on:
+      - mongo
     ports:
       - "8000:8000"
+    networks:
+      - net
   mongo:
     image: mongo:latest
-    environment:
-      - MONGO_INITDB_DATABASE=saas
-      - MONGO_NON_ROOT_USERNAME=saas
-      - MONGO_NON_ROOT_PASSWORD=secret
-      - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
-      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
-      - MONGODB_USERNAME=test
-      - MONGODB_PASSWORD=test123
-      - MONGODB_DATABASE=test1
+    networks:
+      - net
+
+networks:
+  net:
+

@@ -20,13 +20,14 @@ def get_tests(request):
 
 
 def get_marks(request):
-    return render(request, 'main/marks.html', info)
+    return render(request, 'main/marks.html')
 
 
 def run_test(request):
-    test = Test.objects.filter(name=request.POST['test_name'])[0]
-    tasks = Task.objects.filter(test__name=test.name)
-    tasks = random.choices(tasks, k=test.tasks_num)
+    test = list(Test.objects.filter(name=request.POST['test_name']))[0]
+    print(test)
+    tasks = list(Task.objects.filter(test__name=test.name))
+    tasks = random.sample(tasks, k=test.tasks_num)
     return render(request, 'main/runTest.html', {'tasks': tasks})
 
 

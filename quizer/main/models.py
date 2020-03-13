@@ -18,6 +18,7 @@ class Test(models.Model):
     name = models.CharField('Тема теста', max_length=200)
     description = models.TextField('Описание теста', default="")
     tasks_num = models.IntegerField('Количество заданий в тесте', default=0)
+    duration = models.IntegerField('Длительность теста в секундах', default=300)
 
     def __str__(self):
         return self.name

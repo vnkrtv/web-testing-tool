@@ -1,21 +1,48 @@
 from django.shortcuts import render
+from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth.models import User
 from .models import Test, Task
 import random
 
 
-def login(request):
+def login_page(request):
     return render(request, 'main/login.html')
 
 
 def index(request):
+    username = request.POST['username']
+    password = request.POST['password']
+    user = authenticate(username=username, password=password)
     info = {
-        'account': request.POST['account'],
-        'group': request.POST['group']
+        'username': username,
+        'password': password
     }
-    return render(request, 'main/index.html', info)
+    if user is not None:
+        if user.is_active:
+            login(request, user)
+            info['info'] = 'user is valid, active and authenticated'
+            return render(request, 'main/index.html', info)
+        else:
+            info['info'] = 'password is valid, but the account has been disabled'
+            return render(request, 'main/index.html', info)
+    # Return a 'disabled account' error message
+    else:
+        #User.objects.create_user(username, '', password)
+        info['info'] = ' username and password were incorrect'
+        return render(request, 'main/index.html', info)
+
+
+# Return an 'invalid login' error message.
+    #info = {
+    #    'account': request.POST['account'],
+    #    'group': request.POST['group']
+    #}
+    #return render(request, 'main/index.html', info)
 
 
 def get_tests(request):
+    print(User.is_active)
+    print(User.is_authenticated)
     return render(request, 'main/tests.html', {'tests': list(Test.objects.all())})
 
 
@@ -27,6 +54,13 @@ def run_test(request):
     test = list(Test.objects.filter(name=request.POST['test_name']))[0]
     print(test)
     tasks = list(Task.objects.filter(test__name=test.name))
+
+    if len(tasks) < test.tasks_num:
+        info = {
+            'error': 'Вопросов по данной теме меньше %d' % test.tasks_num
+        }
+        return render(request, 'main/error.html', info)
+
     tasks = random.sample(tasks, k=test.tasks_num)
     return render(request, 'main/runTest.html', {'tasks': tasks, 'test_duration': test.duration, 'test_name': test.name})
 
@@ -54,4 +88,9 @@ def test_result(request):
     for task_id in answers_dict:
         right_answers_count += 1 if answers_dict[task_id] != tasks_dict[task_id] else 0
 
-    return render(request, 'main/testResult.html', {'right_answers_count': right_answers_count})
+    info = {
+        'right_answers_count': right_answers_count,
+        'username': request.user.username
+    }
+
+    return render(request, 'main/testResult.html', info)

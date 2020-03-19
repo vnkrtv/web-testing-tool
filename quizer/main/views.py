@@ -1,22 +1,24 @@
 from django.shortcuts import render
 from django.contrib.auth import login, logout, authenticate
-from django.contrib.auth.models import User
+from django.contrib.auth.decorators import login_required
+from .decorators import unauthenticated_user
 from .models import Test, Task
 import random
 
 
 def login_page(request):
+    logout(request)
     return render(request, 'main/login.html')
 
 
 def index(request):
-    username = request.POST['username']
-    password = request.POST['password']
-    user = authenticate(username=username, password=password)
+    if 'password' not in request.POST:
+        return render(request, 'main/index.html', {'username': request.user.username})
     info = {
-        'username': username,
-        'password': password
+        'username': request.POST['username'],
+        'password': request.POST['password']
     }
+    user = authenticate(username=info['username'], password=info['password'])
     if user is not None:
         if user.is_active:
             login(request, user)
@@ -40,31 +42,42 @@ def index(request):
     #return render(request, 'main/index.html', info)
 
 
+@unauthenticated_user
 def get_tests(request):
-    print(User.is_active)
-    print(User.is_authenticated)
-    return render(request, 'main/tests.html', {'tests': list(Test.objects.all())})
+    info = {
+        'tests': list(Test.objects.all()),
+        'username': request.user.username
+    }
+    return render(request, 'main/tests.html', info)
 
 
+@unauthenticated_user
 def get_marks(request):
     return render(request, 'main/marks.html')
 
 
+@unauthenticated_user
 def run_test(request):
     test = list(Test.objects.filter(name=request.POST['test_name']))[0]
-    print(test)
     tasks = list(Task.objects.filter(test__name=test.name))
 
     if len(tasks) < test.tasks_num:
         info = {
-            'error': 'Вопросов по данной теме меньше %d' % test.tasks_num
+            'error': 'Вопросов по данной теме меньше %d' % test.tasks_num,
+            'username': request.user.username
         }
         return render(request, 'main/error.html', info)
-
     tasks = random.sample(tasks, k=test.tasks_num)
-    return render(request, 'main/runTest.html', {'tasks': tasks, 'test_duration': test.duration, 'test_name': test.name})
+
+    info = {
+        'tasks': tasks, 'test_duration': test.duration,
+        'test_name': test.name,
+        'username': request.user.username
+    }
+    return render(request, 'main/runTest.html', info)
 
 
+@unauthenticated_user
 def test_result(request):
     query_dict = dict(request.POST)
     query_dict.pop('csrfmiddlewaretoken')

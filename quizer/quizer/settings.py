@@ -82,7 +82,7 @@ WSGI_APPLICATION = 'quizer.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'djongo',
-        'NAME': 'db',
+        'NAME': 'data',
         # 'HOST' : 'mongodb://<dbuser>:<dbpassword>@ds259144.mlab.com:59144/<db-name>',
         # 'USER' : '<dbuser>',
         # 'PASSWORD' : '<dbpassword>',
@@ -129,3 +129,6 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 STATIC_ROOT = os.path.join(PROJECT_ROOT, 'static')
+
+# LECTURE_USER_MODEL = 'main.LectureUser'
+# STUDENT_USER_MODEL = 'main.StudentUser'

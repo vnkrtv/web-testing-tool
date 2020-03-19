@@ -1,8 +1,9 @@
 {% extends "main/wrapper.html" %}
 
 {% block content %}
- 	<div class='jumbotron'>
- 		Слушатель: {{ username }}<br>
- 		Число правильных ответов: {{ right_answers_count }}
+	<div class='jumbotron'>
+ 		<h3>Результат</h3>
+ 		<p>Слушатель: {{ username }}<br>
+ 		Число правильных ответов: {{ right_answers_count }}</p>
  	</div>
 {% endblock %}

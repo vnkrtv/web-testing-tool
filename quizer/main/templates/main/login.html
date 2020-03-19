@@ -34,6 +34,11 @@
             <div class="col-md-8">
                 <div class="card">
                     <div class="card-header">Зайти в систему</div>
+                    {% if not_authenticated %}
+                        <div class="alert alert-danger" role="alert">
+                          Ошибка: неправильное имя пользователя или пароль!
+                        </div>                    
+                    {% endif %}
                     <div class="card-body">
                         <form action="{% url 'main:index' %}" method="post">
                             {% csrf_token %}

@@ -12,6 +12,8 @@ def login_page(request):
 
 
 def index(request):
+    if 'username' not in request.POST or 'password' not in request.POST['username']:
+        return render(request, 'main/login.html', {'not_authenticated': True})
     if 'password' not in request.POST:
         return render(request, 'main/index.html', {'username': request.user.username})
     info = {
@@ -22,16 +24,16 @@ def index(request):
     if user is not None:
         if user.is_active:
             login(request, user)
-            info['info'] = 'user is valid, active and authenticated'
-            return render(request, 'main/index.html', info)
+
+            if 'lecturer' in user.groups.all():
+                return render(request, 'main/controlPanel.html', info)
+            if 'student' in user.groups.all():
+                return render(request, 'main/index.html', info)
         else:
-            info['info'] = 'password is valid, but the account has been disabled'
             return render(request, 'main/index.html', info)
     # Return a 'disabled account' error message
     else:
-        #User.objects.create_user(username, '', password)
-        info['info'] = ' username and password were incorrect'
-        return render(request, 'main/index.html', info)
+        return render(request, 'main/login.html', {'not_authenticated': True})
 
 
 # Return an 'invalid login' error message.

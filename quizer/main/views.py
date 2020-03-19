@@ -12,10 +12,14 @@ def login_page(request):
 
 
 def index(request):
-    if 'username' not in request.POST or 'password' not in request.POST['username']:
+    if request.user.is_authenticated:
+        info = {'username': request.user.username}
+        if request.user.groups.filter(name='lecturer'):
+            return render(request, 'main/controlPanel.html', info)
+        if request.user.groups.filter(name='student'):
+            return render(request, 'main/index.html', info)
+    if 'username' not in request.POST or 'password' not in request.POST:
         return render(request, 'main/login.html', {'not_authenticated': True})
-    if 'password' not in request.POST:
-        return render(request, 'main/index.html', {'username': request.user.username})
     info = {
         'username': request.POST['username'],
         'password': request.POST['password']
@@ -24,10 +28,9 @@ def index(request):
     if user is not None:
         if user.is_active:
             login(request, user)
-
-            if 'lecturer' in user.groups.all():
+            if user.groups.filter(name='lecturer'):
                 return render(request, 'main/controlPanel.html', info)
-            if 'student' in user.groups.all():
+            if user.groups.filter(name='student'):
                 return render(request, 'main/index.html', info)
         else:
             return render(request, 'main/index.html', info)

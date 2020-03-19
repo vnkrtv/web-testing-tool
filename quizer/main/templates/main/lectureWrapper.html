@@ -14,37 +14,31 @@
 	    Quizer
 	  </div>
 	  <ul class="sidebar-navigation">
-	  	<li class="header">Пользователь</li>
+	  	<li class="header">Преподаватель</li>
 	  	<li>
 	      <a href="{% url 'main:index' %}">
 	        <i class="fa fa-tachometer" aria-hidden="true"></i> {{ username }}
 	      </a>
 	    </li>
-	    <li class="header">Навигация</li>
+	    <li>
+	      <a href="{% url 'main:login_page' %}">
+	        <i class="fa fa-tachometer" aria-hidden="true"></i> Выйти
+	      </a>
+	    </li>
+	    <li class="header">Управление</li>
 	    <li>
 	      <a href="{% url 'main:tests' %}">
-	        <i class="fa fa-home" aria-hidden="true"></i> Тесты
+	        <i class="fa fa-home" aria-hidden="true"></i> Доступные тесты
 	      </a>
 	    </li>
 	    <li>
 	      <a href="{% url 'main:marks' %}">
-	        <i class="fa fa-tachometer" aria-hidden="true"></i> Оценки
-	      </a>
-	    </li>
-	    <li class="header">Another Menu</li>
-	    <li>
-	      <a href="#">
-	        <i class="fa fa-users" aria-hidden="true"></i> Friends
+	        <i class="fa fa-tachometer" aria-hidden="true"></i> Добавить тест
 	      </a>
 	    </li>
 	    <li>
-	      <a href="#">
-	        <i class="fa fa-cog" aria-hidden="true"></i> Settings
-	      </a>
-	    </li>
-	    <li>
-	      <a href="#">
-	        <i class="fa fa-info-circle" aria-hidden="true"></i> Information 
+	      <a href="{% url 'main:marks' %}">
+	        <i class="fa fa-tachometer" aria-hidden="true"></i> Добавить вопрос
 	      </a>
 	    </li>
 	  </ul>

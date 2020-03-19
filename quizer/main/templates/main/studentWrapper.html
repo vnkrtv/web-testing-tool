@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+  	<title>Quizer</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	{% load static %}
+	<link rel="stylesheet" href="{% static 'main/css/sidebar.css' %}">
+	<link rel="stylesheet" href="{% static 'main/css/bootstrap.min.css' %}">
+  </head>
+  <body>
+	<div class="sidebar-container">
+	  <div class="sidebar-logo" href='/'>
+	    Quizer
+	  </div>
+	  <ul class="sidebar-navigation">
+	  	<li class="header">Пользователь</li>
+	  	<li>
+	      <a href="{% url 'main:index' %}">
+	        <i class="fa fa-tachometer" aria-hidden="true"></i> {{ username }}
+	      </a>
+	    </li>
+	    <li>
+	      <a href="{% url 'main:login_page' %}">
+	        <i class="fa fa-tachometer" aria-hidden="true"></i> Выйти
+	      </a>
+	    </li>
+	    <li class="header">Навигация</li>
+	    <li>
+	      <a href="{% url 'main:tests' %}">
+	        <i class="fa fa-home" aria-hidden="true"></i> Тесты
+	      </a>
+	    </li>
+	    <li>
+	      <a href="{% url 'main:marks' %}">
+	        <i class="fa fa-tachometer" aria-hidden="true"></i> Оценки
+	      </a>
+	    </li>
+	  </ul>
+	</div>
+
+	<div class="content-container">
+
+	  <div class="container-fluid">
+
+	    <!-- Main component for a primary marketing message or call to action -->
+	    {% block content %}
+		{% endblock %}
+
+	  </div>
+	</div>
+  </body>
+</html>

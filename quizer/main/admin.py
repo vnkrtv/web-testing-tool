@@ -3,4 +3,4 @@ from .models import Subject, Test
 
 
 admin.site.register(Subject)
-# admin.site.register(Test)
+admin.site.register(Test)

@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from .decorators import unauthenticated_user
-from .models import Test, Task
+from .models import Test, MongoDB
 import random
 
 
@@ -11,15 +11,27 @@ def login_page(request):
     return render(request, 'main/login.html')
 
 
+@unauthenticated_user
+def get_tests(request):
+    if request.user.groups.filter(name='lecturer'):
+        info = {
+            'tests': list(Test.objects.filter(author__username=request.user.username)),
+            'username': request.user.username
+        }
+        return render(request, 'main/testsPanel.html', info)
+    if request.user.groups.filter(name='student'):
+        info = {
+            'tests': list(Test.objects.all()),
+            'username': request.user.username
+        }
+        return render(request, 'main/tests.html', info)
+
+
 def index(request):
     if request.user.is_authenticated:
-        info = {'username': request.user.username}
-        if request.user.groups.filter(name='lecturer'):
-            return render(request, 'main/controlPanel.html', info)
-        if request.user.groups.filter(name='student'):
-            return render(request, 'main/index.html', info)
+        return get_tests(request)
     if 'username' not in request.POST or 'password' not in request.POST:
-        return render(request, 'main/login.html', {'not_authenticated': True})
+        return render(request, 'main/login.html', {'error': 'Ошибка: неправильное имя пользователя или пароль!'})
     info = {
         'username': request.POST['username'],
         'password': request.POST['password']
@@ -28,32 +40,12 @@ def index(request):
     if user is not None:
         if user.is_active:
             login(request, user)
-            if user.groups.filter(name='lecturer'):
-                return render(request, 'main/controlPanel.html', info)
-            if user.groups.filter(name='student'):
-                return render(request, 'main/index.html', info)
+            return get_tests(request)
         else:
-            return render(request, 'main/index.html', info)
+            return render(request, 'main/login.html', {'error': 'Ошибка: аккаунт пользователя неактивен!'})
     # Return a 'disabled account' error message
     else:
-        return render(request, 'main/login.html', {'not_authenticated': True})
-
-
-# Return an 'invalid login' error message.
-    #info = {
-    #    'account': request.POST['account'],
-    #    'group': request.POST['group']
-    #}
-    #return render(request, 'main/index.html', info)
-
-
-@unauthenticated_user
-def get_tests(request):
-    info = {
-        'tests': list(Test.objects.all()),
-        'username': request.user.username
-    }
-    return render(request, 'main/tests.html', info)
+        return render(request, 'main/login.html', {'error': 'неправильное имя пользователя или пароль!'})
 
 
 @unauthenticated_user
@@ -64,7 +56,7 @@ def get_marks(request):
 @unauthenticated_user
 def run_test(request):
     test = list(Test.objects.filter(name=request.POST['test_name']))[0]
-    tasks = list(Task.objects.filter(test__name=test.name))
+    tasks = list()#Task.objects.filter(test__name=test.name))
 
     if len(tasks) < test.tasks_num:
         info = {
@@ -92,7 +84,7 @@ def test_result(request):
 
     # TODO: rewrite dat shit
     tasks_dict = {}
-    for task in list(Task.objects.filter(test__name=test_name)):
+    for task in list():#Task.objects.filter(test__name=test_name)):
         if task.options_1.is_true:
             tasks_dict[task.id] = 1
         elif task.options_2.is_true:

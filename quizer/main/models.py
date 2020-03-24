@@ -1,22 +1,9 @@
 from django.db import models
-from djongo.models import ArrayField, EmbeddedField
-from djongo.models import ListField
 from django.conf import settings
-from django.contrib.auth.models import User
+from pymongo import MongoClient
 
 
-'''
-class LectureUser(AbstractUser):
-    class Meta:
-        verbose_name = 'Преподаватель'
-        verbose_name_plural = 'Преподаватели'
-
-
-class StudentUser(AbstractUser):
-    class Meta:
-        verbose_name = 'Слушатель'
-        verbose_name_plural = 'Слушатели'
-'''
+DEFAULT_AUTHOR_ID = 1
 
 
 class Subject(models.Model):
@@ -34,21 +21,6 @@ class Subject(models.Model):
     class Meta:
         verbose_name = 'Дисциплина'
         verbose_name_plural = 'Дисциплины'
-
-
-class Option(models.Model):
-    option = models.CharField('Вариант ответа', max_length=200)
-    is_true = models.BooleanField('Верный')
-
-    def __str__(self):
-        return self.option
-
-    class Meta:
-        verbose_name = 'Вариант ответа'
-        verbose_name_plural = 'Варианты ответа'
-
-
-DEFAULT_AUTHOR_ID = 1
 
 
 class Test(models.Model):
@@ -74,6 +46,125 @@ class Test(models.Model):
     class Meta:
         verbose_name = 'Тест'
         verbose_name_plural = 'Тесты'
+
+
+class MongoDB(object):
+
+    def __init__(self, host='localhost', port=27017):
+        self._client = MongoClient(host, port) if port else MongoClient(host)
+        self._db = self._client.quizer.quizer
+
+    def add_(self, user) -> None:
+        """
+
+        :param user: json with vk user information
+        """
+        id = user['main_info']['id']
+        domain = user['main_info']['domain']
+        date = "{hour:02}-{minutes:02} {day}-{month:02}-{year}".format(**user['date'])
+
+        if self._db.find_one({'user_id' : id}):
+            self._db.find_one_and_update({'user_id' : id}, {'$push': {'dates': {date: user}}})
+        else:
+            self._db.insert_one({'user_id': id, 'domain': domain, 'dates': [{date: user}]})
+
+    def check_domain(self, domain) -> bool:
+        """
+
+        :param domain: vk user domain
+        :return: True if user exist in db, False else
+        """
+        if self._db.find_one({'domain': domain}):
+            return True
+        return False
+
+    def get_fullname(self, domain) -> str:
+        """
+
+        :param domain: vk user domain
+        :return: str '${first_name} ${last_name}'
+        """
+        if self.check_domain(domain):
+            info = list(self._db.find_one({'domain': domain})['dates'][-1].values())[0]['main_info']
+            return info['first_name'] + ' ' + info['last_name']
+        else:
+            return ''
+
+    def load_user_info(self, id=0, domain='', date='') -> dict:
+        """
+
+        :param id: vk user id (if input)
+        :param domain: vk user domain (if input)
+        :param date: vk user information collected this date (if not input - latest info)
+        :return: dict with vk user information
+        """
+        if id != 0:
+            if date:
+                info = {}
+                for inf in self._db.find_one({'user_id': id})['dates']:
+                    for d in inf:
+                        if d == date:
+                            info = inf[date]
+                return info
+            else:
+                info = self._db.find_one({'user_id': id})
+                return list(info['dates'][-1].values())[0]
+
+        elif domain != '':
+            if date:
+                info = {}
+                for inf in self._db.find_one({'domain': domain})['dates']:
+                    for d in inf:
+                        if d == date:
+                            info = inf[date]
+                return info
+            else:
+                info = self._db.find_one({'domain': domain})
+                return list(info['dates'][-1].values())[0]
+
+    def get_user_info_dates(self, id=0, domain='') -> list:
+        """
+
+        :param id: vk user id
+        :param domain: vk user domain
+        :return: list of dates when vk user information was collected
+        """
+        if id != 0:
+            dates = [date for date in list(self._db.find_one({'user_id': id})['dates'])]
+            return [list(date.keys())[0] for date in dates]
+        elif domain != '':
+            dates = [date for date in list(self._db.find_one({'domain': domain})['dates'])]
+            return [list(date.keys())[0] for date in dates]
+
+
+'''
+from djongo.models import ArrayField, EmbeddedField
+from djongo.models import ListField
+from django.contrib.auth.models import User
+
+
+class LectureUser(AbstractUser):
+    class Meta:
+        verbose_name = 'Преподаватель'
+        verbose_name_plural = 'Преподаватели'
+
+
+class StudentUser(AbstractUser):
+    class Meta:
+        verbose_name = 'Слушатель'
+        verbose_name_plural = 'Слушатели'
+
+
+class Option(models.Model):
+    option = models.CharField('Вариант ответа', max_length=200)
+    is_true = models.BooleanField('Верный')
+
+    def __str__(self):
+        return self.option
+
+    class Meta:
+        verbose_name = 'Вариант ответа'
+        verbose_name_plural = 'Варианты ответа'
 
 
 class Task(models.Model):
@@ -126,3 +217,4 @@ class TestResult(models.Model):
     class Meta:
         verbose_name = 'Результат теста'
         verbose_name_plural = 'Результаты теста'
+'''

@@ -51,9 +51,9 @@ def index(request):
 @unauthenticated_user
 def info(request):
     if request.user.groups.filter(name='lecturer'):
-        test_name = request.POST['test_name']
+        # test_name = request.POST['test_name']
         info = {
-            'title': 'Тест добавлен',
+            'title': 'Успех!',
             'message': request.POST,#'Тест %s по теме %s успешно добавлен' % (test_name, ''),
             'username': request.user.username
         }

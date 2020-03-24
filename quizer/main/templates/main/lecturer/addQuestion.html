@@ -21,37 +21,245 @@
 		  		<label for="test_name">Формулировка вопроса
 		      		<input type="text" class="form-control" id="question" name="question" required>
 		      	</label>
+				  <div class="custom-control custom-checkbox my-1 mr-sm-2">
+				    <input type="checkbox" class="custom-control-input" id="multiselect" name="multiselect">
+				    <label class="custom-control-label" for="multiselect">Мультивыбор</label>
+				  </div>
+				  <div class="custom-control custom-checkbox my-1 mr-sm-2">
+				    <input type="checkbox" class="custom-control-input" id="with_images" name="with_images">
+				    <label class="custom-control-label" for="with_images">Фотографии</label>
+				  </div>
 		  	</div>
 		  </div>
 		  <div class="form-row">
 		     <div class="col-md-4 mb-3">
-		      <label for="description">Количество заданий</label>
-		      <input type="number" class="form-control" id="tasks_num" name="tasks_num" required>
+		      <label for="description">Число вариантов</label>
+		      <input type="number" class="form-control" id="tasks_num" name="tasks_num" min="2" required>
 		    </div>
 		  </div>
-		  <div class="form-row">
-		     <div class="col-md-4 mb-3">
-		      <label for="description">Длительность теста</label>
-		      <input type="number" class="form-control" id="duration" name="duration" required>
-		    </div>
-		  </div>
-		  <div id="items"></div>
+		  <div id="questions" class="col-md-4 mb-3"></div><br>
 		  <script type="text/javascript">
+		  	function getQuestions(i) {
+		  		const container = document.createElement('div');
+				container.className = 'form-row';
+
+				const childContainer = document.createElement('div');
+				childContainer.className = 'col-md-4 mb-3';
+
+				const option_label = document.createElement('label');
+				option_label.htmlFor = `option_${i}`;
+				option_label.innerHTML = `Вариант ${i + 1}`;
+
+				const option_input = document.createElement('input');
+				option_input.className = "form-control"
+				option_input.type = 'text';
+				option_input.id = `option_${i}`;
+				option_input.name = `option_${i}`;
+				option_input.required = 'required';
+
+				option_label.appendChild(option_input);
+
+
+				const radioContainer = document.createElement('div');
+				radioContainer.className = 'custom-control custom-checkbox my-1 mr-sm-2';
+
+				const is_true_input = document.createElement('input');
+				is_true_input.className = "custom-control-input"
+				is_true_input.type = 'radio';
+				is_true_input.id = `is_true_${i}`;
+				is_true_input.name = `is_true`;
+				is_true_input.value = `${i}`;
+
+				const is_true_label = document.createElement('label');
+				is_true_label.className = 'custom-control-label'
+				is_true_label.htmlFor = `is_true_${i}`;
+				is_true_label.innerHTML = 'Верный ответ';
+
+				radioContainer.appendChild(is_true_input);
+				radioContainer.appendChild(is_true_label);
+
+				childContainer.appendChild(option_label);
+				childContainer.appendChild(radioContainer);
+
+				container.appendChild(childContainer);
+
+				return container;
+		  	}
+
+
+		  	function getQuestionsWithImages(i) {
+		  		const container = document.createElement('div');
+				container.className = 'form-row';
+
+				const childContainer = document.createElement('div');
+				childContainer.className = 'col-md-4 mb-3';
+
+
+				const fileContainer = document.createElement('div');
+				fileContainer.className = 'form-group';
+
+				const option_label = document.createElement('label');
+				option_label.htmlFor = `option_${i}`;
+				option_label.innerHTML = `Вариант ${i + 1}`;
+
+				const option_input = document.createElement('input');
+				option_input.className = "form-control-file"
+				option_input.type = 'file';
+				option_input.id = `option_${i}`;
+				option_input.name = `option_${i}`;
+				option_input.required = 'required';
+
+				option_label.appendChild(option_input);
+				fileContainer.appendChild(option_label);
+
+
+				const radioContainer = document.createElement('div');
+				radioContainer.className = 'custom-control custom-checkbox my-1 mr-sm-2';
+
+				const is_true_input = document.createElement('input');
+				is_true_input.className = "custom-control-input"
+				is_true_input.type = 'radio';
+				is_true_input.id = `is_true_${i}`;
+				is_true_input.name = `is_true`;
+				is_true_input.value = `${i}`;
+
+				const is_true_label = document.createElement('label');
+				is_true_label.className = 'custom-control-label'
+				is_true_label.htmlFor = `is_true_${i}`;
+				is_true_label.innerHTML = 'Верный ответ';
+
+				radioContainer.appendChild(is_true_input);
+				radioContainer.appendChild(is_true_label);
+
+				childContainer.appendChild(fileContainer);
+				childContainer.appendChild(radioContainer);
+
+				container.appendChild(childContainer);
+
+				return container;
+		  	}
+
+
+		  	function getQuestionsWithMultiselect(i) {
+		  		const container = document.createElement('div');
+				container.className = 'form-row';
+
+				const childContainer = document.createElement('div');
+				childContainer.className = 'col-md-4 mb-3';
+
+				const option_label = document.createElement('label');
+				option_label.htmlFor = `option_${i}`;
+				option_label.innerHTML = `Вариант ${i + 1}`;
+
+				const option_input = document.createElement('input');
+				option_input.className = "form-control"
+				option_input.type = 'text';
+				option_input.id = `option_${i}`;
+				option_input.name = `option_${i}`;
+				option_input.required = 'required';
+
+				option_label.appendChild(option_input);
+
+
+				const checkboxContainer = document.createElement('div');
+				checkboxContainer.className = 'custom-control custom-checkbox my-1 mr-sm-2';
+
+				const is_true_input = document.createElement('input');
+				is_true_input.className = "custom-control-input"
+				is_true_input.type = 'checkbox';
+				is_true_input.id = `is_true_${i}`;
+				is_true_input.name = `is_true_${i}`;
+
+				const is_true_label = document.createElement('label');
+				is_true_label.className = 'custom-control-label'
+				is_true_label.htmlFor = `is_true_${i}`;
+				is_true_label.innerHTML = 'Верный ответ';
+
+				checkboxContainer.appendChild(is_true_input);
+				checkboxContainer.appendChild(is_true_label);
+
+				childContainer.appendChild(option_label);
+				childContainer.appendChild(checkboxContainer);
+
+				container.appendChild(childContainer);
+
+				return container;
+		  	}
+
+
+		  	function getQuestionsWithMultiselectAndImages(i) {
+		  		const container = document.createElement('div');
+				container.className = 'form-row';
+
+				const childContainer = document.createElement('div');
+				childContainer.className = 'col-md-4 mb-3';
+
+
+				const fileContainer = document.createElement('div');
+				fileContainer.className = 'form-group';
+
+				const option_label = document.createElement('label');
+				option_label.htmlFor = `option_${i}`;
+				option_label.innerHTML = `Вариант ${i + 1}`;
+
+				const option_input = document.createElement('input');
+				option_input.className = "form-control-file"
+				option_input.type = 'file';
+				option_input.id = `option_${i}`;
+				option_input.name = `option_${i}`;
+				option_input.required = 'required';
+
+				option_label.appendChild(option_input);
+				fileContainer.appendChild(option_label);
+
+
+				const checkboxContainer = document.createElement('div');
+				checkboxContainer.className = 'custom-control custom-checkbox my-1 mr-sm-2';
+
+				const is_true_input = document.createElement('input');
+				is_true_input.className = "custom-control-input"
+				is_true_input.type = 'checkbox';
+				is_true_input.id = `is_true_${i}`;
+				is_true_input.name = `is_true_${i}`;
+
+				const is_true_label = document.createElement('label');
+				is_true_label.className = 'custom-control-label'
+				is_true_label.htmlFor = `is_true_${i}`;
+				is_true_label.innerHTML = 'Верный ответ';
+
+				checkboxContainer.appendChild(is_true_input);
+				checkboxContainer.appendChild(is_true_label);
+
+				childContainer.appendChild(fileContainer);
+				childContainer.appendChild(checkboxContainer);
+
+				container.appendChild(childContainer);
+
+				return container;
+		  	}
+
 		  	const e = document.getElementById('tasks_num');
-		  	const items = document.getElementById('items');	  	
+		  	const questions = document.getElementById('questions');	  	
 		  	e.onkeyup = e.onchange = () => {
 		  		const count = +(e.value);
-		  		items.innerHTML = '';
+		  		questions.innerHTML = '';
 		  		for (let i = 0; i < count; ++i) {
-		  			const item_element = document.createElement('input');
-		  			item_element.className = 'form-control';
-		  			item_element.id = `item-${i}`;
-		  			item_element.name = `item-${i}`;
-		  			items.appendChild(item_element);
+		  			if (document.getElementById('multiselect').checked) {
+		  				if (document.getElementById('with_images').checked) {
+		  					questions.appendChild(getQuestionsWithMultiselectAndImages(i));
+		  				} else {
+		  					questions.appendChild(getQuestionsWithMultiselect(i));
+		  				}
+			  		} else {
+			  			if (document.getElementById('with_images').checked) {
+			  				questions.appendChild(getQuestionsWithImages(i));
+		  				} else {
+			  				questions.appendChild(getQuestions(i));
+		  				}
+			  		}
 		  		}
 		  	};
 		  </script>
 		  <button class="btn btn-primary" type="submit">Добавить</button>
 		</form>
- 	</div>
 {% endblock %}

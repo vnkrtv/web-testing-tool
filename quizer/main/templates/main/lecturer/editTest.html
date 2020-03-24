@@ -1,9 +1,9 @@
-{% extends "main/lectureWrapper.html" %}
+{% extends "main/lecturerWrapper.html" %}
 
 {% block content %}
  	<div class='jumbotron'>
- 		<h3>Доступные тесты</h3>
- 		{% for test in iterable %}
+ 		<h2>Доступные тесты</h2><br>
+ 		{% for test in tests %}
 			<label for='test_name'>
 				<h3>{{ test.name }}</h3>
 				<p>{{ test.description }}</p>
@@ -12,13 +12,9 @@
 				<form action="{% url 'main:run_test' %}" method="post">
     			{% csrf_token %}
     				<input type="hidden" name="test_name" id="test_name" value="{{ test.name }}">
-					<button class="btn btn-primary">Запустить</button><br>
 					<button class="btn btn-primary">Редактировать</button>
 				</form>
 			</label>
  		{% endfor %}
- 	</div>
- 	<div class='jumbotron'>
- 		<h3>Добавить тест</h3>
  	</div>
 {% endblock %}

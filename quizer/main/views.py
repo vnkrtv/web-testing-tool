@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
-from .decorators import unauthenticated_user
+from .decorators import unauthenticated_user, allowed_users
 from .models import Test, MongoDB
 import random
 
@@ -18,13 +18,13 @@ def get_tests(request):
             'tests': list(Test.objects.filter(author__username=request.user.username)),
             'username': request.user.username
         }
-        return render(request, 'main/testsPanel.html', info)
+        return render(request, 'main/lecturer/testsPanel.html', info)
     if request.user.groups.filter(name='student'):
         info = {
             'tests': list(Test.objects.all()),
             'username': request.user.username
         }
-        return render(request, 'main/tests.html', info)
+        return render(request, 'main/student/tests.html', info)
 
 
 def index(request):
@@ -49,11 +49,35 @@ def index(request):
 
 
 @unauthenticated_user
-def get_marks(request):
-    return render(request, 'main/marks.html')
+@allowed_users(allowed_roles=['lecturer'])
+def add_test(request):
+
+    info = {
+        'username': request.user.username
+    }
+    return render(request, 'main/lecturer/addTest.html', info)
 
 
 @unauthenticated_user
+@allowed_users(allowed_roles=['lecturer'])
+def edit_test(request):
+    info = {
+        'username': request.user.username
+    }
+    return render(request, 'main/lecturer/editTest.html', info)
+
+
+@unauthenticated_user
+@allowed_users(allowed_roles=['student'])
+def get_marks(request):
+    info = {
+        'username': request.user.username
+    }
+    return render(request, 'main/student/marks.html', info)
+
+
+@unauthenticated_user
+@allowed_users(allowed_roles=['student'])
 def run_test(request):
     test = list(Test.objects.filter(name=request.POST['test_name']))[0]
     tasks = list()#Task.objects.filter(test__name=test.name))
@@ -75,6 +99,7 @@ def run_test(request):
 
 
 @unauthenticated_user
+@allowed_users(allowed_roles=['student'])
 def test_result(request):
     query_dict = dict(request.POST)
     query_dict.pop('csrfmiddlewaretoken')

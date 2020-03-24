@@ -1,8 +1,8 @@
-{% extends "main/lectureWrapper.html" %}
+{% extends "main/lecturerWrapper.html" %}
 
 {% block content %}
  	<div class='jumbotron'>
- 		<h3>Доступные тесты</h3>
+ 		<h2>Доступные для запуска тесты</h2><br>
  		{% for test in tests %}
 			<label for='test_name'>
 				<h3>{{ test.name }}</h3>
@@ -16,8 +16,5 @@
 				</form>
 			</label>
  		{% endfor %}
- 	</div>
- 	<div class='jumbotron'>
- 		<h3>Добавить тест</h3>
  	</div>
 {% endblock %}

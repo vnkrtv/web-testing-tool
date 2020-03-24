@@ -6,6 +6,7 @@ app_name = 'main'
 urlpatterns = [
     url(r'^$', views.login_page, name='login_page'),
     url(r'^home/$', views.index, name='index'),
+    url(r'^info/$', views.info, name='info'),
     url(r'^tests/$', views.get_tests, name='tests'),
 
     url(r'^add_test/$', views.add_test, name='add_test'),

@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from .decorators import unauthenticated_user, allowed_users
-from .models import Test, MongoDB
+from .models import Test, Subject, MongoDB
 import random
 
 
@@ -49,10 +49,28 @@ def index(request):
 
 
 @unauthenticated_user
+def info(request):
+    if request.user.groups.filter(name='lecturer'):
+        test_name = request.POST['test_name']
+        info = {
+            'title': 'Тест добавлен',
+            'message': request.POST,#'Тест %s по теме %s успешно добавлен' % (test_name, ''),
+            'username': request.user.username
+        }
+        return render(request, 'main/lecturer/info.html', info)
+    if request.user.groups.filter(name='student'):
+        info = {
+            'username': request.user.username
+        }
+        return render(request, 'main/student/info.html', info)
+
+
+@unauthenticated_user
 @allowed_users(allowed_roles=['lecturer'])
 def add_test(request):
 
     info = {
+        'subjects': list(Subject.objects.all()),
         'username': request.user.username
     }
     return render(request, 'main/lecturer/addTest.html', info)
@@ -84,10 +102,11 @@ def run_test(request):
 
     if len(tasks) < test.tasks_num:
         info = {
-            'error': 'Вопросов по данной теме меньше %d' % test.tasks_num,
+            'title': 'Ошибка',
+            'message': 'Вопросов по данной теме меньше %d' % test.tasks_num,
             'username': request.user.username
         }
-        return render(request, 'main/error.html', info)
+        return render(request, 'main/info.html', info)
     tasks = random.sample(tasks, k=test.tasks_num)
 
     info = {

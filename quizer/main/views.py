@@ -80,6 +80,7 @@ def add_test(request):
 @allowed_users(allowed_roles=['lecturer'])
 def edit_test(request):
     info = {
+        'tests': list(Test.objects.filter(author__username=request.user.username)),
         'username': request.user.username
     }
     return render(request, 'main/lecturer/editTest.html', info)
@@ -106,7 +107,7 @@ def run_test(request):
             'message': 'Вопросов по данной теме меньше %d' % test.tasks_num,
             'username': request.user.username
         }
-        return render(request, 'main/info.html', info)
+        return render(request, 'main/student/info.html', info)
     tasks = random.sample(tasks, k=test.tasks_num)
 
     info = {
@@ -114,7 +115,7 @@ def run_test(request):
         'test_name': test.name,
         'username': request.user.username
     }
-    return render(request, 'main/runTest.html', info)
+    return render(request, 'main/student/runTest.html', info)
 
 
 @unauthenticated_user

@@ -11,6 +11,7 @@ urlpatterns = [
 
     url(r'^add_test/$', views.add_test, name='add_test'),
     url(r'^edit_test/$', views.edit_test, name='edit_test'),
+    url(r'^add_question/$', views.add_question, name='add_question'),
 
     url(r'^marks/$', views.get_marks, name='marks'),
     url(r'^run_test/$', views.run_test, name='run_test'),

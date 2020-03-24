@@ -87,6 +87,16 @@ def edit_test(request):
 
 
 @unauthenticated_user
+@allowed_users(allowed_roles=['lecturer'])
+def add_question(request):
+    info = {
+        'tests': list(Test.objects.filter(author__username=request.user.username)),
+        'username': request.user.username
+    }
+    return render(request, 'main/lecturer/addQuestion.html', info)
+
+
+@unauthenticated_user
 @allowed_users(allowed_roles=['student'])
 def get_marks(request):
     info = {

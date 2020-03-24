@@ -1,0 +1,57 @@
+{% extends "main/lecturerWrapper.html" %}
+
+{% block content %}
+ 	<div class='jumbotron'>
+ 		<h2>Новый вопрос</h2><br>
+ 		<form action="{% url 'main:info' %}" method="post">
+ 		{% csrf_token %}
+ 		  <div class="form-row">
+		     <div class="col-md-4 mb-3">
+				<label class="my-1 mr-2" for="subject_name">Тест
+				  <select class="custom-select my-1 mr-sm-2" id="test" name="test" required="required">
+				  	{% for test in tests %}
+				  		<option value="{{ test }}">{{ test }}</option>
+				  	{% endfor %}
+				  </select>
+				 </label>
+		      </div>
+		  </div>
+		  <div class="form-row">
+		  	<div class="col-md-4 mb-3">
+		  		<label for="test_name">Формулировка вопроса
+		      		<input type="text" class="form-control" id="question" name="question" required>
+		      	</label>
+		  	</div>
+		  </div>
+		  <div class="form-row">
+		     <div class="col-md-4 mb-3">
+		      <label for="description">Количество заданий</label>
+		      <input type="number" class="form-control" id="tasks_num" name="tasks_num" required>
+		    </div>
+		  </div>
+		  <div class="form-row">
+		     <div class="col-md-4 mb-3">
+		      <label for="description">Длительность теста</label>
+		      <input type="number" class="form-control" id="duration" name="duration" required>
+		    </div>
+		  </div>
+		  <div id="items"></div>
+		  <script type="text/javascript">
+		  	const e = document.getElementById('tasks_num');
+		  	const items = document.getElementById('items');	  	
+		  	e.onkeyup = e.onchange = () => {
+		  		const count = +(e.value);
+		  		items.innerHTML = '';
+		  		for (let i = 0; i < count; ++i) {
+		  			const item_element = document.createElement('input');
+		  			item_element.className = 'form-control';
+		  			item_element.id = `item-${i}`;
+		  			item_element.name = `item-${i}`;
+		  			items.appendChild(item_element);
+		  		}
+		  	};
+		  </script>
+		  <button class="btn btn-primary" type="submit">Добавить</button>
+		</form>
+ 	</div>
+{% endblock %}

@@ -45,3 +45,4 @@ then
     MDB_PORT="27017"
 fi
 
+# TODO: write Mongo config to setting.py

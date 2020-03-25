@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
 from pymongo import MongoClient
+from django.contrib.auth.models import Group
 
 
 DEFAULT_AUTHOR_ID = 1

@@ -55,7 +55,8 @@ def info(request):
         info = {
             'title': 'Успех!',
             'message': request.POST,#'Тест %s по теме %s успешно добавлен' % (test_name, ''),
-            'username': request.user.username
+            'username': request.user.username,
+            'option_1': request.POST['option_1']
         }
         return render(request, 'main/lecturer/info.html', info)
     if request.user.groups.filter(name='student'):

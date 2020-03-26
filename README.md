@@ -7,7 +7,7 @@ Testing system
 - ```cd Quizer```
 - ```python3 -m venv venv```
 - ```./build_djangoapp   #create django app in current folder```
-- ```./build_docker     #create docker image```
+- ```./build_docker     #create docker image using existing djangoapp```
 ### Usage
 Run app by command:   
 - ```docker run quizer```  

@@ -1,9 +1,0 @@
-#!/bin/bash
-
-echo "=========================================Start building django app================================================"
-sudo /bin/bash ./build_djangoapp
-echo "=====================================Start preparing Docker environment==========================================="
-sudo /bin/bash ./update_docker .
-echo "====================================Start building Quizer Docker container========================================"
-sudo docker build -t quizer docker
-echo "=======================Project successfully has been build. Enter 'docker-compose up' to run it==================="

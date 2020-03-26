@@ -1,6 +1,5 @@
 from django.shortcuts import render
 from django.contrib.auth import login, logout, authenticate
-from django.contrib.auth.decorators import login_required
 from .decorators import unauthenticated_user, allowed_users
 from .models import Test, Subject, MongoDB
 import random

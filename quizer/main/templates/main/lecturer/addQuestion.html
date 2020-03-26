@@ -237,11 +237,11 @@
 
 				return container;
 		  	}
-
-		  	const e = document.getElementById('tasks_num');
 		  	const questions = document.getElementById('questions');	  	
-		  	e.onkeyup = e.onchange = () => {
-		  		const count = +(e.value);
+
+		  	const tasks_num = document.getElementById('tasks_num');
+		  	tasks_num.onkeyup = tasks_num.onchange = () => {
+		  		const count = +(tasks_num.value);
 		  		questions.innerHTML = '';
 		  		for (let i = 0; i < count; ++i) {
 		  			if (document.getElementById('multiselect').checked) {
@@ -252,13 +252,55 @@
 		  				}
 			  		} else {
 			  			if (document.getElementById('with_images').checked) {
-			  				questions.appendChild(getQuestionsWithImages(i));
+			  				questions.appendChild(getQuestionsWithImages(i))
 		  				} else {
 			  				questions.appendChild(getQuestions(i));
 		  				}
 			  		}
 		  		}
 		  	};
+
+		  	const multiselect = document.getElementById('multiselect');
+	  		multiselect.onkeyup = multiselect.onchange = () => {
+		  		const count = +(tasks_num.value);
+		  		questions.innerHTML = '';
+		  		for (let i = 0; i < count; ++i) {
+		  			if (document.getElementById('multiselect').checked) {
+		  				if (document.getElementById('with_images').checked) {
+		  					questions.appendChild(getQuestionsWithMultiselectAndImages(i));
+		  				} else {
+		  					questions.appendChild(getQuestionsWithMultiselect(i));
+		  				}
+			  		} else {
+			  			if (document.getElementById('with_images').checked) {
+			  				questions.appendChild(getQuestionsWithImages(i))
+		  				} else {
+			  				questions.appendChild(getQuestions(i));
+		  				}
+			  		}
+		  		}
+		  	};
+
+			const with_images = document.getElementById('with_images');
+	  		with_images.onkeyup = with_images.onchange = () => {
+		  		const count = +(tasks_num.value);
+		  		questions.innerHTML = '';
+		  		for (let i = 0; i < count; ++i) {
+		  			if (document.getElementById('multiselect').checked) {
+		  				if (document.getElementById('with_images').checked) {
+		  					questions.appendChild(getQuestionsWithMultiselectAndImages(i));
+		  				} else {
+		  					questions.appendChild(getQuestionsWithMultiselect(i));
+		  				}
+			  		} else {
+			  			if (document.getElementById('with_images').checked) {
+			  				questions.appendChild(getQuestionsWithImages(i))
+		  				} else {
+			  				questions.appendChild(getQuestions(i));
+		  				}
+			  		}
+		  		}
+		    };
 		  </script>
 		  <button class="btn btn-primary" type="submit">Добавить</button>
 		</form>

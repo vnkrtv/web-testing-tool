@@ -29,7 +29,7 @@ echo 'from django.contrib.auth.models import Group; s = Group(id=2, name="studen
 echo "Created 'student' group"
 echo "===========================================Enter superuser info==============================================="
 python quizer/manage.py createsuperuser
-echo 'from django.contrib.auth.models import User; a = User.objects.get(id=1); s.groups.add(id=1); s.save(); print("Added user %s to group %s" % (a.username, "lecturer"))'  | python quizer/manage.py shell
+echo 'from django.contrib.auth.models import User; a = User.objects.get(id=1); a.groups.add(1); a.save(); print("Added user %s to group %s" % (a.username, "lecturer"))'  | python quizer/manage.py shell
 echo 'from django.contrib.auth.models import User; s = User(id=4, username="user"); s.set_password("password"); s.groups.add(2); s.save()' | python quizer/manage.py shell
 echo "Added user 'user' with password 'password' to group 'student'"
 echo "==========================================Enter configuration data:============================================="

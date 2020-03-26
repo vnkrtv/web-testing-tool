@@ -93,18 +93,9 @@ def edit_test(request):
 @unauthenticated_user
 @allowed_users(allowed_roles=['lecturer'])
 def edit_test_result(request):
-    mdb = MongoDB(
-        host=MONGO_HOST,
-        port=MONGO_PORT
-    )
-    t = Test.objects.get(name='ПЗ1')
-    d = mdb.get_questions(
-        subject_id=t.subject_id,
-        test_id=t.id
-    )
     info = {
-        'title': 'Успех!',
-        'message': d,#'Тест %s по теме %s успешно добавлен' % ('', ''),
+        'title': 'Окно редактирования теста',
+        'message': 'Будет прямо здесь',
         'username': request.user.username,
     }
     return render(request, 'main/lecturer/info.html', info)

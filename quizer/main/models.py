@@ -59,10 +59,9 @@ class MongoDB(object):
         Add test to db
         :param test: json
             {
-                'name': text_field,
+                'name': str,
                 'author_id': int,
-                'subject_id': int,
-                'description': text_field,
+                'description': str,
                 'tasks_num': int,
                 'duration': int
             }
@@ -87,7 +86,7 @@ class MongoDB(object):
                 'tests': [test]
             })
 
-    def get_test(self, test_name, subject_id) -> dict:
+    def get_tests(self, subject_id) -> dict:
         return self._db.find_one({'subject_id': subject_id})['tests']
 
     def delete_test(self, test_name, subject_id) -> None:
@@ -96,73 +95,68 @@ class MongoDB(object):
             {'$pull': {'tests': {'test_name': test_name}}}
         )
 
-    def check_domain(self, domain) -> bool:
-        """
+    def add_question(self, question, subject_id, test_id) -> None:
+        '''
+        Add question to db
+        :param question: json
+            {
+                'formulation': str,
+                'tasks_num': int,
+                'multiselect': bool,
+                'with_images': bool,
+                'options': [
+                    {
+                        'option': str,
+                        'is_true': bool
+                    },
+                    ...
+                ]
+            }
 
-        :param domain: vk user domain
-        :return: True if user exist in db, False else
-        """
-        if self._db.find_one({'domain': domain}):
-            return True
-        return False
+        :return: None
+        '''
+        date = datetime.now().timetuple()
+        question['date'] = {
+            'year': date[0],
+            'month': date[1],
+            'day': date[2],
+            'hour': date[3],
+            'minutes': date[4]
+        }
 
-    def get_fullname(self, domain) -> str:
-        """
-
-        :param domain: vk user domain
-        :return: str '${first_name} ${last_name}'
-        """
-        if self.check_domain(domain):
-            info = list(self._db.find_one({'domain': domain})['dates'][-1].values())[0]['main_info']
-            return info['first_name'] + ' ' + info['last_name']
+        if self._db.find_one({'subject_id': subject_id}):
+            if self._db.find_one({'subject_id': subject_id, 'tests': {'$in': {'id': test_id}}}):
+                self._db.find_one_and_update(
+                    {'subject_id': subject_id, 'tests.id': test_id},
+                    {'$push': {
+                        'tests.$.questions': question
+                    }})
+            else:
+                self._db.find_one_and_update(
+                    {'subject_id': subject_id},
+                    {'$push': {
+                        'tests': {
+                            'id': test_id,
+                            'questions': [question]
+                        }
+                    }})
         else:
-            return ''
+            self._db.find_one_and_update({
+                'subject_id': subject_id,
+                'tests': [
+                    {
+                        'id': test_id,
+                        'questions': [question]
+                    }
+                ]
+            })
 
-    def load_user_info(self, id=0, domain='', date='') -> dict:
-        """
+    def get_questions(self, test_id) -> dict:
+        pass
 
-        :param id: vk user id (if input)
-        :param domain: vk user domain (if input)
-        :param date: vk user information collected this date (if not input - latest info)
-        :return: dict with vk user information
-        """
-        if id != 0:
-            if date:
-                info = {}
-                for inf in self._db.find_one({'user_id': id})['dates']:
-                    for d in inf:
-                        if d == date:
-                            info = inf[date]
-                return info
-            else:
-                info = self._db.find_one({'user_id': id})
-                return list(info['dates'][-1].values())[0]
+    def delete_question(self, question_formulation) -> None:
+        pass
 
-        elif domain != '':
-            if date:
-                info = {}
-                for inf in self._db.find_one({'domain': domain})['dates']:
-                    for d in inf:
-                        if d == date:
-                            info = inf[date]
-                return info
-            else:
-                info = self._db.find_one({'domain': domain})
-                return list(info['dates'][-1].values())[0]
-
-    def get_user_info_dates(self, id=0, domain='') -> list:
-        """
-
-        :param id: vk user id
-        :param domain: vk user domain
-        :return: list of dates when vk user information was collected
-        """
-        if id != 0:
-            dates = [date for date in list(self._db.find_one({'user_id': id})['dates'])]
-            return [list(date.keys())[0] for date in dates]
-        elif domain != '':
-            dates = [date for date in list(self._db.find_one({'domain': domain})['dates'])]
-            return [list(date.keys())[0] for date in dates]
 
 
 '''

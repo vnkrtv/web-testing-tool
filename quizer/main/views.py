@@ -3,6 +3,7 @@ from django.contrib.auth import login, logout, authenticate
 from .decorators import unauthenticated_user, allowed_users
 from .models import Test, Subject, MongoDB
 from .config import MONGO_PORT, MONGO_HOST
+from pymongo.errors import ServerSelectionTimeoutError
 import random
 
 
@@ -62,22 +63,18 @@ def add_test(request):
 @allowed_users(allowed_roles=['lecturer'])
 def add_test_result(request):
     subject = request.POST['subject']
-    mdb = MongoDB(
-        host=MONGO_HOST,
-        port=MONGO_PORT
+    test = Test(
+        name=request.POST['test_name'],
+        author=request.user.id,
+        subject=Subject.objects.get(name=subject).id,
+        description=request.POST['description'],
+        tasks_num=request.POST['tasks_num'],
+        duration=request.POST['duration']
     )
-    test = {
-        'name': request.POST['test_name'],
-        'author_id': request.user.id,
-        'subject_id': Subject.objects.get(name=subject).id,  # ForeignKey
-        'description': request.POST['description'],
-        'tasks_num': request.POST['tasks_num'],
-        'duration': request.POST['duration']
-    }
-    mdb.add_test(test)
+    test.save()
     info = {
         'title': 'Новый тест',
-        'message': f'Тест {test["name"]} по предмету {subject} успешно добавлен.',
+        'message': f'Тест {test.name} по предмету {subject} успешно добавлен.',
         'username': request.user.username,
     }
     return render(request, 'main/lecturer/info.html', info)
@@ -117,9 +114,59 @@ def add_question(request):
 @unauthenticated_user
 @allowed_users(allowed_roles=['lecturer'])
 def add_question_result(request):
+    return render(request, 'main/lecturer/info.html', {'message': request.POST})
+
+    test = Test.objects.get(name=request.POST['test'])
+    question = {
+        'formulation': request.POST['question'],
+        'tasks_num': request.POST['tasks_num'],
+        'multiselect': True if 'multiselect' in request.POST else False,
+        'with_images': True if 'with_images' in request.POST else False,
+        'options': []
+    }
+
+    try:
+        options = {request.POST[key]: int(key.split('_')[1]) for key in request.POST if 'option_' in key}
+
+        # TODO: images - where store?
+        if question['multiselect']:
+            true_options = [int(key.aplit('_')[1]) for key in request.POST if 'is_true_' in key]
+        else:
+            true_options = [request.POST['is_true']]
+
+        for option in options:
+            question['options'].append({
+                'option': option,
+                'is_true': True if options[option] in true_options else False
+            })
+
+        mdb = MongoDB(
+            host=MONGO_HOST,
+            port=MONGO_PORT
+        )
+        mdb.add_question(
+            question=question,
+            subject_id=test.subject_id,
+            test_id=test.id
+        )
+    except KeyError:
+        info = {
+            'title': 'Ошибка',
+            'message': 'Форма некоректно заполнена',
+            'username': request.user.username,
+        }
+        return render(request, 'main/lecturer/info.html', info)
+    except ServerSelectionTimeoutError as e:
+        info = {
+            'title': 'Ошибка',
+            'message': 'СУБД MongoDB не подключена: %s' % e,
+            'username': request.user.username,
+        }
+        return render(request, 'main/lecturer/info.html', info)
+
     info = {
-        'title': 'Успех!',
-        'message': 'Тест %s по теме %s успешно добавлен' % (test_name, ''),
+        'title': 'Новый вопрос',
+        'message': "Вопрос '%s' к тесту '%s' успешно добавлен." % (question['formulation'], test.name),
         'username': request.user.username,
     }
     return render(request, 'main/lecturer/info.html', info)

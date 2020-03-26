@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.contrib.auth import login, logout, authenticate
 from .decorators import unauthenticated_user, allowed_users
 from .models import Test, Subject, MongoDB
+from .config import MONGO_PORT, MONGO_HOST
 import random
 
 
@@ -48,32 +49,38 @@ def index(request):
 
 
 @unauthenticated_user
-def info(request):
-    if request.user.groups.filter(name='lecturer'):
-        # test_name = request.POST['test_name']
-        info = {
-            'title': 'Успех!',
-            'message': request.POST,#'Тест %s по теме %s успешно добавлен' % (test_name, ''),
-            'username': request.user.username,
-            'option_1': request.POST['option_1']
-        }
-        return render(request, 'main/lecturer/info.html', info)
-    if request.user.groups.filter(name='student'):
-        info = {
-            'username': request.user.username
-        }
-        return render(request, 'main/student/info.html', info)
-
-
-@unauthenticated_user
 @allowed_users(allowed_roles=['lecturer'])
 def add_test(request):
-
     info = {
         'subjects': list(Subject.objects.all()),
         'username': request.user.username
     }
     return render(request, 'main/lecturer/addTest.html', info)
+
+
+@unauthenticated_user
+@allowed_users(allowed_roles=['lecturer'])
+def add_test_result(request):
+    subject = request.POST['subject']
+    mdb = MongoDB(
+        host=MONGO_HOST,
+        port=MONGO_PORT
+    )
+    test = {
+        'name': request.POST['test_name'],
+        'author_id': request.user.id,
+        'subject_id': Subject.objects.get(name=subject).id,  # ForeignKey
+        'description': request.POST['description'],
+        'tasks_num': request.POST['tasks_num'],
+        'duration': request.POST['duration']
+    }
+    mdb.add_test(test)
+    info = {
+        'title': 'Новый тест',
+        'message': f'Тест {test["name"]} по предмету {subject} успешно добавлен.',
+        'username': request.user.username,
+    }
+    return render(request, 'main/lecturer/info.html', info)
 
 
 @unauthenticated_user
@@ -88,12 +95,34 @@ def edit_test(request):
 
 @unauthenticated_user
 @allowed_users(allowed_roles=['lecturer'])
+def edit_test_result(request):
+    info = {
+        'title': 'Успех!',
+        'message': 'Тест %s по теме %s успешно добавлен' % ('', ''),
+        'username': request.user.username,
+    }
+    return render(request, 'main/lecturer/info.html', info)
+
+
+@unauthenticated_user
+@allowed_users(allowed_roles=['lecturer'])
 def add_question(request):
     info = {
         'tests': list(Test.objects.filter(author__username=request.user.username)),
         'username': request.user.username
     }
     return render(request, 'main/lecturer/addQuestion.html', info)
+
+
+@unauthenticated_user
+@allowed_users(allowed_roles=['lecturer'])
+def add_question_result(request):
+    info = {
+        'title': 'Успех!',
+        'message': 'Тест %s по теме %s успешно добавлен' % (test_name, ''),
+        'username': request.user.username,
+    }
+    return render(request, 'main/lecturer/info.html', info)
 
 
 @unauthenticated_user

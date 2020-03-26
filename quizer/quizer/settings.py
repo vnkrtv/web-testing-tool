@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 
 import os
 import sys
+from .config import MONGO_DBNAME
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -82,10 +83,10 @@ WSGI_APPLICATION = 'quizer.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'djongo',
-        'NAME': 'data',
-        # 'HOST' : 'mongodb://<dbuser>:<dbpassword>@ds259144.mlab.com:59144/<db-name>',
-        # 'USER' : '<dbuser>',
-        # 'PASSWORD' : '<dbpassword>',
+        'NAME': MONGO_DBNAME,
+        # 'HOST' : MONGO_HOST'mongodb://<dbuser>:<dbpassword>@ds259144.mlab.com:59144/<db-name>',
+        # 'USER' : MONGO_USER'<dbuser>',
+        # 'PASSWORD' : MONGO_PASSWORD'<dbpassword>',
     }
 }
 

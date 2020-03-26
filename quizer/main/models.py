@@ -1,7 +1,7 @@
 from django.db import models
 from django.conf import settings
 from pymongo import MongoClient
-
+from datetime import datetime
 
 DEFAULT_AUTHOR_ID = 1
 
@@ -50,23 +50,51 @@ class Test(models.Model):
 
 class MongoDB(object):
 
-    def __init__(self, host='localhost', port=27017):
-        self._client = MongoClient(host, port) if port else MongoClient(host)
-        self._db = self._client.quizer.quizer
+    def __init__(self, host='localhost', port=27017, **kwargs):
+        self._client = MongoClient(host, port, **kwargs)
+        self._db = self._client.data.quizer
 
-    def add_(self, user) -> None:
-        """
-
-        :param user: json with vk user information
-        """
-        id = user['main_info']['id']
-        domain = user['main_info']['domain']
-        date = "{hour:02}-{minutes:02} {day}-{month:02}-{year}".format(**user['date'])
-
-        if self._db.find_one({'user_id' : id}):
-            self._db.find_one_and_update({'user_id' : id}, {'$push': {'dates': {date: user}}})
+    def add_test(self, test) -> None:
+        '''
+        Add test to db
+        :param test: json
+            {
+                'name': text_field,
+                'author_id': int,
+                'subject_id': int,
+                'description': text_field,
+                'tasks_num': int,
+                'duration': int
+            }
+        :return: None
+        '''
+        date = datetime.now().timetuple()
+        test['date'] = {
+            'year': date[0],
+            'month': date[1],
+            'day': date[2],
+            'hour': date[3],
+            'minutes': date[4]
+        }
+        if self._db.find_one({'subject_id': test['subject_id']}):
+            self._db.find_one_and_update(
+                {'subject_id': test['subject_id']},
+                {'$push': {'tests': test}}
+            )
         else:
-            self._db.insert_one({'user_id': id, 'domain': domain, 'dates': [{date: user}]})
+            self._db.insert_one({
+                'subject_id': test['subject_id'],
+                'tests': [test]
+            })
+
+    def get_test(self, test_name, subject_id) -> dict:
+        return self._db.find_one({'subject_id': subject_id})['tests']
+
+    def delete_test(self, test_name, subject_id) -> None:
+        self._db.find_one_and_update(
+            {'subject_id': subject_id},
+            {'$pull': {'tests': {'test_name': test_name}}}
+        )
 
     def check_domain(self, domain) -> bool:
         """

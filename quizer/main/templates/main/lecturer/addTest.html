@@ -3,7 +3,7 @@
 {% block content %}
  	<div class='jumbotron'>
  		<h2>Новый тест</h2><br>
- 		<form action="{% url 'main:info' %}" method="post">
+ 		<form action="{% url 'main:add_test_result' %}" method="post">
  		{% csrf_token %}
 		  <div class="form-row">
 		  	<div class="col-md-4 mb-3">
@@ -14,8 +14,8 @@
 		  </div>
 		  <div class="form-row">
 		     <div class="col-md-4 mb-3">
-				<label class="my-1 mr-2" for="subject_name">Предмет
-				  <select class="custom-select my-1 mr-sm-2" id="subject_name" name="subject_name" required="required">
+				<label class="my-1 mr-2" for="subject">Предмет
+				  <select class="custom-select my-1 mr-sm-2" id="subject" name="subject" required="required">
 				  	{% for subject in subjects %}
 				  		<option value="{{ subject }}">{{ subject }}</option>
 				  	{% endfor %}

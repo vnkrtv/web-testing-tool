@@ -3,7 +3,7 @@
 {% block content %}
  	<div class='jumbotron'>
  		<h2>Новый вопрос</h2><br>
- 		<form action="{% url 'main:info' %}" method="post">
+ 		<form action="{% url 'main:add_question_result' %}" method="post">
  		{% csrf_token %}
  		  <div class="form-row">
 		     <div class="col-md-4 mb-3">

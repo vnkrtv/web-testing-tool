@@ -93,9 +93,18 @@ def edit_test(request):
 @unauthenticated_user
 @allowed_users(allowed_roles=['lecturer'])
 def edit_test_result(request):
+    mdb = MongoDB(
+        host=MONGO_HOST,
+        port=MONGO_PORT
+    )
+    t = Test.objects.get(name='ПЗ1')
+    d = mdb.get_questions(
+        subject_id=t.subject_id,
+        test_id=t.id
+    )
     info = {
         'title': 'Успех!',
-        'message': 'Тест %s по теме %s успешно добавлен' % ('', ''),
+        'message': d,#'Тест %s по теме %s успешно добавлен' % ('', ''),
         'username': request.user.username,
     }
     return render(request, 'main/lecturer/info.html', info)
@@ -114,8 +123,6 @@ def add_question(request):
 @unauthenticated_user
 @allowed_users(allowed_roles=['lecturer'])
 def add_question_result(request):
-    return render(request, 'main/lecturer/info.html', {'message': request.POST})
-
     test = Test.objects.get(name=request.POST['test'])
     question = {
         'formulation': request.POST['question'],
@@ -130,7 +137,7 @@ def add_question_result(request):
 
         # TODO: images - where store?
         if question['multiselect']:
-            true_options = [int(key.aplit('_')[1]) for key in request.POST if 'is_true_' in key]
+            true_options = [int(key.split('_')[2]) for key in request.POST if 'is_true_' in key]
         else:
             true_options = [request.POST['is_true']]
 

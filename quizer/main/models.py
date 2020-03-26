@@ -55,7 +55,7 @@ class MongoDB(object):
         self._db = self._client.data.quizer
 
     def add_test(self, test) -> None:
-        '''
+        """
         Add test to db
         :param test: json
             {
@@ -66,7 +66,7 @@ class MongoDB(object):
                 'duration': int
             }
         :return: None
-        '''
+        """
         date = datetime.now().timetuple()
         test['date'] = {
             'year': date[0],
@@ -96,7 +96,7 @@ class MongoDB(object):
         )
 
     def add_question(self, question, subject_id, test_id) -> None:
-        '''
+        """
         Add question to db
         :param question: json
             {
@@ -112,9 +112,10 @@ class MongoDB(object):
                     ...
                 ]
             }
-
+        :param subject_id: int
+        :param test_id: int
         :return: None
-        '''
+        """
         date = datetime.now().timetuple()
         question['date'] = {
             'year': date[0],
@@ -125,7 +126,7 @@ class MongoDB(object):
         }
 
         if self._db.find_one({'subject_id': subject_id}):
-            if self._db.find_one({'subject_id': subject_id, 'tests': {'$in': {'id': test_id}}}):
+            if self._db.find_one({'subject_id': subject_id, 'tests.id': test_id}):
                 self._db.find_one_and_update(
                     {'subject_id': subject_id, 'tests.id': test_id},
                     {'$push': {
@@ -141,7 +142,7 @@ class MongoDB(object):
                         }
                     }})
         else:
-            self._db.find_one_and_update({
+            self._db.insert_one({
                 'subject_id': subject_id,
                 'tests': [
                     {
@@ -151,12 +152,30 @@ class MongoDB(object):
                 ]
             })
 
-    def get_questions(self, test_id) -> dict:
-        pass
+    def get_questions(self, test_id, subject_id) -> list:
+        """
+
+        :param test_id: int
+        :param subject_id: int
+        :return: list
+        """
+
+        document = None
+        if self._db.find_one({'subject_id': subject_id}):
+            if self._db.find_one({'subject_id': subject_id, 'tests.id': test_id}):
+                document = self._db.find_one({
+                    'subject_id': subject_id,
+                    'tests.id': test_id
+                })
+
+        if document:
+            test = list(filter(lambda item: item['id'] == test_id, document['tests']))[0]
+            return test['questions']
+        else:
+            return []
 
     def delete_question(self, question_formulation) -> None:
         pass
-
 
 
 '''

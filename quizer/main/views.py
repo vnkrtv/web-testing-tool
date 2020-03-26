@@ -66,7 +66,7 @@ def add_test_result(request):
     test = Test(
         name=request.POST['test_name'],
         author=request.user.id,
-        subject=Subject.objects.get(name=subject).id,
+        subject=Subject.objects.get(name=subject),
         description=request.POST['description'],
         tasks_num=request.POST['tasks_num'],
         duration=request.POST['duration']

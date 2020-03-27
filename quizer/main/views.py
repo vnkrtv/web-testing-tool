@@ -93,9 +93,17 @@ def edit_test(request):
 @unauthenticated_user
 @allowed_users(allowed_roles=['lecturer'])
 def edit_test_result(request):
+    mdb = MongoDB(
+        host=MONGO_HOST,
+        port=MONGO_PORT
+    )
+    question = mdb._db.find_one({})
+    question.pop('_id')
+    import json
+    print(json.dumps(question, indent=2))
     info = {
         'title': 'Окно редактирования теста',
-        'message': 'Будет прямо здесь',
+        'message': f"""Пока здесь будет пример вопроса:\n{json.dumps(question, indent=2)}""",
         'username': request.user.username,
     }
     return render(request, 'main/lecturer/info.html', info)

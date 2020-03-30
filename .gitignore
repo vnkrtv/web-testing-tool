@@ -1,6 +1,6 @@
 venv/
 .idea/
-post-commit hook/
+post-commit\ hook/
 docker/quizer
 docker/requirements.txt
 quizer/config/default_config.json

@@ -112,17 +112,8 @@ class MongoDB(object):
         :return: None
         """
         db = self._client.data.questions
-        if db.find_one({'test_id': test_id}):
-            db.find_one_and_update(
-                {'test_id': test_id},
-                {'$push': {
-                    'questions': question
-                }})
-        else:
-            db.insert_one({
-                'test_id': test_id,
-                'questions': [question]
-            })
+        question['test_id'] = test_id
+        db.insert_one(question)
 
     def get_questions(self, test_id) -> list:
         """
@@ -131,17 +122,14 @@ class MongoDB(object):
         :return: list
         """
         db = self._client.data.questions
-        test = db.find_one({
+        questions = db.find({
             'test_id': test_id
         })
-        return test['questions'] if test else []
+        return [question for question in questions] if questions else []
 
-    def drop_question(self, test_id, question_formulation) -> None:
+    def drop_question(self, question_formulation) -> None:
         db = self._client.data.questions
-        db.find_one_and_update(
-            {'test_id': test_id},
-            {'$pull': {'questions': {'formulation': question_formulation}}}
-        )
+        db.delete_one({'formulation': question_formulation})
 
     def add_running_test_answers(self, user_id, test_id, right_answers):
         db = self._client.data.running_tests_answers

@@ -149,10 +149,9 @@ class MongoDB(object):
             'right_answers': right_answers
         })
 
-    def get_running_test(self, user_id, test_id):
+    def get_running_test(self, user_id):
         db = self._client.data.running_tests
         return db.find_one({
-            'test_id': test_id,
             'user_id': user_id,
         })
 
@@ -162,14 +161,14 @@ class MongoDB(object):
             'test_id': test_id,
         })]
 
-    def drop_running_test(self, user_id, test_id):
+    def drop_running_test(self, user_id):
         db = self._client.data.running_tests
         db.delete_one({
-            'test_id': test_id,
             'user_id': user_id,
         })
 
     def add_test_result(self, ):
+        pass
 
 
 

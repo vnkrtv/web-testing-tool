@@ -137,7 +137,7 @@ def add_question_result(request):
         if question['multiselect']:
             true_options = [int(key.split('_')[2]) for key in request.POST if 'is_true_' in key]
         else:
-            true_options = [request.POST['is_true']]
+            true_options = [int(request.POST['is_true'])]
 
         for option in options:
             question['options'].append({
@@ -151,7 +151,6 @@ def add_question_result(request):
         )
         mdb.add_question(
             question=question,
-            subject_id=test.subject_id,
             test_id=test.id
         )
     except KeyError:
@@ -195,8 +194,7 @@ def run_test(request):
         host=MONGO_HOST,
         port=MONGO_PORT
     )
-    questions = mdb.get_questions(test_id=test.id, subject_id=test.subject_id)
-    print(questions)
+    questions = mdb.get_questions(test_id=test.id)
 
     if len(questions) < test.tasks_num:
         info = {
@@ -206,10 +204,15 @@ def run_test(request):
         }
         return render(request, 'main/student/info.html', info)
     questions = random.sample(questions, k=test.tasks_num)
+
     right_answers = {}
     for i, question in enumerate(questions):
-        right_answers[i + 1] = [i + 1 for i, option in enumerate(question['options']) if option['is_true']]
-
+        right_answers[str(i + 1)] = [i + 1 for i, option in enumerate(question['options']) if option['is_true']]
+    mdb.add_running_test(
+        user_id=request.user.id,
+        test_id=test.id,
+        right_answers=right_answers
+    )
     info = {
         'questions': questions, 'test_duration': test.duration,
         'test_name': test.name,
@@ -222,30 +225,35 @@ def run_test(request):
 @unauthenticated_user
 @allowed_users(allowed_roles=['student'])
 def test_result(request):
+    mdb = MongoDB(
+        host=MONGO_HOST,
+        port=MONGO_PORT
+    )
+    right_answers = mdb.get_running_test(user_id=request.user.id)['right_answers']
+    mdb.drop_running_test(user_id=request.user.id)
+
     query_dict = dict(request.POST)
-    if query_dict:
-        return render(request, 'main/student/testResult.html', {'query_dict': query_dict})
     query_dict.pop('csrfmiddlewaretoken')
-    print(query_dict)
-    test_name = query_dict.pop('test_name')[0]
 
-    answers_dict = {int(answer.split('_')[0]): int(answer.split('_')[1]) for answer in query_dict}
-
-    # TODO: rewrite dat shit
-    tasks_dict = {}
-    for task in list():#Task.objects.filter(test__name=test_name)):
-        if task.options_1.is_true:
-            tasks_dict[task.id] = 1
-        elif task.options_2.is_true:
-            tasks_dict[task.id] = 2
-        elif task.options_3.is_true:
-            tasks_dict[task.id] = 3
-        elif task.options_4.is_true:
-            tasks_dict[task.id] = 4
+    answers_dict = {}
+    for key in query_dict:
+        '''
+            'key' for multiselect: {question_num}_{selected_option}: True/False
+            'key' for single: {question_num}: True/False
+        '''
+        buf = key.split('_')
+        if len(buf) == 1:
+            answers_dict[buf[0]] = [int(query_dict[key][0])]
+        else:
+            if buf[0] in answers_dict:
+                answers_dict[buf[0]].append(buf[1])
+            else:
+                answers_dict[buf[0]] = [buf[1]]
 
     right_answers_count = 0
-    for task_id in answers_dict:
-        right_answers_count += 1 if answers_dict[task_id] != tasks_dict[task_id] else 0
+    for question_num in right_answers:
+        if right_answers[question_num] == answers_dict[question_num]:
+            right_answers_count += 1
 
     info = {
         'right_answers_count': right_answers_count,

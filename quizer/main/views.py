@@ -168,8 +168,6 @@ def edit_test_result(request):
         port=MONGO_PORT
     )
     question = mdb.get_questions(test_id=1)
-    #question.pop('_id')
-    import json
     info = {
         'title': 'Окно редактирования теста',
         'message': f"""Пока здесь будет пример вопроса:\n{question}""",
@@ -199,22 +197,18 @@ def add_question_result(request):
         'with_images': True if 'with_images' in request.POST else False,
         'options': []
     }
-
     try:
         options = {request.POST[key]: int(key.split('_')[1]) for key in request.POST if 'option_' in key}
-
         # TODO: images - where store?
         if question['multiselect']:
             true_options = [int(key.split('_')[2]) for key in request.POST if 'is_true_' in key]
         else:
             true_options = [int(request.POST['is_true'])]
-
         for option in options:
             question['options'].append({
                 'option': option,
                 'is_true': True if options[option] in true_options else False
             })
-
         mdb = MongoDB(
             host=MONGO_HOST,
             port=MONGO_PORT
@@ -277,7 +271,10 @@ def run_test(request):
 
     right_answers = {}
     for i, question in enumerate(questions):
-        right_answers[str(i + 1)] = [i + 1 for i, option in enumerate(question['options']) if option['is_true']]
+        right_answers[str(i + 1)] = {
+            'right_answers': [i + 1 for i, option in enumerate(question['options']) if option['is_true']],
+            'id': str(question['_id'])
+        }
     mdb.add_running_test_answers(
         user_id=request.user.id,
         test_id=test.id,
@@ -299,13 +296,15 @@ def test_result(request):
         host=MONGO_HOST,
         port=MONGO_PORT
     )
-    right_answers = mdb.get_running_test_answers(user_id=request.user.id)['right_answers']
+    running_test_answers = mdb.get_running_test_answers(user_id=request.user.id)
+    right_answers = running_test_answers['right_answers']
+    test_id = running_test_answers['test_id']
     mdb.drop_running_test_answers(user_id=request.user.id)
 
     query_dict = dict(request.POST)
     query_dict.pop('csrfmiddlewaretoken')
     time = query_dict.pop('time')[0]
-    print(time)
+
     answers_dict = {}
     for key in query_dict:
         '''
@@ -322,13 +321,28 @@ def test_result(request):
                 answers_dict[buf[0]] = [buf[1]]
 
     right_answers_count = 0
+    questions = []
     for question_num in right_answers:
-        if right_answers[question_num] == answers_dict[question_num]:
+        if right_answers[question_num]['right_answers'] == answers_dict[question_num]:
             right_answers_count += 1
-
+        questions.append({
+            'id': right_answers[question_num]['id'],
+            'selected_answers': answers_dict[question_num],
+            'right_answers': right_answers[question_num]['right_answers']
+        })
+    test_result = {
+        'user_id': request.user.id,
+        'time': time,
+        'tasks_num': len(right_answers),
+        'right_answers_num': right_answers_count,
+        'questions': questions
+    }
+    mdb.add_test_result(
+        test_result=test_result,
+        test_id=test_id
+    )
     info = {
         'right_answers_count': right_answers_count,
         'username': request.user.username
     }
-
     return render(request, 'main/student/testResult.html', info)

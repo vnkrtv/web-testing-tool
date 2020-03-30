@@ -151,12 +151,19 @@ class MongoDB(object):
             'user_id': user_id,
         })
 
-    def add_test_result(self, test_result, test_id, student_id):
-        date = datetime.now().timetuple()
+    def add_test_result(self, test_result, test_id):
         db = self._client.data.tests_results
-        db.find_one_and_update({
+        db.find_one_and_update(
             {'test_id': test_id},
-        })
+            {'$push': {'results': test_result}}
+        )
+
+    def get_test_result(self, test_result, test_id):
+        db = self._client.data.tests_results
+        db.find_one_and_update(
+            {'test_id': test_id},
+            {'$push': {'results': test_result}}
+        )
 
     def run_test(self, test_id, lectorer_id):
         db = self._client.data.tests_results

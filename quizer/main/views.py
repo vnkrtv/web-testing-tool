@@ -97,13 +97,12 @@ def edit_test_result(request):
         host=MONGO_HOST,
         port=MONGO_PORT
     )
-    question = mdb._db.find_one({})
-    question.pop('_id')
+    question = mdb.get_questions(test_id=1)
+    #question.pop('_id')
     import json
-    print(json.dumps(question, indent=2))
     info = {
         'title': 'Окно редактирования теста',
-        'message': f"""Пока здесь будет пример вопроса:\n{json.dumps(question, indent=2)}""",
+        'message': f"""Пока здесь будет пример вопроса:\n{question}""",
         'username': request.user.username,
     }
     return render(request, 'main/lecturer/info.html', info)
@@ -191,20 +190,30 @@ def get_marks(request):
 @allowed_users(allowed_roles=['student'])
 def run_test(request):
     test = list(Test.objects.filter(name=request.POST['test_name']))[0]
-    tasks = list()#Task.objects.filter(test__name=test.name))
 
-    if len(tasks) < test.tasks_num:
+    mdb = MongoDB(
+        host=MONGO_HOST,
+        port=MONGO_PORT
+    )
+    questions = mdb.get_questions(test_id=test.id, subject_id=test.subject_id)
+    print(questions)
+
+    if len(questions) < test.tasks_num:
         info = {
             'title': 'Ошибка',
             'message': 'Вопросов по данной теме меньше %d' % test.tasks_num,
             'username': request.user.username
         }
         return render(request, 'main/student/info.html', info)
-    tasks = random.sample(tasks, k=test.tasks_num)
+    questions = random.sample(questions, k=test.tasks_num)
+    right_answers = {}
+    for i, question in enumerate(questions):
+        right_answers[i + 1] = [i + 1 for i, option in enumerate(question['options']) if option['is_true']]
 
     info = {
-        'tasks': tasks, 'test_duration': test.duration,
+        'questions': questions, 'test_duration': test.duration,
         'test_name': test.name,
+        'right_answers': right_answers,
         'username': request.user.username
     }
     return render(request, 'main/student/runTest.html', info)
@@ -214,7 +223,10 @@ def run_test(request):
 @allowed_users(allowed_roles=['student'])
 def test_result(request):
     query_dict = dict(request.POST)
+    if query_dict:
+        return render(request, 'main/student/testResult.html', {'query_dict': query_dict})
     query_dict.pop('csrfmiddlewaretoken')
+    print(query_dict)
     test_name = query_dict.pop('test_name')[0]
 
     answers_dict = {int(answer.split('_')[0]): int(answer.split('_')[1]) for answer in query_dict}
@@ -240,4 +252,4 @@ def test_result(request):
         'username': request.user.username
     }
 
-    return render(request, 'main/testResult.html', info)
+    return render(request, 'main/student/testResult.html', info)

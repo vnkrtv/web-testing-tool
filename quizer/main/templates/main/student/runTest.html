@@ -24,38 +24,35 @@
     <br>
     <form action="{% url 'main:test_result' %}" method="post">
 		{% csrf_token %}
-	    {% for task in tasks %}
-		 	<span class="d-block p-2 bg-primary text-white">{{ forloop.counter }}. {{ task.question }}</span>
+	    {% for question in questions %}
+	    {{ question }}
+		 	<span class="d-block p-2 bg-primary text-white">{{ forloop.counter }}. {{ question.formulation }}</span>
 		 		<table class="table table-striped table-dark">
 		            <tbody>
-		                <tr>
-		                    <label for='{{ task.id }}_1'>
-		                    	<td><input type="checkbox" id='{{ task.id }}_1' name='{{ task.id }}_1'></td>
-		                    </label>
-		                    <td>{{ task.options_1.option }}</td>
-		                </tr>
-		                <tr>
-		                    <label for='{{ task.id }}_2'>
-		                    	<td><input type="checkbox" id='{{ task.id }}_2' name='{{ task.id }}_2'></td>
-		                    </label>
-		                    <td>{{ task.options_2.option }}</td>
-		                </tr>
-		                <tr>
-		                    <label for='{{ task.id }}_3'>
-		                    	<td><input type="checkbox" id='{{ task.id }}_3' name='{{ task.id }}_3'></td>
-		                    </label>
-		                    <td>{{ task.options_3.option }}</td>
-		                </tr>
-		                <tr>
-		                    <label for='{{ task.id }}_4'>
-		                    	<td><input type="checkbox" id='{{ task.id }}_4' name='{{ task.id }}_4'></td>
-		                    </label>
-		                    <td>{{ task.options_4.option }}</td>
-		                </tr>
+		            	{% for option in question.options %}
+		            		<tr>
+		            			<label for='option_{{ forloop.parentloop.counter }}_{{ forloop.counter }}'>
+			            			{% if question.multiselect %}
+			                    		<td><input type="checkbox" id='option_{{ forloop.parentloop.counter }}_{{ forloop.counter }}' name='m_{{ forloop.parentloop.counter }}_{{ forloop.counter }}' value='{{ option.is_true }}'></td>
+			            			{% else %}
+			                    		<td><input type="radio" id='option_{{ forloop.parentloop.counter }}_{{ forloop.counter }}' name='s_{{ forloop.parentloop.counter }}' value='{{ option.is_true }}'></td>
+			            			{% endif %}
+			            		</label>
+			            		{% if question.with_images %}
+			                    	<td>{{ option.option }}</td>
+			            		{% else %}
+			                    	<td>{{ option.option }}</td>           		    
+			            		{% endif %}           	    
+			                </tr>
+		            	{% endfor %}
 		            </tbody>
 		    </table>
 		    <br>
 	 	{% endfor %}
+	 	{{ right_answers }}
+	 	<label for='right_answers'>
+	 		<input type="hidden" name="right_answers" id="right_answers" value="{{ right_answers }}">
+	 	</label>
         <span class="d-block p-2 bg-primary text-white">
             <input id='stop_button' type="submit" class="btn btn-dark btn-sm" value="Закончить тест">
         </span>

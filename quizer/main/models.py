@@ -52,7 +52,6 @@ class MongoDB(object):
 
     def __init__(self, host='localhost', port=27017, **kwargs):
         self._client = MongoClient(host, port, **kwargs)
-        self._db = self._client.data.quizer
 
     def add_test(self, test) -> None:
         """
@@ -67,35 +66,30 @@ class MongoDB(object):
             }
         :return: None
         """
-        date = datetime.now().timetuple()
-        test['date'] = {
-            'year': date[0],
-            'month': date[1],
-            'day': date[2],
-            'hour': date[3],
-            'minutes': date[4]
-        }
-        if self._db.find_one({'subject_id': test['subject_id']}):
-            self._db.find_one_and_update(
+        db = self._client.data.tests
+        if db.find_one({'subject_id': test['subject_id']}):
+            db.find_one_and_update(
                 {'subject_id': test['subject_id']},
                 {'$push': {'tests': test}}
             )
         else:
-            self._db.insert_one({
+            db.insert_one({
                 'subject_id': test['subject_id'],
                 'tests': [test]
             })
 
     def get_tests(self, subject_id) -> dict:
-        return self._db.find_one({'subject_id': subject_id})['tests']
+        db = self._client.data.tests
+        return db.find_one({'subject_id': subject_id})['tests']
 
     def delete_test(self, test_name, subject_id) -> None:
-        self._db.find_one_and_update(
+        db = self._client.data.tests
+        db.find_one_and_update(
             {'subject_id': subject_id},
             {'$pull': {'tests': {'test_name': test_name}}}
         )
 
-    def add_question(self, question, subject_id, test_id) -> None:
+    def add_question(self, question, test_id) -> None:
         """
         Add question to db
         :param question: json
@@ -112,70 +106,71 @@ class MongoDB(object):
                     ...
                 ]
             }
-        :param subject_id: int
         :param test_id: int
         :return: None
         """
-        date = datetime.now().timetuple()
-        question['date'] = {
-            'year': date[0],
-            'month': date[1],
-            'day': date[2],
-            'hour': date[3],
-            'minutes': date[4]
-        }
-
-        if self._db.find_one({'subject_id': subject_id}):
-            if self._db.find_one({'subject_id': subject_id, 'tests.id': test_id}):
-                self._db.find_one_and_update(
-                    {'subject_id': subject_id, 'tests.id': test_id},
-                    {'$push': {
-                        'tests.$.questions': question
-                    }})
-            else:
-                self._db.find_one_and_update(
-                    {'subject_id': subject_id},
-                    {'$push': {
-                        'tests': {
-                            'id': test_id,
-                            'questions': [question]
-                        }
-                    }})
+        db = self._client.data.questions
+        if db.find_one({'test_id': test_id}):
+            db.find_one_and_update(
+                {'test_id': test_id},
+                {'$push': {
+                    'questions': question
+                }})
         else:
-            self._db.insert_one({
-                'subject_id': subject_id,
-                'tests': [
-                    {
-                        'id': test_id,
-                        'questions': [question]
-                    }
-                ]
+            db.insert_one({
+                'test_id': test_id,
+                'questions': [question]
             })
 
-    def get_questions(self, test_id, subject_id) -> list:
+    def get_questions(self, test_id) -> list:
         """
 
         :param test_id: int
-        :param subject_id: int
         :return: list
         """
+        db = self._client.data.questions
+        test = db.find_one({
+                'test_id': test_id
+            })
+        return test['questions'] if test else []
 
-        document = None
-        if self._db.find_one({'subject_id': subject_id}):
-            if self._db.find_one({'subject_id': subject_id, 'tests.id': test_id}):
-                document = self._db.find_one({
-                    'subject_id': subject_id,
-                    'tests.id': test_id
-                })
+    def drop_question(self, test_id, question_formulation) -> None:
+        db = self._client.data.questions
+        db.find_one_and_update(
+            {'test_id': test_id},
+            {'$pull': {'questions': {'formulation': question_formulation}}}
+        )
 
-        if document:
-            test = list(filter(lambda item: item['id'] == test_id, document['tests']))[0]
-            return test['questions']
-        else:
-            return []
+    def add_running_test(self, user_id, test_id, right_answers):
+        db = self._client.data.running_tests
+        db.insert_one({
+            'test_id': test_id,
+            'user_id': user_id,
+            'right_answers': right_answers
+        })
 
-    def delete_question(self, question_formulation) -> None:
-        pass
+    def get_running_test(self, user_id, test_id):
+        db = self._client.data.running_tests
+        return db.find_one({
+            'test_id': test_id,
+            'user_id': user_id,
+        })
+
+    def get_running_tests(self, test_id):
+        db = self._client.data.running_tests
+        return [test for test in db.find({
+            'test_id': test_id,
+        })]
+
+    def drop_running_test(self, user_id, test_id):
+        db = self._client.data.running_tests
+        db.delete_one({
+            'test_id': test_id,
+            'user_id': user_id,
+        })
+
+    def add_test_result(self, ):
+
 
 
 '''

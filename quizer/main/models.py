@@ -182,10 +182,11 @@ class MongoDB(object):
         return [test['test_id'] for test in running_tests] if running_tests else []
 
     def stop_test(self, test_id, lectorer_id):
-        self._client.data.tests_results.find_one_and_update({
-            {'test_id': test_id, 'launched_lectorer_id': lectorer_id},
+        print(self._client.data.tests_results.find_one({'test_id': test_id, 'launched_lectorer_id': lectorer_id, 'active': True}))
+        self._client.data.tests_results.find_one_and_update(
+            {'test_id': test_id, 'launched_lectorer_id': lectorer_id, 'active': True},
             {'$set': {'active': False}}
-        })
+        )
 
     def get_test_results(self, test_id, lectorer_id):
         db = self._client.data.tests_results

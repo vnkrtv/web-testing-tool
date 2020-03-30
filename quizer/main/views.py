@@ -19,15 +19,16 @@ def get_tests(request):
         host=MONGO_HOST,
         port=MONGO_PORT
     )
+    running_tests_ids = mdb.get_running_tests()
     if request.user.groups.filter(name='lecturer'):
+        lectorers_tests = Test.objects.filter(author__username=request.user.username)
         info = {
-            'tests': list(Test.objects.filter(author__username=request.user.username)),
+            'tests': list(filter(lambda test: test.id not in running_tests_ids, lectorers_tests)),
             'username': request.user.username
         }
         return render(request, 'main/lecturer/testsPanel.html', info)
     if request.user.groups.filter(name='student'):
-        tests_ids = mdb.get_running_tests()
-        if len(tests_ids) == 0:
+        if len(running_tests_ids) == 0:
             info = {
                 'title': 'Доступные тесты отсутствуют',
                 'message': 'Ни один из тестов пока не запущен.',
@@ -35,7 +36,7 @@ def get_tests(request):
             }
             return render(request, 'main/student/info.html', info)
         info = {
-            'tests': [Test.objects.get(id=_id) for _id in tests_ids],
+            'tests': [Test.objects.get(id=_id) for _id in running_tests_ids],
             'username': request.user.username
         }
         return render(request, 'main/student/tests.html', info)
@@ -76,7 +77,7 @@ def run_test_result(request):
     )
     info = {
         'title': 'Тест запущен',
-        'message': f'Пока здесь будет пример вопроса:\n{request.POST}',
+        'message': "Состояние его прохождения можно отследить во вкладке 'Запущенные тесты'",
         'username': request.user.username,
     }
     return render(request, 'main/lecturer/info.html', info)
@@ -108,6 +109,42 @@ def add_test_result(request):
     info = {
         'title': 'Новый тест',
         'message': f'Тест {test.name} по предмету {subject} успешно добавлен.',
+        'username': request.user.username,
+    }
+    return render(request, 'main/lecturer/info.html', info)
+
+
+@unauthenticated_user
+@allowed_users(allowed_roles=['lecturer'])
+def get_running_tests(request):
+    mdb = MongoDB(
+        host=MONGO_HOST,
+        port=MONGO_PORT
+    )
+    running_tests_ids = mdb.get_running_tests()
+    lectorers_tests = Test.objects.filter(author__username=request.user.username)
+    info = {
+        'tests': list(filter(lambda test: test.id in running_tests_ids, lectorers_tests)),
+        'username': request.user.username
+    }
+    return render(request, 'main/lecturer/runningTests.html', info)
+
+
+@unauthenticated_user
+@allowed_users(allowed_roles=['lecturer'])
+def stop_running_test(request):
+    test = Test.objects.get(name=request.POST['test_name'])
+    mdb = MongoDB(
+        host=MONGO_HOST,
+        port=MONGO_PORT
+    )
+    mdb.stop_test(
+        test_id=test.id,
+        lectorer_id=request.user.id
+    )
+    info = {
+        'title': 'Тест остановлен',
+        'message': 'Тут будет результат прохождения',
         'username': request.user.username,
     }
     return render(request, 'main/lecturer/info.html', info)

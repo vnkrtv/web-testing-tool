@@ -234,7 +234,8 @@ def test_result(request):
 
     query_dict = dict(request.POST)
     query_dict.pop('csrfmiddlewaretoken')
-
+    time = query_dict.pop('time')[0]
+    print(time)
     answers_dict = {}
     for key in query_dict:
         '''

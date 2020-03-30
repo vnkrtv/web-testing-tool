@@ -167,8 +167,11 @@ class MongoDB(object):
             'user_id': user_id,
         })
 
-    def add_test_result(self, ):
-        pass
+    def add_test_result(self, test_result):
+        db = self._client.data.tests_results
+        db.insert_one({
+
+        })
 
 
 

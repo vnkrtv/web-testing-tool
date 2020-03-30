@@ -3,26 +3,25 @@
 {% block content %}
 	<script type="text/javascript">
 		var ticks = {{ test_duration }};
-
-		function letsGo() {
-		  if(ticks<0) {
-		       document.getElementById("time").innerHTML ='Время вышло!';
+		function runTest() {
+		    if (ticks < 0) {
 		       document.getElementById("stop_button").click();      
 		       return;
-		  }
-
-		  document.getElementById("time").innerHTML='Времени осталось: ' + ticks + ' c';
-		  ticks--;
-		  setTimeout(letsGo,1000);
+		    }
+		    document.getElementById("time").value = ticks
+		    ticks--;
+		    setTimeout(runTest,1000);
 		}
 	</script>
-	<span class="d-block p-2 bg-primary text-white">
-        <div id="time" type="text" class="btn btn-dark btn-sm"></div>
-    </span>
-    <script type="text/javascript">letsGo();</script>
-    <br>
-    <br>
-    <form action="{% url 'main:test_result' %}" method="post">
+	<form action="{% url 'main:test_result' %}" method="post">
+		<span class="d-block p-2 bg-primary text-white">
+			<label for='time'>
+				Времени осталось: <input id="time" type="text" name='time' class="btn btn-dark btn-sm" size='2'> с
+			</label>
+	    </span>
+	    <script type="text/javascript">runTest();</script>
+	    <br>
+	    <br>
 		{% csrf_token %}
 	    {% for question in questions %}
 		 	<span class="d-block p-2 bg-primary text-white">{{ forloop.counter }}. {{ question.formulation }}</span>

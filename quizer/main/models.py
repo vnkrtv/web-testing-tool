@@ -1,3 +1,4 @@
+import time
 from datetime import datetime
 from django.db import models
 from django.conf import settings
@@ -142,41 +143,6 @@ class MongoDB(object):
             {'$pull': {'questions': {'formulation': question_formulation}}}
         )
 
-    def run_test(self, test_id, lectorer_id):
-        date = datetime.now().timetuple()
-        time = {
-            'year': date[0],
-            'month': date[1],
-            'day': date[2],
-            'hour': date[3],
-            'minutes': date[4]
-        }
-        self._client.data.running_tests.insert_one({
-            'test_id': test_id,
-            'time': time,
-            'launched_lectorer_id': lectorer_id
-        })
-        self._client.data.tests_results.insert_one({
-            'test_id': test_id,
-            'time': time,
-            'active': True,
-            'results': []
-        })
-
-    def get_running_tests(self):
-        db = self._client.data.tests_results
-        running_tests = db.find({'active': True})
-        return [test['test_id'] for test in running_tests] if running_tests else []
-
-    def stop_test(self, test_id, lectorer_id):
-        self._client.data.running_tests.delete_one({
-            {'test_id': test_id, 'launched_lectorer_id': lectorer_id}
-        })
-        self._client.data.tests_results.find_one_and_update({
-            {'test_id': test_id, 'launched_lectorer_id': lectorer_id},
-            {'$set': {'active': False}}
-        })
-
     def add_running_test_answers(self, user_id, test_id, right_answers):
         db = self._client.data.running_tests_answers
         db.insert_one({
@@ -204,9 +170,43 @@ class MongoDB(object):
             {'test_id': test_id},
         })
 
-    def get_test_results(self, test_id, **kwargs):
+    def run_test(self, test_id, lectorer_id):
         db = self._client.data.tests_results
-        results = db.find_one({
-            {'test_id': test_id, **kwargs},
+        date = datetime.now().timetuple()
+        db.insert_one({
+            'test_id': test_id,
+            'launched_lectorer_id': lectorer_id,
+            'active': True,
+            'results': [],
+            'timestamp': time.time(),
+            'time': {
+                'year': date[0],
+                'month': date[1],
+                'day': date[2],
+                'hour': date[3],
+                'minutes': date[4]
+            }
         })
-        return results['results'] if results else []
+
+    def get_running_tests(self):
+        db = self._client.data.tests_results
+        running_tests = db.find({'active': True})
+        return [test['test_id'] for test in running_tests] if running_tests else []
+
+    def stop_test(self, test_id, lectorer_id):
+        self._client.data.tests_results.find_one_and_update({
+            {'test_id': test_id, 'launched_lectorer_id': lectorer_id},
+            {'$set': {'active': False}}
+        })
+
+    def get_test_results(self, test_id, lectorer_id):
+        db = self._client.data.tests_results
+        test_results = db.find({
+            'test_id': test_id,
+            'launched_lectorer_id': lectorer_id
+        })
+        if test_results:
+            test_results = [test_result for test_result in test_results]
+            latest_test_results = max(test_results, key=lambda res: res['timestamp'])
+            return latest_test_results['results']
+        return []

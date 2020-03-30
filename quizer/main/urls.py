@@ -8,6 +8,7 @@ urlpatterns = [
     url(r'^home/$', views.index, name='index'),
     url(r'^tests/$', views.get_tests, name='tests'),
 
+    url(r'^run_new_test/$', views.run_test_result, name='run_test_result'),
     url(r'^add_test/$', views.add_test, name='add_test'),
     url(r'^add_test_result/$', views.add_test_result, name='add_test_result'),
     url(r'^edit_test/$', views.edit_test, name='edit_test'),

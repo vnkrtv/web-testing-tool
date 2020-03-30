@@ -4,6 +4,7 @@ from .decorators import unauthenticated_user, allowed_users
 from .models import Test, Subject, MongoDB
 from .config import MONGO_PORT, MONGO_HOST
 from pymongo.errors import ServerSelectionTimeoutError
+from bson import ObjectId
 import random
 
 
@@ -14,6 +15,10 @@ def login_page(request):
 
 @unauthenticated_user
 def get_tests(request):
+    mdb = MongoDB(
+        host=MONGO_HOST,
+        port=MONGO_PORT
+    )
     if request.user.groups.filter(name='lecturer'):
         info = {
             'tests': list(Test.objects.filter(author__username=request.user.username)),
@@ -21,8 +26,16 @@ def get_tests(request):
         }
         return render(request, 'main/lecturer/testsPanel.html', info)
     if request.user.groups.filter(name='student'):
+        tests_ids = mdb.get_running_tests()
+        if len(tests_ids) == 0:
+            info = {
+                'title': 'Доступные тесты отсутствуют',
+                'message': 'Ни один из тестов пока не запущен.',
+                'username': request.user.username,
+            }
+            return render(request, 'main/student/info.html', info)
         info = {
-            'tests': list(Test.objects.all()),
+            'tests': [Test.objects.get(id=_id) for _id in tests_ids],
             'username': request.user.username
         }
         return render(request, 'main/student/tests.html', info)
@@ -47,6 +60,26 @@ def index(request):
     # Return a 'disabled account' error message
     else:
         return render(request, 'main/login.html', {'error': 'неправильное имя пользователя или пароль!'})
+
+
+@unauthenticated_user
+@allowed_users(allowed_roles=['lecturer'])
+def run_test_result(request):
+    test = Test.objects.get(name=request.POST['test_name'])
+    mdb = MongoDB(
+        host=MONGO_HOST,
+        port=MONGO_PORT
+    )
+    mdb.run_test(
+        test_id=test.id,
+        lectorer_id=request.user.id
+    )
+    info = {
+        'title': 'Тест запущен',
+        'message': f'Пока здесь будет пример вопроса:\n{request.POST}',
+        'username': request.user.username,
+    }
+    return render(request, 'main/lecturer/info.html', info)
 
 
 @unauthenticated_user
@@ -208,7 +241,7 @@ def run_test(request):
     right_answers = {}
     for i, question in enumerate(questions):
         right_answers[str(i + 1)] = [i + 1 for i, option in enumerate(question['options']) if option['is_true']]
-    mdb.add_running_test(
+    mdb.add_running_test_answers(
         user_id=request.user.id,
         test_id=test.id,
         right_answers=right_answers
@@ -229,8 +262,8 @@ def test_result(request):
         host=MONGO_HOST,
         port=MONGO_PORT
     )
-    right_answers = mdb.get_running_test(user_id=request.user.id)['right_answers']
-    mdb.drop_running_test(user_id=request.user.id)
+    right_answers = mdb.get_running_test_answers(user_id=request.user.id)['right_answers']
+    mdb.drop_running_test_answers(user_id=request.user.id)
 
     query_dict = dict(request.POST)
     query_dict.pop('csrfmiddlewaretoken')

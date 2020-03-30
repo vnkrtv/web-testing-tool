@@ -1,7 +1,8 @@
+from datetime import datetime
 from django.db import models
 from django.conf import settings
 from pymongo import MongoClient
-from datetime import datetime
+
 
 DEFAULT_AUTHOR_ID = 1
 
@@ -130,8 +131,8 @@ class MongoDB(object):
         """
         db = self._client.data.questions
         test = db.find_one({
-                'test_id': test_id
-            })
+            'test_id': test_id
+        })
         return test['questions'] if test else []
 
     def drop_question(self, test_id, question_formulation) -> None:
@@ -141,118 +142,71 @@ class MongoDB(object):
             {'$pull': {'questions': {'formulation': question_formulation}}}
         )
 
-    def add_running_test(self, user_id, test_id, right_answers):
-        db = self._client.data.running_tests
+    def run_test(self, test_id, lectorer_id):
+        date = datetime.now().timetuple()
+        time = {
+            'year': date[0],
+            'month': date[1],
+            'day': date[2],
+            'hour': date[3],
+            'minutes': date[4]
+        }
+        self._client.data.running_tests.insert_one({
+            'test_id': test_id,
+            'time': time,
+            'launched_lectorer_id': lectorer_id
+        })
+        self._client.data.tests_results.insert_one({
+            'test_id': test_id,
+            'time': time,
+            'active': True,
+            'results': []
+        })
+
+    def get_running_tests(self):
+        db = self._client.data.tests_results
+        running_tests = db.find({'active': True})
+        return [test['test_id'] for test in running_tests] if running_tests else []
+
+    def stop_test(self, test_id, lectorer_id):
+        self._client.data.running_tests.delete_one({
+            {'test_id': test_id, 'launched_lectorer_id': lectorer_id}
+        })
+        self._client.data.tests_results.find_one_and_update({
+            {'test_id': test_id, 'launched_lectorer_id': lectorer_id},
+            {'$set': {'active': False}}
+        })
+
+    def add_running_test_answers(self, user_id, test_id, right_answers):
+        db = self._client.data.running_tests_answers
         db.insert_one({
             'test_id': test_id,
             'user_id': user_id,
             'right_answers': right_answers
         })
 
-    def get_running_test(self, user_id):
-        db = self._client.data.running_tests
+    def get_running_test_answers(self, user_id):
+        db = self._client.data.running_tests_answers
         return db.find_one({
             'user_id': user_id,
         })
 
-    def get_running_tests(self, test_id):
-        db = self._client.data.running_tests
-        return [test for test in db.find({
-            'test_id': test_id,
-        })]
-
-    def drop_running_test(self, user_id):
-        db = self._client.data.running_tests
+    def drop_running_test_answers(self, user_id):
+        db = self._client.data.running_tests_answers
         db.delete_one({
             'user_id': user_id,
         })
 
-    def add_test_result(self, test_result):
+    def add_test_result(self, test_result, test_id, student_id):
+        date = datetime.now().timetuple()
         db = self._client.data.tests_results
-        db.insert_one({
-
+        db.find_one_and_update({
+            {'test_id': test_id},
         })
 
-
-
-'''
-from djongo.models import ArrayField, EmbeddedField
-from djongo.models import ListField
-from django.contrib.auth.models import User
-
-
-class LectureUser(AbstractUser):
-    class Meta:
-        verbose_name = 'Преподаватель'
-        verbose_name_plural = 'Преподаватели'
-
-
-class StudentUser(AbstractUser):
-    class Meta:
-        verbose_name = 'Слушатель'
-        verbose_name_plural = 'Слушатели'
-
-
-class Option(models.Model):
-    option = models.CharField('Вариант ответа', max_length=200)
-    is_true = models.BooleanField('Верный')
-
-    def __str__(self):
-        return self.option
-
-    class Meta:
-        verbose_name = 'Вариант ответа'
-        verbose_name_plural = 'Варианты ответа'
-
-
-class Task(models.Model):
-    test = models.ForeignKey(
-        Test,
-        verbose_name='Тест',
-        on_delete=models.CASCADE
-    )
-    question = models.CharField('Формулировка вопроса', max_length=200)
-    options_1 = EmbeddedField(Option, verbose_name='Вариант 1', default={})
-    options_2 = EmbeddedField(Option, verbose_name='Вариант 2', default={})
-    options_3 = EmbeddedField(Option, verbose_name='Вариант 3', default={})
-    options_4 = EmbeddedField(Option, verbose_name='Вариант 4', default={})
-
-    def __str__(self):
-        return self.question
-
-    class Meta:
-        verbose_name = 'Вопрос'
-        verbose_name_plural = 'Вопросы'
-
-
-class TaskAnswer(models.Field):
-    task_id = models.IntegerField('Идентификатор задания')
-    true_answer = models.IntegerField('Правильный ответ')
-    selected_answer = models.IntegerField('Выбранный ответ')
-
-
-class TestResult(models.Model):
-    username = models.ForeignKey(
-        User,# settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-    )
-    test = models.ForeignKey(
-        Test,
-        verbose_name='Тест',
-        on_delete=models.CASCADE
-    )
-    #answers = ListField(
-    #    verbose_name='Вопросы теста',
-    #    default=[]
-    #)
-
-    result = models.IntegerField('Число правильных ответов')
-
-    def __str__(self):
-        return 'Тест по теме %s\nСлушатель: %s\nРезультат: %d/%d' % \
-               (self.test, self.username, self.result, self.test.tasks_num)
-
-    class Meta:
-        verbose_name = 'Результат теста'
-        verbose_name_plural = 'Результаты теста'
-'''
+    def get_test_results(self, test_id, **kwargs):
+        db = self._client.data.tests_results
+        results = db.find_one({
+            {'test_id': test_id, **kwargs},
+        })
+        return results['results'] if results else []

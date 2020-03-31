@@ -158,12 +158,12 @@ class MongoDB(object):
             {'$push': {'results': test_result}}
         )
 
-    def get_test_result(self, test_result, test_id):
+    def get_active_test_results(self, test_id, lectorer_id):
         db = self._client.data.tests_results
-        db.find_one_and_update(
-            {'test_id': test_id},
-            {'$push': {'results': test_result}}
+        test_results = db.find_one(
+            {'test_id': test_id, 'launched_lectorer_id': lectorer_id, 'active': True},
         )
+        return test_results['results'] if test_results else []
 
     def run_test(self, test_id, lectorer_id):
         db = self._client.data.tests_results
@@ -189,7 +189,6 @@ class MongoDB(object):
         return [test['test_id'] for test in running_tests] if running_tests else []
 
     def stop_test(self, test_id, lectorer_id):
-        print(self._client.data.tests_results.find_one({'test_id': test_id, 'launched_lectorer_id': lectorer_id, 'active': True}))
         self._client.data.tests_results.find_one_and_update(
             {'test_id': test_id, 'launched_lectorer_id': lectorer_id, 'active': True},
             {'$set': {'active': False}}

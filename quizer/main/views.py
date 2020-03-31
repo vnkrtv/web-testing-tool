@@ -138,13 +138,17 @@ def stop_running_test(request):
         host=MONGO_HOST,
         port=MONGO_PORT
     )
+    results = mdb.get_active_test_results(
+        test_id=test.id,
+        lectorer_id=request.user.id
+    )
     mdb.stop_test(
         test_id=test.id,
         lectorer_id=request.user.id
     )
     info = {
         'title': 'Тест остановлен',
-        'message': 'Тут будет результат прохождения',
+        'message': f'{results}',
         'username': request.user.username,
     }
     return render(request, 'main/lecturer/info.html', info)

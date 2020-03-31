@@ -2,21 +2,20 @@
 
 {% block content %}
  	<div class='jumbotron'>
- 		<h2>Результаты тестирования</h2><br>	
+ 		<h2>Результаты тестирования</h2><br>
+ 		<h3>Тест: {{ test.name }}</h3>
  		{% for result in results %}
  			<hr class="my-4">
 			<h3>{{ result.username }}</h3>
 			<p>Результат: {{ result.right_answers_num }}/{{ result.tasks_num }}</p>
-			<table class="table table-striped table-dark">
-	            <tbody>
-					{% for question in result.questions %}
-	            		<tr>
-		                	<td>Выбранный ответ: {{ question.selected_answers }}</td>
-		                	<td>Правильный ответ: {{ question.right_answers }}</td>
-		            	</tr>
-	            	{% endfor %}
-	            </tbody>
-            </table>
+			{% for question in result.questions %}
+    			{% if question.is_true %}
+    				{{ forloop.counter }}. Верно
+				{% else %}
+					{{ forloop.counter }}. Ошибка - выбранный ответ({{ question.selected_answers }}), правильный ответ({{ question.right_answers }})     
+				{% endif %}
+				<br>
+	        {% endfor %}
  		{% endfor %}
  	</div>
 {% endblock %}

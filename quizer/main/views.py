@@ -123,13 +123,20 @@ def get_running_tests(request):
     )
     running_tests_ids = mdb.get_running_tests()
     lectorers_tests = Test.objects.filter(author__username=request.user.username)
-    tests = list(filter(lambda test: test.id in running_tests_ids, lectorers_tests))
-    for test in tests:
+    running_tests = list(filter(lambda test: test.id in running_tests_ids, lectorers_tests))
+    tests = []
+    for test in running_tests:
         results = mdb.get_test_results(
             test_id=test.id,
             lectorer_id=request.user.id
         )
-        test['students_complite_count'] = len(results['results'])
+        tests.append({
+            'name': test.name,
+            'description': test.description,
+            'tasks_num': test.tasks_num,
+            'duration': test.duration,
+            'students_complite_num': len(results)
+        })
 
     info = {
         'tests': tests,
@@ -141,21 +148,12 @@ def get_running_tests(request):
 @unauthenticated_user
 @allowed_users(allowed_roles=['lecturer'])
 def stop_running_test(request):
-    results = {'_id': ObjectId('5e828c4f9f74283aa8b996d8'), 'test_id': 1, 'launched_lectorer_id': 1, 'active': False, 'results': [{'user_id': 2, 'username': 'abrams', 'time': '55', 'tasks_num': 2, 'right_answers_num': 1, 'questions': [{'id': '5e8275e58122d1d08e9652f7', 'selected_answers': ['1', '2'], 'right_answers': [1]}, {'id': '5e8275c68122d1d08e9652f5', 'selected_answers': [1], 'right_answers': [1]}]}], 'timestamp': 1585613903.5628731, 'time': {'year': 2020, 'month': 3, 'day': 31, 'hour': 0, 'minutes': 18}}
-
-    info = {
-        'results': results['results'],
-        'username': request.user.username,
-    }
-    return render(request, 'main/lecturer/testingResults.html', info)
-
-
     test = Test.objects.get(name=request.POST['test_name'])
     mdb = MongoDB(
         host=MONGO_HOST,
         port=MONGO_PORT
     )
-    results = mdb.get_active_test_results(
+    results = mdb.get_test_results(
         test_id=test.id,
         lectorer_id=request.user.id
     )
@@ -164,9 +162,11 @@ def stop_running_test(request):
         lectorer_id=request.user.id
     )
     info = {
+        'test': test,
         'results': results,
         'username': request.user.username,
     }
+    print(info)
     return render(request, 'main/lecturer/testingResults.html', info)
 
 
@@ -343,13 +343,16 @@ def test_result(request):
     right_answers_count = 0
     questions = []
     for question_num in right_answers:
-        if right_answers[question_num]['right_answers'] == answers_dict[question_num]:
-            right_answers_count += 1
         questions.append({
             'id': right_answers[question_num]['id'],
             'selected_answers': answers_dict[question_num],
             'right_answers': right_answers[question_num]['right_answers']
         })
+        if right_answers[question_num]['right_answers'] == answers_dict[question_num]:
+            right_answers_count += 1
+            questions[-1]['is_true'] = True
+        else:
+            questions[-1]['is_true'] = False
     test_result = {
         'user_id': request.user.id,
         'username': request.user.username,

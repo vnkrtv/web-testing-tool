@@ -154,7 +154,7 @@ class MongoDB(object):
     def add_test_result(self, test_result, test_id):
         db = self._client.data.tests_results
         db.find_one_and_update(
-            {'test_id': test_id},
+            {'test_id': test_id, 'active': True},
             {'$push': {'results': test_result}}
         )
 

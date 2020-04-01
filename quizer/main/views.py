@@ -4,7 +4,6 @@ from .decorators import unauthenticated_user, allowed_users
 from .models import Test, Subject, MongoDB
 from .config import MONGO_PORT, MONGO_HOST
 from pymongo.errors import ServerSelectionTimeoutError
-from bson import ObjectId
 import random
 
 

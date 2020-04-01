@@ -50,50 +50,64 @@ class Test(models.Model):
         verbose_name_plural = 'Тесты'
 
 
-class MongoDB(object):
+class MongoObjectStorage(object):
+    """
+        Class for working with objects, stored in MongoDB
 
-    def __init__(self, host='localhost', port=27017, **kwargs):
-        self._client = MongoClient(host, port, **kwargs)
-
-    def add_test(self, test) -> None:
+        _client: MongoClient() object
+        _db: MongoDB database
+        _col: MongoDB collection
         """
-        Add test to db
-        :param test: json
-            {
-                'name': str,
-                'author_id': int,
-                'description': str,
-                'tasks_num': int,
-                'duration': int
-            }
-        :return: None
+
+    _client = None
+    _db = None
+    _col = None
+
+    @staticmethod
+    def get_connection(host, port, db_name, collection_name):
         """
-        db = self._client.data.tests
-        if db.find_one({'subject_id': test['subject_id']}):
-            db.find_one_and_update(
-                {'subject_id': test['subject_id']},
-                {'$push': {'tests': test}}
-            )
-        else:
-            db.insert_one({
-                'subject_id': test['subject_id'],
-                'tests': [test]
-            })
+        Establish connection to mongodb database 'db_name', collection 'questions'
 
-    def get_tests(self, subject_id) -> dict:
-        db = self._client.data.tests
-        return db.find_one({'subject_id': subject_id})['tests']
+        :param host: MongoDB host
+        :param port: MongoDB port
+        :param db_name: database name
+        :param collection_name: collection name
+        :return: MongoObjectStorage object
+        """
+        obj = MongoObjectStorage()
+        obj._client = MongoClient(host, port)
+        obj._db = obj._client[db_name]
+        obj._col = obj._db[collection_name]
+        return obj
 
-    def delete_test(self, test_name, subject_id) -> None:
-        db = self._client.data.tests
-        db.find_one_and_update(
-            {'subject_id': subject_id},
-            {'$pull': {'tests': {'test_name': test_name}}}
+
+class QuestionStorage(MongoObjectStorage):
+    """
+    Class for working with Questions, stored in MongoDB
+    """
+
+    @staticmethod
+    def connect_to_mongodb(host, port, db_name):
+        """
+        Establish connection to mongodb database 'db_name', collection 'questions'
+
+        :param host: MongoDB host
+        :param port: MongoDB port
+        :param db_name: MongoDB name
+        :return: Question object
+        """
+        obj = MongoObjectStorage.get_connection(
+            host=host,
+            port=port,
+            db_name=db_name,
+            collection_name='questions'
         )
+        return obj
 
-    def add_question(self, question, test_id) -> None:
+    def add_one(self, question, test_id: int) -> None:
         """
-        Add question to db
+        Add question to MongoDB
+
         :param question: json
             {
                 'formulation': str,
@@ -111,25 +125,32 @@ class MongoDB(object):
         :param test_id: int
         :return: None
         """
-        db = self._client.data.questions
         question['test_id'] = test_id
-        db.insert_one(question)
+        self._col.insert_one(question)
 
-    def get_questions(self, test_id) -> list:
+    def get_many(self, test_id: int) -> list:
         """
+        Get all questions for Test(id='test_id')
 
         :param test_id: int
-        :return: list
+        :return: list of questions
         """
-        db = self._client.data.questions
-        questions = db.find({
+        questions = self._col.find({
             'test_id': test_id
         })
         return [question for question in questions] if questions else []
 
-    def drop_question(self, question_formulation) -> None:
-        db = self._client.data.questions
-        db.delete_one({'formulation': question_formulation})
+    def delete_one(self, question_formulation: str) -> None:
+        """
+        Delete question with formulation 'question_formulation'
+
+        :param question_formulation: str
+        :return: None
+        """
+        self._col.delete_one({'formulation': question_formulation})
+
+
+
 
     def add_running_test_answers(self, user_id, test_id, right_answers):
         db = self._client.data.running_tests_answers

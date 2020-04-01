@@ -5,9 +5,7 @@ Testing system
 ### Installation
 - ```git clone https://github.com/LeadNess/Quizer.git```
 - ```cd Quizer```
-- ```python3 -m venv venv```
-- ```./build_djangoapp   #create django app```
-- ```./build_docker     #create docker image```
+- ```./build_djangoapp   #create django app and docker image```
 ### Usage
 Run app by command:   
 - ```docker run quizer```  

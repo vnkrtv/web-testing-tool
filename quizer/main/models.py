@@ -263,7 +263,7 @@ class TestsResultsStorage(MongoDB):
         self._col.insert_one({
             'test_id': test_id,
             'launched_lecturer_id': lecturer_id,
-            'active': True,
+            'is_running': True,
             'results': [],
             'timestamp': time.time(),
             'time': {
@@ -275,9 +275,9 @@ class TestsResultsStorage(MongoDB):
             }
         })
 
-    def add_results_to_active_test(self, test_result, test_id: int) -> None:
+    def add_results_to_running_test(self, test_result, test_id: int) -> None:
         """
-        Add passed test result to other results for active test
+        Add passed test result to other results for running test
 
         :param test_result: <dict>
             {
@@ -299,43 +299,43 @@ class TestsResultsStorage(MongoDB):
         :return: None
         """
         self._col.find_one_and_update(
-            {'test_id': test_id, 'active': True},
+            {'test_id': test_id, 'is_running': True},
             {'$push': {'results': test_result}}
         )
 
-    def get_active_test_results(self, test_id: int, lecturer_id: int) -> list:
+    def get_running_test_results(self, test_id: int, lecturer_id: int) -> list:
         """
-        Get results of active test
+        Get results of running test
 
         :param test_id: <int>
         :param lecturer_id: <int>, lecturer who ran test
         :return: <list>, list of results
         """
         test_results = self._col.find_one(
-            {'test_id': test_id, 'launched_lecturer_id': lecturer_id, 'active': True},
+            {'test_id': test_id, 'launched_lecturer_id': lecturer_id, 'is_running': True},
         )
         return test_results['results'] if test_results else []
 
-    def get_active_tests_ids(self) -> list:
+    def get_running_tests_ids(self) -> list:
         """
-        Return list of active tests ids
+        Return list of running tests ids
 
         :return: <list: int>
         """
-        running_tests = self._col.find({'active': True})
+        running_tests = self._col.find({'is_running': True})
         return [test['test_id'] for test in running_tests] if running_tests else []
 
-    def stop_active_test(self, test_id: int, lecturer_id: int) -> None:
+    def stop_running_test(self, test_id: int, lecturer_id: int) -> None:
         """
-        Stops active test, setting its 'active' field as 'False'
+        Stops running test, setting its 'is_running' field to 'False'
 
         :param test_id: <int>
         :param lecturer_id: <int>, lecturer who ran test
         :return: None
         """
         self._col.find_one_and_update(
-            {'test_id': test_id, 'launched_lecturer_id': lecturer_id, 'active': True},
-            {'$set': {'active': False}}
+            {'test_id': test_id, 'launched_lecturer_id': lecturer_id, 'is_running': True},
+            {'$set': {'is_running': False}}
         )
 
     def get_latest_test_results(self, test_id: int, lecturer_id: int) -> list:

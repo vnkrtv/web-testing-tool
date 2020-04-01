@@ -2,28 +2,37 @@
 from django.shortcuts import render
 from django.contrib.auth import login, logout, authenticate
 from .decorators import unauthenticated_user, allowed_users
-from .models import Test, Subject, MongoDB
-from .config import MONGO_PORT, MONGO_HOST
+from .models import Test, Subject, RunningTestsAnswersStorage, TestsResultsStorage, QuestionsStorage
+from .config import MONGO_PORT, MONGO_HOST, MONGO_DBNAME
 from pymongo.errors import ServerSelectionTimeoutError
 import random
 
 
 def login_page(request):
+    """
+    Login page view
+    """
     logout(request)
     return render(request, 'main/login.html')
 
 
 @unauthenticated_user
 def get_tests(request):
-    mdb = MongoDB(
+    """
+    The page to which the user is redirected after authorization.
+    For lecturer - displays a list of tests that can be run.
+    For student - displays a list of running tests
+    """
+    mdb = TestsResultsStorage.connect_to_mongodb(
         host=MONGO_HOST,
-        port=MONGO_PORT
+        port=MONGO_PORT,
+        db_name=MONGO_DBNAME
     )
-    running_tests_ids = mdb.get_running_tests()
+    running_tests_ids = mdb.get_active_tests_ids()
     if request.user.groups.filter(name='lecturer'):
-        lectorers_tests = Test.objects.filter(author__username=request.user.username)
+        lecturers_tests = Test.objects.filter(author__username=request.user.username)
         info = {
-            'tests': list(filter(lambda test: test.id not in running_tests_ids, lectorers_tests)),
+            'tests': list(filter(lambda test: test.id not in running_tests_ids, lecturers_tests)),
             'username': request.user.username
         }
         return render(request, 'main/lecturer/testsPanel.html', info)

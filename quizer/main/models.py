@@ -52,12 +52,12 @@ class Test(models.Model):
 
 class MongoObjectStorage(object):
     """
-        Class for working with objects, stored in MongoDB
+    Class for working with objects, stored in MongoDB
 
-        _client: MongoClient() object
-        _db: MongoDB database
-        _col: MongoDB collection
-        """
+    _client: MongoClient() object
+    _db: MongoDB database
+    _col: MongoDB collection
+    """
 
     _client = None
     _db = None
@@ -94,7 +94,7 @@ class QuestionStorage(MongoObjectStorage):
         :param host: MongoDB host
         :param port: MongoDB port
         :param db_name: MongoDB name
-        :return: Question object
+        :return: QuestionStorage object
         """
         obj = MongoObjectStorage.get_connection(
             host=host,
@@ -108,7 +108,7 @@ class QuestionStorage(MongoObjectStorage):
         """
         Add question to MongoDB
 
-        :param question: json
+        :param question: dict
             {
                 'formulation': str,
                 'tasks_num': int,
@@ -150,25 +150,73 @@ class QuestionStorage(MongoObjectStorage):
         self._col.delete_one({'formulation': question_formulation})
 
 
+class RunningTestAnswersStorage(MongoObjectStorage):
+    """
+    Class for working with answers for running tests, stored in MongoDB
+    """
 
+    @staticmethod
+    def connect_to_mongodb(host, port, db_name):
+        """
+        Establish connection to mongodb database 'db_name', collection 'questions'
 
-    def add_running_test_answers(self, user_id, test_id, right_answers):
-        db = self._client.data.running_tests_answers
-        db.insert_one({
+        :param host: MongoDB host
+        :param port: MongoDB port
+        :param db_name: MongoDB name
+        :return: RunningTestAnswersStorage object
+        """
+        obj = MongoObjectStorage.get_connection(
+            host=host,
+            port=port,
+            db_name=db_name,
+            collection_name='running_tests_answers'
+        )
+        return obj
+
+    def add(self, right_answers, test_id: str, user_id: str) -> None:
+        """
+        Add answers for running tests to MongoDB
+
+        :param right_answers: dict
+            {
+                'question_number_1': {
+                    'right_answers': [1, 2 ... <list: int>],
+                    'id': str(ObjectId()),
+                'question_number_2': {
+                    ...
+                },
+                ...
+            }
+        :param test_id: int
+        :param user_id: int
+        :return:
+        """
+        self._col.insert_one({
+            'right_answers': right_answers,
             'test_id': test_id,
-            'user_id': user_id,
-            'right_answers': right_answers
+            'user_id': user_id
         })
 
-    def get_running_test_answers(self, user_id):
-        db = self._client.data.running_tests_answers
-        return db.find_one({
+    def get(self, user_id: int) -> dict:
+        """
+        Get user answers for running test
+
+        :param user_id: int
+        :return: dict
+        """
+        right_answers = self._col.find_one({
             'user_id': user_id,
         })
+        return right_answers
 
-    def drop_running_test_answers(self, user_id):
-        db = self._client.data.running_tests_answers
-        db.delete_one({
+    def delete(self, user_id: int) -> None:
+        """
+        Delete user answers for running test
+
+        :param user_id: int
+        :return: None
+        """
+        self._col.delete_one({
             'user_id': user_id,
         })
 

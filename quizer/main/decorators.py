@@ -1,8 +1,15 @@
+# pylint: disable=import-error, no-else-return
+"""
+Decorators for differentiate user rights
+"""
 from django.http import HttpResponse
 from django.shortcuts import redirect
 
 
 def unauthenticated_user(view_func):
+    """
+    Checked if user is authorized
+    """
     def wrapper_func(request, *args, **kwargs):
         if request.user.is_authenticated:
             return view_func(request, *args, **kwargs)
@@ -11,7 +18,12 @@ def unauthenticated_user(view_func):
     return wrapper_func
 
 
-def allowed_users(allowed_roles=[]):
+def allowed_users(allowed_roles: list):
+    """
+    Checked if user belong to allowed group
+
+    :param allowed_roles: student or lecturer
+    """
     def decorator(view_func):
         def wrapper_func(request, *args, **kwargs):
 

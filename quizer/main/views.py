@@ -1,3 +1,4 @@
+# pylint: disable=import-error
 from django.shortcuts import render
 from django.contrib.auth import login, logout, authenticate
 from .decorators import unauthenticated_user, allowed_users
@@ -59,7 +60,7 @@ def index(request):
             return render(request, 'main/login.html', {'error': 'Ошибка: аккаунт пользователя неактивен!'})
     # Return a 'disabled account' error message
     else:
-        return render(request, 'main/login.html', {'error': 'неправильное имя пользователя или пароль!'})
+        return render(request, 'main/login.html', {'error': 'Ошибка: неправильное имя пользователя или пароль!'})
 
 
 @unauthenticated_user

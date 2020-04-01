@@ -1,3 +1,8 @@
+# pylint: disable=invalid-name, too-few-public-methods, missing-class-docstring, import-error
+"""
+Models and classes for working with MongoDB and objects stored in it
+"""
+
 import time
 from datetime import datetime
 from django.db import models
@@ -50,9 +55,9 @@ class Test(models.Model):
         verbose_name_plural = 'Тесты'
 
 
-class MongoObjectStorage(object):
+class MongoDB:
     """
-    Class for working with objects, stored in MongoDB
+    Class for getting connection to MongoDB
 
     _client: MongoClient() object
     _db: MongoDB database
@@ -64,7 +69,7 @@ class MongoObjectStorage(object):
     _col = None
 
     @staticmethod
-    def get_connection(host, port, db_name, collection_name):
+    def get_connection(host: str, port, db_name: str, collection_name: str) -> tuple:
         """
         Establish connection to mongodb database 'db_name', collection 'questions'
 
@@ -72,22 +77,21 @@ class MongoObjectStorage(object):
         :param port: MongoDB port
         :param db_name: database name
         :param collection_name: collection name
-        :return: MongoObjectStorage object
+        :return: tuple of (MongoClient, db, collection)
         """
-        obj = MongoObjectStorage()
-        obj._client = MongoClient(host, port)
-        obj._db = obj._client[db_name]
-        obj._col = obj._db[collection_name]
-        return obj
+        client = MongoClient(host, port)
+        db = client[db_name]
+        col = db[collection_name]
+        return client, db, col
 
 
-class QuestionStorage(MongoObjectStorage):
+class QuestionsStorage(MongoDB):
     """
     Class for working with Questions, stored in MongoDB
     """
 
     @staticmethod
-    def connect_to_mongodb(host, port, db_name):
+    def connect_to_mongodb(host: str, port, db_name: str):
         """
         Establish connection to mongodb database 'db_name', collection 'questions'
 
@@ -96,7 +100,8 @@ class QuestionStorage(MongoObjectStorage):
         :param db_name: MongoDB name
         :return: QuestionStorage object
         """
-        obj = MongoObjectStorage.get_connection(
+        obj = QuestionsStorage()
+        obj._client, obj._db, obj._col = MongoDB.get_connection(
             host=host,
             port=port,
             db_name=db_name,
@@ -108,7 +113,7 @@ class QuestionStorage(MongoObjectStorage):
         """
         Add question to MongoDB
 
-        :param question: dict
+        :param question: <dict>
             {
                 'formulation': str,
                 'tasks_num': int,
@@ -122,7 +127,7 @@ class QuestionStorage(MongoObjectStorage):
                     ...
                 ]
             }
-        :param test_id: int
+        :param test_id: <int>
         :return: None
         """
         question['test_id'] = test_id
@@ -132,25 +137,25 @@ class QuestionStorage(MongoObjectStorage):
         """
         Get all questions for Test(id='test_id')
 
-        :param test_id: int
-        :return: list of questions
+        :param test_id: <int>
+        :return: <list>, list of questions
         """
         questions = self._col.find({
             'test_id': test_id
         })
-        return [question for question in questions] if questions else []
+        return list(questions) if questions else []
 
     def delete_one(self, question_formulation: str) -> None:
         """
         Delete question with formulation 'question_formulation'
 
-        :param question_formulation: str
+        :param question_formulation: <str>
         :return: None
         """
         self._col.delete_one({'formulation': question_formulation})
 
 
-class RunningTestAnswersStorage(MongoObjectStorage):
+class RunningTestsAnswersStorage(MongoDB):
     """
     Class for working with answers for running tests, stored in MongoDB
     """
@@ -158,26 +163,27 @@ class RunningTestAnswersStorage(MongoObjectStorage):
     @staticmethod
     def connect_to_mongodb(host, port, db_name):
         """
-        Establish connection to mongodb database 'db_name', collection 'questions'
+        Establish connection to mongodb database 'db_name', collection 'running_tests_answers'
 
         :param host: MongoDB host
         :param port: MongoDB port
         :param db_name: MongoDB name
         :return: RunningTestAnswersStorage object
         """
-        obj = MongoObjectStorage.get_connection(
+        obj = RunningTestsAnswersStorage()
+        obj._client, obj._db, obj._col = MongoDB.get_connection(
             host=host,
             port=port,
             db_name=db_name,
-            collection_name='running_tests_answers'
+            collection_name='questions'
         )
         return obj
 
     def add(self, right_answers, test_id: str, user_id: str) -> None:
         """
-        Add answers for running tests to MongoDB
+        Add right answers for running tests and current user
 
-        :param right_answers: dict
+        :param right_answers: <dict>
             {
                 'question_number_1': {
                     'right_answers': [1, 2 ... <list: int>],
@@ -187,8 +193,8 @@ class RunningTestAnswersStorage(MongoObjectStorage):
                 },
                 ...
             }
-        :param test_id: int
-        :param user_id: int
+        :param test_id: <int>
+        :param user_id: <int>, user who passes test
         :return:
         """
         self._col.insert_one({
@@ -199,10 +205,10 @@ class RunningTestAnswersStorage(MongoObjectStorage):
 
     def get(self, user_id: int) -> dict:
         """
-        Get user answers for running test
+        Get right answers for running test and current user
 
-        :param user_id: int
-        :return: dict
+        :param user_id: <int>, user who passes test
+        :return: <dict>
         """
         right_answers = self._col.find_one({
             'user_id': user_id,
@@ -213,33 +219,50 @@ class RunningTestAnswersStorage(MongoObjectStorage):
         """
         Delete user answers for running test
 
-        :param user_id: int
+        :param user_id: <int>
         :return: None
         """
         self._col.delete_one({
             'user_id': user_id,
         })
 
-    def add_test_result(self, test_result, test_id):
-        db = self._client.data.tests_results
-        db.find_one_and_update(
-            {'test_id': test_id, 'active': True},
-            {'$push': {'results': test_result}}
-        )
 
-    def get_active_test_results(self, test_id, lectorer_id):
-        db = self._client.data.tests_results
-        test_results = db.find_one(
-            {'test_id': test_id, 'launched_lectorer_id': lectorer_id, 'active': True},
-        )
-        return test_results['results'] if test_results else []
+class TestsResultsStorage(MongoDB):
+    """
+    Class for working with tests results, stored in MongoDB
+    """
 
-    def run_test(self, test_id, lectorer_id):
-        db = self._client.data.tests_results
+    @staticmethod
+    def connect_to_mongodb(host, port, db_name):
+        """
+        Establish connection to mongodb database 'db_name', collection 'tests_results'
+
+        :param host: MongoDB host
+        :param port: MongoDB port
+        :param db_name: MongoDB name
+        :return: TestsResultsStorage object
+        """
+        obj = TestsResultsStorage()
+        obj._client, obj._db, obj._col = MongoDB.get_connection(
+            host=host,
+            port=port,
+            db_name=db_name,
+            collection_name='questions'
+        )
+        return obj
+
+    def add_active_test(self, test_id: int, lecturer_id: int):
+        """
+        Create object in collection corresponding to running test
+
+        :param test_id: <int>
+        :param lecturer_id: <int>, lecturer who ran test
+        :return:
+        """
         date = datetime.now().timetuple()
-        db.insert_one({
+        self._col.insert_one({
             'test_id': test_id,
-            'launched_lectorer_id': lectorer_id,
+            'launched_lecturer_id': lecturer_id,
             'active': True,
             'results': [],
             'timestamp': time.time(),
@@ -252,25 +275,83 @@ class RunningTestAnswersStorage(MongoObjectStorage):
             }
         })
 
-    def get_running_tests(self):
-        db = self._client.data.tests_results
-        running_tests = db.find({'active': True})
+    def add_results_to_active_test(self, test_result, test_id: int) -> None:
+        """
+        Add passed test result to other results for active test
+
+        :param test_result: <dict>
+            {
+                'user_id': <int>,
+                'username': <str>,
+                'time': <int>, time of passing test,
+                'tasks_num': <int>, number of questions,
+                'right_answers_num': <int>, number of correctly solved questions,
+                'questions': [
+                    {
+                        'id': <str>, str(ObjectId()),
+                        'selected_answers': <list: int>,
+                        'right_answers': <list: int>
+                    },
+                    ...
+                ]
+            }
+        :param test_id: <int>
+        :return: None
+        """
+        self._col.find_one_and_update(
+            {'test_id': test_id, 'active': True},
+            {'$push': {'results': test_result}}
+        )
+
+    def get_active_test_results(self, test_id: int, lecturer_id: int) -> list:
+        """
+        Get results of active test
+
+        :param test_id: <int>
+        :param lecturer_id: <int>, lecturer who ran test
+        :return: <list>, list of results
+        """
+        test_results = self._col.find_one(
+            {'test_id': test_id, 'launched_lecturer_id': lecturer_id, 'active': True},
+        )
+        return test_results['results'] if test_results else []
+
+    def get_active_tests_ids(self) -> list:
+        """
+        Return list of active tests ids
+
+        :return: <list: int>
+        """
+        running_tests = self._col.find({'active': True})
         return [test['test_id'] for test in running_tests] if running_tests else []
 
-    def stop_test(self, test_id, lectorer_id):
-        self._client.data.tests_results.find_one_and_update(
-            {'test_id': test_id, 'launched_lectorer_id': lectorer_id, 'active': True},
+    def stop_active_test(self, test_id: int, lecturer_id: int) -> None:
+        """
+        Stops active test, setting its 'active' field as 'False'
+
+        :param test_id: <int>
+        :param lecturer_id: <int>, lecturer who ran test
+        :return: None
+        """
+        self._col.find_one_and_update(
+            {'test_id': test_id, 'launched_lecturer_id': lecturer_id, 'active': True},
             {'$set': {'active': False}}
         )
 
-    def get_test_results(self, test_id, lectorer_id):
-        db = self._client.data.tests_results
-        test_results = db.find({
+    def get_latest_test_results(self, test_id: int, lecturer_id: int) -> list:
+        """
+        Get results for latest test
+
+        :param test_id: <int>
+        :param lecturer_id: <int>, lecturer who ran test
+        :return: <list>, list of results
+        """
+        test_results = self._col.find({
             'test_id': test_id,
-            'launched_lectorer_id': lectorer_id
+            'launched_lecturer_id': lecturer_id
         })
         if test_results:
-            test_results = [test_result for test_result in test_results]
+            test_results = list(test_results)
             latest_test_results = max(test_results, key=lambda res: res['timestamp'])
             return latest_test_results['results']
         return []

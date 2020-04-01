@@ -1,8 +1,7 @@
-# pylint: disable=import-error, line-too-long, inconsistent-return-statements, missing-module-docstring, no-else-return
+# pylint: disable=import-error, line-too-long, missing-module-docstring, no-else-return, pointless-string-statement
 import random
 from django.shortcuts import render
 from django.contrib.auth import login, logout, authenticate
-from pymongo.errors import ServerSelectionTimeoutError
 from .decorators import unauthenticated_user, allowed_users
 from .models import Test, Subject, RunningTestsAnswersStorage, TestsResultsStorage, QuestionsStorage
 from .config import MONGO_PORT, MONGO_HOST, MONGO_DBNAME
@@ -37,19 +36,18 @@ def get_tests(request):
             'username': request.user.username
         }
         return render(request, 'main/lecturer/testsPanel.html', info)
-    if request.user.groups.filter(name='student'):
-        if len(running_tests_ids) == 0:
-            info = {
-                'title': 'Доступные тесты отсутствуют',
-                'message': 'Ни один из тестов пока не запущен.',
-                'username': request.user.username,
-            }
-            return render(request, 'main/student/info.html', info)
+    if len(running_tests_ids) == 0:
         info = {
-            'tests': [Test.objects.get(id=_id) for _id in running_tests_ids],
-            'username': request.user.username
+            'title': 'Доступные тесты отсутствуют',
+            'message': 'Ни один из тестов пока не запущен.',
+            'username': request.user.username,
         }
-        return render(request, 'main/student/tests.html', info)
+        return render(request, 'main/student/info.html', info)
+    info = {
+        'tests': [Test.objects.get(id=_id) for _id in running_tests_ids],
+        'username': request.user.username
+    }
+    return render(request, 'main/student/tests.html', info)
 
 
 def index(request):
@@ -102,7 +100,7 @@ def run_test_result(request):
 @allowed_users(allowed_roles=['lecturer'])
 def add_test(request):
     """
-    Displays page with an empty form for filling out information about the test
+    Displays page with an empty form for filling out information about new test
     """
     info = {
         'subjects': list(Subject.objects.all()),
@@ -129,7 +127,7 @@ def add_test_result(request):
     test.save()
     info = {
         'title': 'Новый тест',
-        'message': f'Тест {test.name} по предмету {subject} успешно добавлен.',
+        'message': 'Тест %s по предмету %s успешно добавлен.' % (test.name, subject),
         'username': request.user.username,
     }
     return render(request, 'main/lecturer/info.html', info)
@@ -139,28 +137,28 @@ def add_test_result(request):
 @allowed_users(allowed_roles=['lecturer'])
 def get_running_tests(request):
     """
-    Displays page with running tests
+    Displays page with running lecturer's tests
     """
     mdb = TestsResultsStorage.connect_to_mongodb(
         host=MONGO_HOST,
         port=MONGO_PORT,
         db_name=MONGO_DBNAME
     )
-    running_tests_ids = mdb.get_running_tests()
-    lectorers_tests = Test.objects.filter(author__username=request.user.username)
-    running_tests = list(filter(lambda test: test.id in running_tests_ids, lectorers_tests))
+    running_tests_ids = mdb.get_running_tests_ids()
+    lecturers_tests = Test.objects.filter(author__username=request.user.username)
+    running_lecturers_tests = list(filter(lambda item: item.id in running_tests_ids, lecturers_tests))
     tests = []
-    for test in running_tests:
-        results = mdb.get_test_results(
+    for test in running_lecturers_tests:
+        results = mdb.get_running_test_results(
             test_id=test.id,
-            lectorer_id=request.user.id
+            lecturer_id=request.user.id
         )
         tests.append({
             'name': test.name,
             'description': test.description,
             'tasks_num': test.tasks_num,
             'duration': test.duration,
-            'students_complite_num': len(results)
+            'finished_students_num': len(results)
         })
 
     info = {
@@ -173,31 +171,37 @@ def get_running_tests(request):
 @unauthenticated_user
 @allowed_users(allowed_roles=['lecturer'])
 def stop_running_test(request):
+    """
+    Displays page with results of passing stopped test
+    """
     test = Test.objects.get(name=request.POST['test_name'])
-    mdb = MongoDB(
+    mdb = TestsResultsStorage.connect_to_mongodb(
         host=MONGO_HOST,
-        port=MONGO_PORT
+        port=MONGO_PORT,
+        db_name=MONGO_DBNAME
     )
-    results = mdb.get_test_results(
+    results = mdb.get_running_test_results(
         test_id=test.id,
-        lectorer_id=request.user.id
+        lecturer_id=request.user.id
     )
-    mdb.stop_test(
+    mdb.stop_running_test(
         test_id=test.id,
-        lectorer_id=request.user.id
+        lecturer_id=request.user.id
     )
     info = {
         'test': test,
         'results': results,
         'username': request.user.username,
     }
-    print(info)
     return render(request, 'main/lecturer/testingResults.html', info)
 
 
 @unauthenticated_user
 @allowed_users(allowed_roles=['lecturer'])
 def edit_test(request):
+    """
+    Displays page with all lecturer's tests
+    """
     info = {
         'tests': list(Test.objects.filter(author__username=request.user.username)),
         'username': request.user.username
@@ -208,14 +212,12 @@ def edit_test(request):
 @unauthenticated_user
 @allowed_users(allowed_roles=['lecturer'])
 def edit_test_result(request):
-    mdb = MongoDB(
-        host=MONGO_HOST,
-        port=MONGO_PORT
-    )
-    question = mdb.get_questions(test_id=1)
+    """
+    Displays page with result of editing test
+    """
     info = {
         'title': 'Окно редактирования теста',
-        'message': f"""Пока здесь будет пример вопроса:\n{question}""",
+        'message': 'Coming soon...',
         'username': request.user.username,
     }
     return render(request, 'main/lecturer/info.html', info)
@@ -224,6 +226,9 @@ def edit_test_result(request):
 @unauthenticated_user
 @allowed_users(allowed_roles=['lecturer'])
 def add_question(request):
+    """
+    Displays page with an empty form for filling out information about new question
+    """
     info = {
         'tests': list(Test.objects.filter(author__username=request.user.username)),
         'username': request.user.username
@@ -234,49 +239,54 @@ def add_question(request):
 @unauthenticated_user
 @allowed_users(allowed_roles=['lecturer'])
 def add_question_result(request):
+    """
+    Displays page with result of adding new question
+    """
     test = Test.objects.get(name=request.POST['test'])
     question = {
         'formulation': request.POST['question'],
         'tasks_num': request.POST['tasks_num'],
-        'multiselect': True if 'multiselect' in request.POST else False,
-        'with_images': True if 'with_images' in request.POST else False,
+        'multiselect': 'multiselect' in request.POST,
+        'with_images': 'with_images' in request.POST,
         'options': []
     }
+    print(request.POST)
     try:
-        options = {request.POST[key]: int(key.split('_')[1]) for key in request.POST if 'option_' in key}
-        # TODO: images - where store?
+        """
+            request.POST:
+            - option_{i} - possible answer
+            - is_true_{t} - if exists in request.POST then option_{t} is true
+        """
+        options = {
+            request.POST[key]: int(key.split('_')[1])
+            for key in request.POST if 'option_' in key
+        }
+        # images - where store?
         if question['multiselect']:
             true_options = [int(key.split('_')[2]) for key in request.POST if 'is_true_' in key]
         else:
             true_options = [int(request.POST['is_true'])]
-        for option in options:
+        for option_num in options:
             question['options'].append({
-                'option': option,
-                'is_true': True if options[option] in true_options else False
+                'option': option_num,
+                'is_true': options[option_num] in true_options
             })
-        mdb = MongoDB(
+        mdb = QuestionsStorage.connect_to_mongodb(
             host=MONGO_HOST,
-            port=MONGO_PORT
+            port=MONGO_PORT,
+            db_name=MONGO_DBNAME
         )
-        mdb.add_question(
+        mdb.add_one(
             question=question,
             test_id=test.id
         )
     except KeyError:
         info = {
             'title': 'Ошибка',
-            'message': 'Форма некоректно заполнена',
+            'message': 'Форма некорректно заполнена',
             'username': request.user.username,
         }
         return render(request, 'main/lecturer/info.html', info)
-    except ServerSelectionTimeoutError as e:
-        info = {
-            'title': 'Ошибка',
-            'message': 'СУБД MongoDB не подключена: %s' % e,
-            'username': request.user.username,
-        }
-        return render(request, 'main/lecturer/info.html', info)
-
     info = {
         'title': 'Новый вопрос',
         'message': "Вопрос '%s' к тесту '%s' успешно добавлен." % (question['formulation'], test.name),
@@ -288,6 +298,9 @@ def add_question_result(request):
 @unauthenticated_user
 @allowed_users(allowed_roles=['student'])
 def get_marks(request):
+    """
+    Displays page with students marks
+    """
     info = {
         'username': request.user.username
     }
@@ -297,33 +310,39 @@ def get_marks(request):
 @unauthenticated_user
 @allowed_users(allowed_roles=['student'])
 def run_test(request):
+    """
+    Displays page with test for student
+    """
     test = list(Test.objects.filter(name=request.POST['test_name']))[0]
-
-    mdb = MongoDB(
+    mdb = QuestionsStorage.connect_to_mongodb(
         host=MONGO_HOST,
-        port=MONGO_PORT
+        port=MONGO_PORT,
+        db_name=MONGO_DBNAME
     )
-    questions = mdb.get_questions(test_id=test.id)
-
+    questions = mdb.get_many(test_id=test.id)
     if len(questions) < test.tasks_num:
         info = {
             'title': 'Ошибка',
-            'message': 'Вопросов по данной теме меньше %d' % test.tasks_num,
+            'message': 'Вопросов к данному тесту меньше %d' % test.tasks_num,
             'username': request.user.username
         }
         return render(request, 'main/student/info.html', info)
     questions = random.sample(questions, k=test.tasks_num)
-
     right_answers = {}
     for i, question in enumerate(questions):
         right_answers[str(i + 1)] = {
             'right_answers': [i + 1 for i, option in enumerate(question['options']) if option['is_true']],
             'id': str(question['_id'])
         }
-    mdb.add_running_test_answers(
-        user_id=request.user.id,
+    mdb = RunningTestsAnswersStorage.connect_to_mongodb(
+        host=MONGO_HOST,
+        port=MONGO_PORT,
+        db_name=MONGO_DBNAME
+    )
+    mdb.add(
+        right_answers=right_answers,
         test_id=test.id,
-        right_answers=right_answers
+        user_id=request.user.id
     )
     info = {
         'questions': questions, 'test_duration': test.duration,
@@ -337,48 +356,52 @@ def run_test(request):
 @unauthenticated_user
 @allowed_users(allowed_roles=['student'])
 def test_result(request):
-    mdb = MongoDB(
+    """
+    Displays page with results of passing test
+    """
+    mdb = RunningTestsAnswersStorage.connect_to_mongodb(
         host=MONGO_HOST,
-        port=MONGO_PORT
+        port=MONGO_PORT,
+        db_name=MONGO_DBNAME
     )
-    running_test_answers = mdb.get_running_test_answers(user_id=request.user.id)
-    right_answers = running_test_answers['right_answers']
-    test_id = running_test_answers['test_id']
-    mdb.drop_running_test_answers(user_id=request.user.id)
+    passed_test_answers = mdb.get(user_id=request.user.id)
+    right_answers = passed_test_answers['right_answers']
+    test_id = passed_test_answers['test_id']
+    mdb.delete(user_id=request.user.id)
 
-    query_dict = dict(request.POST)
-    query_dict.pop('csrfmiddlewaretoken')
-    time = query_dict.pop('time')[0]
+    response = dict(request.POST)
+    response.pop('csrfmiddlewaretoken')
+    time = response.pop('time')[0]
 
-    answers_dict = {}
-    for key in query_dict:
-        '''
+    answers = {}
+    for key in response:
+        """
             'key' for multiselect: {question_num}_{selected_option}: True/False
             'key' for single: {question_num}: True/False
-        '''
+        """
         buf = key.split('_')
         if len(buf) == 1:
-            answers_dict[buf[0]] = [int(query_dict[key][0])]
+            answers[buf[0]] = [int(answers[key][0])]
         else:
-            if buf[0] in answers_dict:
-                answers_dict[buf[0]].append(buf[1])
+            if buf[0] in answers:
+                answers[buf[0]].append(buf[1])
             else:
-                answers_dict[buf[0]] = [buf[1]]
+                answers[buf[0]] = [buf[1]]
 
     right_answers_count = 0
     questions = []
     for question_num in right_answers:
         questions.append({
             'id': right_answers[question_num]['id'],
-            'selected_answers': answers_dict[question_num],
+            'selected_answers': answers[question_num],
             'right_answers': right_answers[question_num]['right_answers']
         })
-        if right_answers[question_num]['right_answers'] == answers_dict[question_num]:
+        if right_answers[question_num]['right_answers'] == answers[question_num]:
             right_answers_count += 1
             questions[-1]['is_true'] = True
         else:
             questions[-1]['is_true'] = False
-    test_result = {
+    result = {
         'user_id': request.user.id,
         'username': request.user.username,
         'time': time,
@@ -386,8 +409,13 @@ def test_result(request):
         'right_answers_num': right_answers_count,
         'questions': questions
     }
-    mdb.add_test_result(
-        test_result=test_result,
+    mdb = TestsResultsStorage.connect_to_mongodb(
+        host=MONGO_HOST,
+        port=MONGO_PORT,
+        db_name=MONGO_DBNAME
+    )
+    mdb.add_results_to_running_test(
+        test_result=result,
         test_id=test_id
     )
     info = {

@@ -2,7 +2,6 @@
 """
 Models and classes for working with MongoDB and objects stored in it
 """
-
 import time
 from datetime import datetime
 from django.db import models

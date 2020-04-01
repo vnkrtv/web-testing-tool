@@ -1,0 +1,5 @@
+[coverage:run]
+source = ./quizer/main
+
+[html]
+directory = ./htmlcov

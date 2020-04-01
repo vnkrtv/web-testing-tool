@@ -251,7 +251,7 @@ class TestsResultsStorage(MongoDB):
         )
         return obj
 
-    def add_active_test(self, test_id: int, lecturer_id: int):
+    def add_running_test(self, test_id: int, lecturer_id: int):
         """
         Create object in collection corresponding to running test
 

@@ -1,16 +1,16 @@
-# pylint: disable=import-error
+# pylint: disable=import-error, line-too-long, inconsistent-return-statements, missing-module-docstring, no-else-return
+import random
 from django.shortcuts import render
 from django.contrib.auth import login, logout, authenticate
+from pymongo.errors import ServerSelectionTimeoutError
 from .decorators import unauthenticated_user, allowed_users
 from .models import Test, Subject, RunningTestsAnswersStorage, TestsResultsStorage, QuestionsStorage
 from .config import MONGO_PORT, MONGO_HOST, MONGO_DBNAME
-from pymongo.errors import ServerSelectionTimeoutError
-import random
 
 
 def login_page(request):
     """
-    Login page view
+    Displays login page
     """
     logout(request)
     return render(request, 'main/login.html')
@@ -19,7 +19,7 @@ def login_page(request):
 @unauthenticated_user
 def get_tests(request):
     """
-    The page to which the user is redirected after authorization.
+    The page to which user is redirected after successful authorization.
     For lecturer - displays a list of tests that can be run.
     For student - displays a list of running tests
     """
@@ -28,11 +28,12 @@ def get_tests(request):
         port=MONGO_PORT,
         db_name=MONGO_DBNAME
     )
-    running_tests_ids = mdb.get_active_tests_ids()
+    running_tests_ids = mdb.get_running_tests_ids()
     if request.user.groups.filter(name='lecturer'):
         lecturers_tests = Test.objects.filter(author__username=request.user.username)
+        not_running_lecturers_tests = filter(lambda test: test.id not in running_tests_ids, lecturers_tests)
         info = {
-            'tests': list(filter(lambda test: test.id not in running_tests_ids, lecturers_tests)),
+            'tests': list(not_running_lecturers_tests),
             'username': request.user.username
         }
         return render(request, 'main/lecturer/testsPanel.html', info)
@@ -52,22 +53,23 @@ def get_tests(request):
 
 
 def index(request):
+    """
+    In case of successful authorization redirect to get_tests page, else displays login page with error
+    """
     if request.user.is_authenticated:
         return get_tests(request)
     if 'username' not in request.POST or 'password' not in request.POST:
         return render(request, 'main/login.html', {'error': 'Ошибка: неправильное имя пользователя или пароль!'})
-    info = {
-        'username': request.POST['username'],
-        'password': request.POST['password']
-    }
-    user = authenticate(username=info['username'], password=info['password'])
+    user = authenticate(
+        username=request.POST['username'],
+        password=request.POST['password']
+    )
     if user is not None:
         if user.is_active:
             login(request, user)
             return get_tests(request)
         else:
-            return render(request, 'main/login.html', {'error': 'Ошибка: аккаунт пользователя неактивен!'})
-    # Return a 'disabled account' error message
+            return render(request, 'main/login.html', {'error': 'Ошибка: аккаунт пользователя отключен!'})
     else:
         return render(request, 'main/login.html', {'error': 'Ошибка: неправильное имя пользователя или пароль!'})
 
@@ -75,14 +77,18 @@ def index(request):
 @unauthenticated_user
 @allowed_users(allowed_roles=['lecturer'])
 def run_test_result(request):
+    """
+    Displays page with test run result
+    """
     test = Test.objects.get(name=request.POST['test_name'])
-    mdb = MongoDB(
+    mdb = TestsResultsStorage.connect_to_mongodb(
         host=MONGO_HOST,
-        port=MONGO_PORT
+        port=MONGO_PORT,
+        db_name=MONGO_DBNAME
     )
-    mdb.run_test(
+    mdb.add_running_test(
         test_id=test.id,
-        lectorer_id=request.user.id
+        lecturer_id=request.user.id
     )
     info = {
         'title': 'Тест запущен',
@@ -95,6 +101,9 @@ def run_test_result(request):
 @unauthenticated_user
 @allowed_users(allowed_roles=['lecturer'])
 def add_test(request):
+    """
+    Displays page with an empty form for filling out information about the test
+    """
     info = {
         'subjects': list(Subject.objects.all()),
         'username': request.user.username
@@ -105,6 +114,9 @@ def add_test(request):
 @unauthenticated_user
 @allowed_users(allowed_roles=['lecturer'])
 def add_test_result(request):
+    """
+    Displays page with result of adding new test
+    """
     subject = request.POST['subject']
     test = Test(
         name=request.POST['test_name'],
@@ -126,9 +138,13 @@ def add_test_result(request):
 @unauthenticated_user
 @allowed_users(allowed_roles=['lecturer'])
 def get_running_tests(request):
-    mdb = MongoDB(
+    """
+    Displays page with running tests
+    """
+    mdb = TestsResultsStorage.connect_to_mongodb(
         host=MONGO_HOST,
-        port=MONGO_PORT
+        port=MONGO_PORT,
+        db_name=MONGO_DBNAME
     )
     running_tests_ids = mdb.get_running_tests()
     lectorers_tests = Test.objects.filter(author__username=request.user.username)

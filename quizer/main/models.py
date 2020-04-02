@@ -144,14 +144,18 @@ class QuestionsStorage(MongoDB):
         })
         return list(questions) if questions else []
 
-    def delete_one(self, question_formulation: str) -> None:
+    def delete_one(self, question_formulation: str, test_id: int) -> None:
         """
-        Delete question with formulation 'question_formulation'
+        Delete question with formulation 'question_formulation' and 'test_id' test_id
 
         :param question_formulation: <str>
+        :param test_id: <int>
         :return: None
         """
-        self._col.delete_one({'formulation': question_formulation})
+        self._col.delete_one({
+            'test_id': test_id,
+            'formulation': question_formulation
+        })
 
 
 class RunningTestsAnswersStorage(MongoDB):

@@ -18,9 +18,9 @@ def login_page(request):
 @unauthenticated_user
 def get_tests(request):
     """
-    The page to which user is redirected after successful authorization.
-    For lecturer - displays a list of tests that can be run.
-    For student - displays a list of running tests
+    Page to which user is redirected after successful authorization
+    For lecturer - displays list of tests that can be run
+    For student - displays list of running tests
     """
     mdb = TestsResultsStorage.connect_to_mongodb(
         host=MONGO_HOST,

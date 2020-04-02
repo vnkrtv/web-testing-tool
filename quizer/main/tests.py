@@ -220,6 +220,8 @@ class TestsResultsStorageTest(MainTest):
         self.response = self.client.post(reverse('main:run_test_result'), {
             'test_name': self.test.name,
         }, follow=True)
+        self.assertEqual(len(Test.objects.all()), 1)
+        self.assertEqual(len(self.tests_results_storage.get_running_tests_ids()), 1)
 
     def test_running_new_test(self):
         self.assertEqual(self.response.status_code, 200)
@@ -229,9 +231,21 @@ class TestsResultsStorageTest(MainTest):
         self.assertEqual(response.status_code, 200)
         self.assertNotContains(response, self.test.name)
 
+        self.response = self.client.post(reverse('main:stop_running_test'), {
+            'test_name': self.test.name,
+        }, follow=True)
+        self.assertContains(self.response, self.test.name)
+        self.assertEqual(0, len(self.tests_results_storage.get_running_tests_ids()))
+
     def test_get_running_tests_ids_method(self):
         running_tests_ids = self.tests_results_storage.get_running_tests_ids()
         self.assertEqual(running_tests_ids, [self.test.id])
+
+        self.response = self.client.post(reverse('main:stop_running_test'), {
+            'test_name': self.test.name,
+        }, follow=True)
+        self.assertContains(self.response, self.test.name)
+        self.assertEqual(0, len(self.tests_results_storage.get_running_tests_ids()))
 
     def test_running_tests_student_page(self):
         self.client.logout()
@@ -239,12 +253,29 @@ class TestsResultsStorageTest(MainTest):
             username=self.student.username,
             password='top_secret'
         )
-        response = self.client.post(reverse('main:tests'), {}, follow=True)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response, self.test.name)
+        self.response = self.client.post(reverse('main:tests'), {}, follow=True)
+        self.assertEqual(self.response.status_code, 200)
+        self.assertContains(self.response, self.test.name)
+
+        self.client.logout()
+        self.client.login(
+            username=self.lecturer.username,
+            password='top_secret'
+        )
+        self.response = self.client.post(reverse('main:stop_running_test'), {
+            'test_name': self.test.name,
+        }, follow=True)
+        self.assertContains(self.response, self.test.name)
+        self.assertEqual(0, len(self.tests_results_storage.get_running_tests_ids()))
 
     def test_running_tests_lecturer_page(self):
         self.response = self.client.post(reverse('main:running_tests'), {}, follow=True)
 
         self.assertEqual(self.response.status_code, 200)
         self.assertContains(self.response, self.test.name)
+
+        self.response = self.client.post(reverse('main:stop_running_test'), {
+            'test_name': self.test.name,
+        }, follow=True)
+        self.assertContains(self.response, self.test.name)
+        self.assertEqual(0, len(self.tests_results_storage.get_running_tests_ids()))

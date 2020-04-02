@@ -231,20 +231,20 @@ class TestsResultsStorageTest(MainTest):
         self.assertEqual(response.status_code, 200)
         self.assertNotContains(response, self.test.name)
 
-        self.response = self.client.post(reverse('main:stop_running_test'), {
+        response = self.client.post(reverse('main:stop_running_test'), {
             'test_name': self.test.name,
         }, follow=True)
-        self.assertContains(self.response, self.test.name)
+        self.assertContains(response, self.test.name)
         self.assertEqual(0, len(self.tests_results_storage.get_running_tests_ids()))
 
     def test_get_running_tests_ids_method(self):
         running_tests_ids = self.tests_results_storage.get_running_tests_ids()
         self.assertEqual(running_tests_ids, [self.test.id])
 
-        self.response = self.client.post(reverse('main:stop_running_test'), {
+        response = self.client.post(reverse('main:stop_running_test'), {
             'test_name': self.test.name,
         }, follow=True)
-        self.assertContains(self.response, self.test.name)
+        self.assertContains(response, self.test.name)
         self.assertEqual(0, len(self.tests_results_storage.get_running_tests_ids()))
 
     def test_running_tests_student_page(self):
@@ -253,29 +253,63 @@ class TestsResultsStorageTest(MainTest):
             username=self.student.username,
             password='top_secret'
         )
-        self.response = self.client.post(reverse('main:tests'), {}, follow=True)
-        self.assertEqual(self.response.status_code, 200)
-        self.assertContains(self.response, self.test.name)
+        response = self.client.post(reverse('main:tests'), {}, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, self.test.name)
 
         self.client.logout()
         self.client.login(
             username=self.lecturer.username,
             password='top_secret'
         )
-        self.response = self.client.post(reverse('main:stop_running_test'), {
+        response = self.client.post(reverse('main:stop_running_test'), {
             'test_name': self.test.name,
         }, follow=True)
-        self.assertContains(self.response, self.test.name)
+        self.assertContains(response, self.test.name)
         self.assertEqual(0, len(self.tests_results_storage.get_running_tests_ids()))
 
     def test_running_tests_lecturer_page(self):
-        self.response = self.client.post(reverse('main:running_tests'), {}, follow=True)
+        response = self.client.post(reverse('main:running_tests'), {}, follow=True)
 
-        self.assertEqual(self.response.status_code, 200)
-        self.assertContains(self.response, self.test.name)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, self.test.name)
 
-        self.response = self.client.post(reverse('main:stop_running_test'), {
+        response = self.client.post(reverse('main:stop_running_test'), {
             'test_name': self.test.name,
         }, follow=True)
-        self.assertContains(self.response, self.test.name)
+        self.assertContains(response, self.test.name)
         self.assertEqual(0, len(self.tests_results_storage.get_running_tests_ids()))
+
+
+class TestAddingAndEditingTest(MainTest):
+    def test_student_has_no_access(self):
+        client = Client()
+        client.login(
+            username=self.student.username,
+            password='top_secret'
+        )
+        response = client.post(reverse('main:add_test'), {}, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'You are not permitted to see this page.')
+
+    def test_adding_new_test(self):
+        client = Client()
+        client.login(
+            username=self.lecturer.username,
+            password='top_secret'
+        )
+        response = client.post(reverse('main:add_test'), {}, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Новый тест')
+
+        self.assertEqual(len(Test.objects.all()), 1)
+        response = client.post(reverse('main:add_test_result'), {
+            'subject': self.subject.name,
+            'test_name': 'Second test',
+            'description': 'Description of second test',
+            'tasks_num': 3,
+            'duration': 45
+        }, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Тест %s по предмету %s успешно добавлен.' % ('Second test', self.subject.name))
+        self.assertEqual(len(Test.objects.all()), 2)

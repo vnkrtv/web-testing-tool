@@ -110,7 +110,7 @@ def add_test_result(request):
     subject = request.POST['subject']
     test = Test(
         name=request.POST['test_name'],
-        author=request.user.id,
+        author=request.user,
         subject=Subject.objects.get(name=subject),
         description=request.POST['description'],
         tasks_num=request.POST['tasks_num'],

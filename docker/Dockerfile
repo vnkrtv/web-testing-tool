@@ -18,8 +18,9 @@ RUN python3 -m venv venv \
  && django-admin.py startproject quizer \
  && python3 quizer/manage.py startapp main
 
-# RUN service mongodb start
 COPY quizer /app/quizer
+COPY config.py /app/quizer/quizer/config.py
+COPY config.py /app/quizer/main/config.py
 #RUN . venv/bin/activate \
 # && python3 quizer/manage.py makemigrations \
 # && python3 quizer/manage.py migrate
@@ -33,6 +34,6 @@ COPY quizer /app/quizer
 # && echo 'from django.contrib.auth.models import User; a = User.objects.get(username="admin"); a.groups.add(1); a.save()'  | python3 quizer/manage.py shell
 # && echo 'from django.contrib.auth.models import User; s = User(id=2); s.username = "user"; s.set_password("password"); s.groups.add(2); s.save()' | python3 quizer/manage.py shell
 
-COPY entry_commands.sh /entry_commands.sh
+COPY entry_commands /entry_commands.sh
 EXPOSE 8000
-ENTRYPOINT ["/entry_commands.sh"]
+ENTRYPOINT ["/entry_commands"]

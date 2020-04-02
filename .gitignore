@@ -5,5 +5,4 @@ docker/requirements.txt
 quizer/config/default_config.json
 *.pyc
 000*
-quizer/main/htmlcov/
-.coverage*
+.coverage

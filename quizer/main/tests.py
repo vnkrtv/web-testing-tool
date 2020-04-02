@@ -176,3 +176,38 @@ class AuthorizationTest(MainTest):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Зайти в систему')
+
+
+class AccessRolesTest(MainTest):
+    def test_student_auth(self):
+        client = Client()
+        client.logout()
+        response = client.post(reverse('main:index'), {
+            'username': self.student.username,
+            'password': 'top_secret'
+        }, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Пользователь')
+
+    def test_lecturer_auth(self):
+        client = Client()
+        client.logout()
+        response = client.post(reverse('main:index'), {
+            'username': self.lecturer.username,
+            'password': 'top_secret'
+        }, follow=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Преподаватель')
+
+    def test_anonymous_auth(self):
+        client = Client()
+        client.logout()
+        response = client.post(reverse('main:index'), {
+            'username': 'anonymous',
+            'password': 'anonymous'
+        }, follow=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Зайти в систему')
+

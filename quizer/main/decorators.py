@@ -22,7 +22,7 @@ def allowed_users(allowed_roles: list):
     """
     Checked if user belong to allowed group
 
-    :param allowed_roles: student or lecturer
+    :param allowed_roles: 'student' or 'lecturer'
     """
     def decorator(view_func):
         def wrapper_func(request, *args, **kwargs):

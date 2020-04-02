@@ -1,7 +1,10 @@
-# pylint: disable=import-error, line-too-long, missing-module-docstring, no-else-return, pointless-string-statement
+# pylint: disable=import-error, line-too-long, no-else-return, pointless-string-statement, relative-beyond-top-level
+"""
+Quizer template rendering functions
+"""
 import random
-from django.shortcuts import render
 from django.contrib.auth import login, logout, authenticate
+from django.shortcuts import render
 from .decorators import unauthenticated_user, allowed_users
 from .models import Test, Subject, RunningTestsAnswersStorage, TestsResultsStorage, QuestionsStorage
 from .config import MONGO_PORT, MONGO_HOST, MONGO_DBNAME
@@ -232,7 +235,6 @@ def add_question_result(request):
         'with_images': 'with_images' in request.POST,
         'options': []
     }
-    print(request.POST)
     try:
         """
             request.POST:
@@ -352,12 +354,12 @@ def test_result(request):
     answers = {}
     for key in response:
         """
-            'key' for multiselect: {question_num}_{selected_option}: True/False
-            'key' for single: {question_num}: True/False
+            'key' for multiselect: {question_num}_{selected_option}: ['on']
+            'key' for single: {question_num}: ['{selected_option}']
         """
         buf = key.split('_')
         if len(buf) == 1:
-            answers[buf[0]] = [int(answers[key][0])]
+            answers[buf[0]] = [int(response[key][0])]
         else:
             if buf[0] in answers:
                 answers[buf[0]].append(buf[1])

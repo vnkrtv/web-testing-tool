@@ -250,7 +250,7 @@ class TestsResultsStorage(MongoDB):
             host=host,
             port=port,
             db_name=db_name,
-            collection_name='questions'
+            collection_name='tests_results'
         )
         return obj
 

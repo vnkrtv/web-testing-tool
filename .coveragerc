@@ -1,5 +1,6 @@
 [coverage:run]
 source = ./quizer/main
+omit = manage.py
 
 [html]
 directory = ./htmlcov

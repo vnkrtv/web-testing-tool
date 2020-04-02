@@ -291,7 +291,7 @@ def run_test(request):
     """
     Displays page with test for student
     """
-    test = list(Test.objects.filter(name=request.POST['test_name']))[0]
+    test = Test.objects.get(name=request.POST['test_name'])
     mdb = QuestionsStorage.connect_to_mongodb(
         host=MONGO_HOST,
         port=MONGO_PORT,

@@ -3,3 +3,4 @@ django==2.2.10
 djongo
 bootstrap4
 sqlparse==0.2.4
+coverage

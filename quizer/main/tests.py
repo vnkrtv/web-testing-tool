@@ -45,17 +45,17 @@ class MainTest(TestCase):
         self.questions_storage = QuestionsStorage.connect_to_mongodb(
             host=MONGO_HOST,
             port=MONGO_PORT,
-            db_name='test_' + MONGO_DBNAME
-        )
-        self.tests_results_storage = TestsResultsStorage.connect_to_mongodb(
-            host=MONGO_HOST,
-            port=MONGO_PORT,
-            db_name='test_' + MONGO_DBNAME
+            db_name=MONGO_DBNAME
         )
         self.running_tests_answers_storage = RunningTestsAnswersStorage.connect_to_mongodb(
             host=MONGO_HOST,
             port=MONGO_PORT,
-            db_name='test_' + MONGO_DBNAME
+            db_name=MONGO_DBNAME
+        )
+        self.tests_results_storage = TestsResultsStorage.connect_to_mongodb(
+            host=MONGO_HOST,
+            port=MONGO_PORT,
+            db_name=MONGO_DBNAME
         )
 
         self.questions_storage.add_one(
@@ -210,28 +210,41 @@ class AccessRightsTest(MainTest):
 
 
 class TestsResultsStorageTest(MainTest):
-    def test_running_new_test(self):
-        client = Client()
-        client.login(
-            username=self.student.username,
-            password='top_secret'
-        )
-        response = client.post(reverse('main:run_test_result'), {
-            'test_name': self.test.name,
-        }, follow=True)
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'You are not permitted to see this page.')
-
-    def test_(self):
-        client = Client()
-        client.login(
+    def setUp(self):
+        super().setUp()
+        self.client = Client()
+        self.client.login(
             username=self.lecturer.username,
             password='top_secret'
         )
-        response = client.post(reverse('main:marks'), {
-            'username': self.lecturer.username,
-            'password': 'top_secret'
+        self.response = self.client.post(reverse('main:run_test_result'), {
+            'test_name': self.test.name,
         }, follow=True)
 
+    def test_running_new_test(self):
+        self.assertEqual(self.response.status_code, 200)
+        self.assertContains(self.response, 'Тест запущен')
+
+        response = self.client.post(reverse('main:tests'), {}, follow=True)
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'You are not permitted to see this page.')
+        self.assertNotContains(response, self.test.name)
+
+    def test_get_running_tests_ids_method(self):
+        running_tests_ids = self.tests_results_storage.get_running_tests_ids()
+        self.assertEqual(running_tests_ids, [self.test.id])
+
+    def test_running_tests_student_page(self):
+        self.client.logout()
+        self.client.login(
+            username=self.student.username,
+            password='top_secret'
+        )
+        response = self.client.post(reverse('main:tests'), {}, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response, self.test.name)
+
+    def test_running_tests_lecturer_page(self):
+        self.response = self.client.post(reverse('main:running_tests'), {}, follow=True)
+
+        self.assertEqual(self.response.status_code, 200)
+        self.assertContains(self.response, self.test.name)

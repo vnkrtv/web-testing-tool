@@ -1,24 +1,18 @@
-# pylint:
-from django.test import TestCase, RequestFactory, Client
+# pylint: disable=import-error, invalid-name, too-few-public-methods, relative-beyond-top-level
+from django.test import TestCase, Client
 from django.urls import reverse
-from django.contrib.auth.models import User, AnonymousUser, Group
+from django.contrib.auth.models import User, Group
 from .models import Subject, Test, TestsResultsStorage, RunningTestsAnswersStorage, QuestionsStorage
-from .views import login_page, get_tests, index
-from .views import run_test_result, add_test, add_test_result, get_running_tests, stop_running_test
-from .views import edit_test, edit_test_result, add_question, add_question_result
-from .views import get_marks, run_test, test_result
 from .config import MONGO_HOST, MONGO_PORT, MONGO_DBNAME
 
 
 class MainTest(TestCase):
     def setUp(self):
-        self.factory = RequestFactory()
-
         self.lecturer = User.objects.create_user(
             username='lecturer',
             password='top_secret'
         )
-        self.lecturer_group = Group.objects.create(
+        Group.objects.create(
             id=1,
             name="lecturer"
         )
@@ -28,7 +22,7 @@ class MainTest(TestCase):
             username='user',
             password='top_secret'
         )
-        self.student_group = Group.objects.create(
+        Group.objects.create(
             id=2,
             name="student"
         )
@@ -175,39 +169,69 @@ class AuthorizationTest(MainTest):
         }, follow=True)
 
         self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Ошибка: неправильное имя пользователя или пароль!')
+
+    def test_anonymous_redirect(self):
+        client = Client()
+        client.logout()
+        response = client.get(reverse('main:tests'), follow=True)
+
+        self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Зайти в систему')
 
 
-class AccessRolesTest(MainTest):
-    def test_student_auth(self):
+class AccessRightsTest(MainTest):
+    def test_student_access(self):
         client = Client()
-        client.logout()
-        response = client.post(reverse('main:index'), {
+        client.login(
+            username=self.student.username,
+            password='top_secret'
+        )
+        response = client.post(reverse('main:add_question'), {
             'username': self.student.username,
             'password': 'top_secret'
         }, follow=True)
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Пользователь')
+        self.assertContains(response, 'You are not permitted to see this page.')
 
-    def test_lecturer_auth(self):
+    def test_lecturer_access(self):
         client = Client()
-        client.logout()
-        response = client.post(reverse('main:index'), {
+        client.login(
+            username=self.lecturer.username,
+            password='top_secret'
+        )
+        response = client.post(reverse('main:marks'), {
             'username': self.lecturer.username,
             'password': 'top_secret'
         }, follow=True)
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Преподаватель')
+        self.assertContains(response, 'You are not permitted to see this page.')
 
-    def test_anonymous_auth(self):
+
+class TestsResultsStorageTest(MainTest):
+    def test_running_new_test(self):
         client = Client()
-        client.logout()
-        response = client.post(reverse('main:index'), {
-            'username': 'anonymous',
-            'password': 'anonymous'
+        client.login(
+            username=self.student.username,
+            password='top_secret'
+        )
+        response = client.post(reverse('main:run_test_result'), {
+            'test_name': self.test.name,
+        }, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'You are not permitted to see this page.')
+
+    def test_(self):
+        client = Client()
+        client.login(
+            username=self.lecturer.username,
+            password='top_secret'
+        )
+        response = client.post(reverse('main:marks'), {
+            'username': self.lecturer.username,
+            'password': 'top_secret'
         }, follow=True)
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Зайти в систему')
-
+        self.assertContains(response, 'You are not permitted to see this page.')

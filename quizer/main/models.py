@@ -178,7 +178,7 @@ class RunningTestsAnswersStorage(MongoDB):
             host=host,
             port=port,
             db_name=db_name,
-            collection_name='questions'
+            collection_name='running_tests_answers'
         )
         return obj
 

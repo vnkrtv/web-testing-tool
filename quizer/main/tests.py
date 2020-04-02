@@ -1,5 +1,6 @@
 # pylint:
-from django.test import TestCase, RequestFactory
+from django.test import TestCase, RequestFactory, Client
+from django.urls import reverse
 from django.contrib.auth.models import User, AnonymousUser, Group
 from .models import Subject, Test, TestsResultsStorage, RunningTestsAnswersStorage, QuestionsStorage
 from .views import login_page, get_tests, index
@@ -145,32 +146,33 @@ class QuestionsStorageTest(MainTest):
 
 class AuthorizationTest(MainTest):
     def test_student_auth(self):
-        request = self.factory.post('main:index', {
+        client = Client()
+        client.logout()
+        response = client.post(reverse('main:index'), {
             'username': self.student.username,
-            'password': self.student.password
-        })
-
-        response = index(request)
+            'password': 'top_secret'
+        }, follow=True)
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Слушатель')
+        self.assertContains(response, 'Пользователь')
 
     def test_lecturer_auth(self):
-        request = self.factory.post('main:index', {
+        client = Client()
+        client.logout()
+        response = client.post(reverse('main:index'), {
             'username': self.lecturer.username,
-            'password': self.lecturer.password
-        })
+            'password': 'top_secret'
+        }, follow=True)
 
-        response = index(request)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Преподаватель')
 
     def test_anonymous_auth(self):
-        request = self.factory.post('main:index', {
+        client = Client()
+        client.logout()
+        response = client.post(reverse('main:index'), {
             'username': 'anonymous',
             'password': 'anonymous'
-        })
-        request.user =
+        }, follow=True)
 
-        response = index(request)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Зайти в систему')

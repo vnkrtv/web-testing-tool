@@ -145,25 +145,32 @@ class QuestionsStorageTest(MainTest):
 
 class AuthorizationTest(MainTest):
     def test_student_auth(self):
-        request = self.factory.get('/')
-        request.POST['username'] = self.student.username
-        request.POST['password'] = self.student.password
+        request = self.factory.post('main:index', {
+            'username': self.student.username,
+            'password': self.student.password
+        })
 
         response = index(request)
-        self.assertRedirects(response, '/home')
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Слушатель')
 
     def test_lecturer_auth(self):
-        request = self.factory.get('/')
-        request.POST['username'] = self.student.username
-        request.POST['password'] = self.student.password
+        request = self.factory.post('main:index', {
+            'username': self.lecturer.username,
+            'password': self.lecturer.password
+        })
 
         response = index(request)
-        self.assertRedirects(response, '/home')
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Преподаватель')
 
     def test_anonymous_auth(self):
-        request = self.factory.get('/')
-        request.POST['username'] = self.student.username
-        request.POST['password'] = self.student.password
+        request = self.factory.post('main:index', {
+            'username': 'anonymous',
+            'password': 'anonymous'
+        })
+        request.user =
 
         response = index(request)
-        self.assertRedirects(response, '/')
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Зайти в систему')

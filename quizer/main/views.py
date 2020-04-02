@@ -33,19 +33,16 @@ def get_tests(request):
         not_running_lecturers_tests = filter(lambda test: test.id not in running_tests_ids, lecturers_tests)
         info = {
             'tests': list(not_running_lecturers_tests),
-            'username': request.user.username
         }
         return render(request, 'main/lecturer/testsPanel.html', info)
     if len(running_tests_ids) == 0:
         info = {
             'title': 'Доступные тесты отсутствуют',
             'message': 'Ни один из тестов пока не запущен.',
-            'username': request.user.username,
         }
         return render(request, 'main/student/info.html', info)
     info = {
         'tests': [Test.objects.get(id=_id) for _id in running_tests_ids],
-        'username': request.user.username
     }
     return render(request, 'main/student/tests.html', info)
 
@@ -91,7 +88,6 @@ def run_test_result(request):
     info = {
         'title': 'Тест запущен',
         'message': "Состояние его прохождения можно отследить во вкладке 'Запущенные тесты'",
-        'username': request.user.username,
     }
     return render(request, 'main/lecturer/info.html', info)
 
@@ -102,11 +98,7 @@ def add_test(request):
     """
     Displays page with an empty form for filling out information about new test
     """
-    info = {
-        'subjects': list(Subject.objects.all()),
-        'username': request.user.username
-    }
-    return render(request, 'main/lecturer/addTest.html', info)
+    return render(request, 'main/lecturer/addTest.html', {'subjects': list(Subject.objects.all())})
 
 
 @unauthenticated_user
@@ -128,7 +120,6 @@ def add_test_result(request):
     info = {
         'title': 'Новый тест',
         'message': 'Тест %s по предмету %s успешно добавлен.' % (test.name, subject),
-        'username': request.user.username,
     }
     return render(request, 'main/lecturer/info.html', info)
 
@@ -160,12 +151,7 @@ def get_running_tests(request):
             'duration': test.duration,
             'finished_students_num': len(results)
         })
-
-    info = {
-        'tests': tests,
-        'username': request.user.username
-    }
-    return render(request, 'main/lecturer/runningTests.html', info)
+    return render(request, 'main/lecturer/runningTests.html', {'tests': tests})
 
 
 @unauthenticated_user
@@ -191,7 +177,6 @@ def stop_running_test(request):
     info = {
         'test': test,
         'results': results,
-        'username': request.user.username,
     }
     return render(request, 'main/lecturer/testingResults.html', info)
 
@@ -204,7 +189,6 @@ def edit_test(request):
     """
     info = {
         'tests': list(Test.objects.filter(author__username=request.user.username)),
-        'username': request.user.username
     }
     return render(request, 'main/lecturer/editTest.html', info)
 
@@ -218,7 +202,6 @@ def edit_test_result(request):
     info = {
         'title': 'Окно редактирования теста',
         'message': 'Coming soon...',
-        'username': request.user.username,
     }
     return render(request, 'main/lecturer/info.html', info)
 
@@ -231,7 +214,6 @@ def add_question(request):
     """
     info = {
         'tests': list(Test.objects.filter(author__username=request.user.username)),
-        'username': request.user.username
     }
     return render(request, 'main/lecturer/addQuestion.html', info)
 
@@ -284,13 +266,11 @@ def add_question_result(request):
         info = {
             'title': 'Ошибка',
             'message': 'Форма некорректно заполнена',
-            'username': request.user.username,
         }
         return render(request, 'main/lecturer/info.html', info)
     info = {
         'title': 'Новый вопрос',
         'message': "Вопрос '%s' к тесту '%s' успешно добавлен." % (question['formulation'], test.name),
-        'username': request.user.username,
     }
     return render(request, 'main/lecturer/info.html', info)
 
@@ -301,9 +281,7 @@ def get_marks(request):
     """
     Displays page with students marks
     """
-    info = {
-        'username': request.user.username
-    }
+    info = {}
     return render(request, 'main/student/marks.html', info)
 
 
@@ -324,7 +302,6 @@ def run_test(request):
         info = {
             'title': 'Ошибка',
             'message': 'Вопросов к данному тесту меньше %d' % test.tasks_num,
-            'username': request.user.username
         }
         return render(request, 'main/student/info.html', info)
     questions = random.sample(questions, k=test.tasks_num)
@@ -348,7 +325,6 @@ def run_test(request):
         'questions': questions, 'test_duration': test.duration,
         'test_name': test.name,
         'right_answers': right_answers,
-        'username': request.user.username
     }
     return render(request, 'main/student/runTest.html', info)
 
@@ -418,8 +394,4 @@ def test_result(request):
         test_result=result,
         test_id=test_id
     )
-    info = {
-        'right_answers_count': right_answers_count,
-        'username': request.user.username
-    }
-    return render(request, 'main/student/testResult.html', info)
+    return render(request, 'main/student/testResult.html', {'right_answers_count': right_answers_count})

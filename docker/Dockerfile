@@ -19,8 +19,6 @@ RUN python3 -m venv venv \
  && python3 quizer/manage.py startapp main
 
 COPY quizer /app/quizer
-COPY config.py /app/quizer/quizer/config.py
-COPY config.py /app/quizer/main/config.py
 #RUN . venv/bin/activate \
 # && python3 quizer/manage.py makemigrations \
 # && python3 quizer/manage.py migrate

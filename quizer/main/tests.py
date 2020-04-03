@@ -1,4 +1,9 @@
 # pylint: disable=import-error, invalid-name, too-few-public-methods, relative-beyond-top-level
+"""
+Main app tests, covered views.py and models.py.
+Tests should be started using manage.py, because at the same time MONGO_DBNAME
+value is replaced with 'test_${MONGO_DBNAME}' in config.py during the test run
+"""
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.auth.models import User, Group
@@ -7,7 +12,19 @@ from .config import MONGO_HOST, MONGO_PORT, MONGO_DBNAME
 
 
 class MainTest(TestCase):
-    def setUp(self):
+    """
+    Base class for all tests
+    """
+
+    def setUp(self) -> None:
+        """
+        Add objects to temporary test 'test_${MONGO_DBNAME} database:
+        - groups 'lecturer' and 'student'
+        - 'lecturer' user and 'student' user
+        - study subject 'Subject'
+        - Subject 'Subject' test 'Hard test'
+        - 2 questions for 'Hard test'
+        """
         self.lecturer = User.objects.create_user(
             username='lecturer',
             password='top_secret'
@@ -103,7 +120,15 @@ class MainTest(TestCase):
 
 
 class QuestionsStorageTest(MainTest):
-    def test_adding_and_getting_questions(self):
+    """
+    Tests for QuestionsStorage class which provides work
+    with 'questions' collection in database
+    """
+
+    def test_adding_and_getting_questions(self) -> None:
+        """
+        Test for 'add_one' and 'get_many' QuestionsStorage methods
+        """
         questions = self.questions_storage.get_many(test_id=self.test.id)
         question = {
             'formulation': 'Test question',
@@ -128,7 +153,10 @@ class QuestionsStorageTest(MainTest):
         updated_questions = self.questions_storage.get_many(test_id=self.test.id)
         self.assertEqual(updated_questions, questions + [question])
 
-    def test_deleting_questions(self):
+    def test_deleting_questions(self) -> None:
+        """
+        Test for 'delete_one' and 'get_many' QuestionsStorage methods
+        """
         questions = self.questions_storage.get_many(test_id=self.test.id)
         self.questions_storage.delete_one(
             question_formulation='First question with multiselect',
@@ -139,7 +167,14 @@ class QuestionsStorageTest(MainTest):
 
 
 class AuthorizationTest(MainTest):
-    def test_student_auth(self):
+    """
+    Tests for authorization system in the application
+    """
+
+    def test_student_auth(self) -> None:
+        """
+        Tests user belonging to 'student' group authorization
+        """
         client = Client()
         client.logout()
         response = client.post(reverse('main:index'), {
@@ -149,7 +184,7 @@ class AuthorizationTest(MainTest):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Пользователь')
 
-    def test_lecturer_auth(self):
+    def test_lecturer_auth(self) -> None:
         client = Client()
         client.logout()
         response = client.post(reverse('main:index'), {
@@ -160,7 +195,7 @@ class AuthorizationTest(MainTest):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Преподаватель')
 
-    def test_anonymous_auth(self):
+    def test_anonymous_auth(self) -> None:
         client = Client()
         client.logout()
         response = client.post(reverse('main:index'), {
@@ -171,7 +206,7 @@ class AuthorizationTest(MainTest):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Ошибка: неправильное имя пользователя или пароль!')
 
-    def test_anonymous_redirect(self):
+    def test_anonymous_redirect(self) -> None:
         client = Client()
         client.logout()
         response = client.get(reverse('main:tests'), follow=True)
@@ -181,7 +216,7 @@ class AuthorizationTest(MainTest):
 
 
 class AccessRightsTest(MainTest):
-    def test_student_access(self):
+    def test_student_access(self) -> None:
         client = Client()
         client.login(
             username=self.student.username,
@@ -194,7 +229,7 @@ class AccessRightsTest(MainTest):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'You are not permitted to see this page.')
 
-    def test_lecturer_access(self):
+    def test_lecturer_access(self) -> None:
         client = Client()
         client.login(
             username=self.lecturer.username,
@@ -210,7 +245,7 @@ class AccessRightsTest(MainTest):
 
 
 class TestAddingAndEditingTest(MainTest):
-    def test_student_has_no_access(self):
+    def test_student_has_no_access(self) -> None:
         client = Client()
         client.login(
             username=self.student.username,
@@ -220,7 +255,7 @@ class TestAddingAndEditingTest(MainTest):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'You are not permitted to see this page.')
 
-    def test_adding_new_test(self):
+    def test_adding_new_test(self) -> None:
         client = Client()
         client.login(
             username=self.lecturer.username,
@@ -243,7 +278,7 @@ class TestAddingAndEditingTest(MainTest):
         self.assertContains(response, message)
         self.assertEqual(len(Test.objects.all()), 2)
 
-    def test_editing_test(self):
+    def test_editing_test(self) -> None:
         client = Client()
         client.login(
             username=self.lecturer.username,
@@ -255,7 +290,7 @@ class TestAddingAndEditingTest(MainTest):
 
 
 class AddQuestionTest(MainTest):
-    def test_student_has_no_access(self):
+    def test_student_has_no_access(self) -> None:
         client = Client()
         client.login(
             username=self.student.username,
@@ -265,7 +300,7 @@ class AddQuestionTest(MainTest):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'You are not permitted to see this page.')
 
-    def test_adding_question(self):
+    def test_adding_question(self) -> None:
         client = Client()
         client.login(
             username=self.lecturer.username,
@@ -294,7 +329,7 @@ class AddQuestionTest(MainTest):
 
 
 class TestsResultsStorageTest(MainTest):
-    def setUp(self):
+    def setUp(self) -> None:
         super().setUp()
         self.client = Client()
         self.client.login(
@@ -307,7 +342,7 @@ class TestsResultsStorageTest(MainTest):
         self.assertEqual(len(Test.objects.all()), 1)
         self.assertEqual(len(self.tests_results_storage.get_running_tests_ids()), 1)
 
-    def test_running_new_test(self):
+    def test_running_new_test(self) -> None:
         self.assertEqual(self.response.status_code, 200)
         self.assertContains(self.response, 'Тест запущен')
 
@@ -321,7 +356,7 @@ class TestsResultsStorageTest(MainTest):
         self.assertContains(response, self.test.name)
         self.assertEqual(0, len(self.tests_results_storage.get_running_tests_ids()))
 
-    def test_get_running_tests_ids_method(self):
+    def test_get_running_tests_ids_method(self) -> None:
         running_tests_ids = self.tests_results_storage.get_running_tests_ids()
         self.assertEqual(running_tests_ids, [self.test.id])
 
@@ -331,7 +366,7 @@ class TestsResultsStorageTest(MainTest):
         self.assertContains(response, self.test.name)
         self.assertEqual(0, len(self.tests_results_storage.get_running_tests_ids()))
 
-    def test_running_tests_student_page(self):
+    def test_running_tests_student_page(self) -> None:
         self.client.logout()
         self.client.login(
             username=self.student.username,
@@ -352,7 +387,7 @@ class TestsResultsStorageTest(MainTest):
         self.assertContains(response, self.test.name)
         self.assertEqual(0, len(self.tests_results_storage.get_running_tests_ids()))
 
-    def test_running_tests_lecturer_page(self):
+    def test_running_tests_lecturer_page(self) -> None:
         response = self.client.post(reverse('main:running_tests'), {}, follow=True)
 
         self.assertEqual(response.status_code, 200)
@@ -366,7 +401,7 @@ class TestsResultsStorageTest(MainTest):
 
 
 class RunningTestsAnswersStorageTest(TestsResultsStorageTest):
-    def test_students_available_tests_page(self):
+    def test_students_available_tests_page(self) -> None:
         client = Client()
         client.login(
             username=self.student.username,
@@ -388,7 +423,7 @@ class RunningTestsAnswersStorageTest(TestsResultsStorageTest):
         self.assertContains(response, self.test.name)
         self.assertEqual(0, len(self.tests_results_storage.get_running_tests_ids()))
 
-    def test_student_running_test_page(self):
+    def test_student_running_test_page(self) -> None:
         client = Client()
         client.login(
             username=self.student.username,

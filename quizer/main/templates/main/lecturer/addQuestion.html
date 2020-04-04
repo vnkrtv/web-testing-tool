@@ -3,7 +3,7 @@
 {% block content %}
  	<div class='jumbotron'>
  		<h2>Новый вопрос</h2><br>
- 		<form action="{% url 'main:add_question_result' %}" method="post">
+ 		<form action="{% url 'main:add_question_result' %}" enctype="multipart/form-data" method="post">
  		{% csrf_token %}
  		  <div class="form-row">
 		     <div class="col-md-4 mb-3">
@@ -108,10 +108,10 @@
 				option_input.id = `option_${i}`;
 				option_input.name = `option_${i}`;
 				option_input.required = 'required';
+				option_input.accept="image/*"
 
 				option_label.appendChild(option_input);
 				fileContainer.appendChild(option_label);
-
 
 				const radioContainer = document.createElement('div');
 				radioContainer.className = 'custom-control custom-checkbox my-1 mr-sm-2';
@@ -208,6 +208,7 @@
 				option_input.id = `option_${i}`;
 				option_input.name = `option_${i}`;
 				option_input.required = 'required';
+				option_input.accept="image/*"
 
 				option_label.appendChild(option_input);
 				fileContainer.appendChild(option_label);

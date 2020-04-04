@@ -1,5 +1,6 @@
 venv/
 .idea/
+media/
 docker/quizer
 docker/requirements.txt
 quizer/config/default_config.json

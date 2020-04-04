@@ -3,8 +3,12 @@
 Quizer template rendering functions
 """
 import random
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
+from django.conf import settings
 from django.contrib.auth import login, logout, authenticate
 from django.shortcuts import render
+from bson import ObjectId
 from .decorators import unauthenticated_user, allowed_users
 from .models import Test, Subject, RunningTestsAnswersStorage, TestsResultsStorage, QuestionsStorage
 from .config import MONGO_PORT, MONGO_HOST, MONGO_DBNAME
@@ -216,7 +220,7 @@ def add_question(request):
     Displays page with an empty form for filling out information about new question
     """
     info = {
-        'tests': list(Test.objects.filter(author__username=request.user.username)),
+        'tests': list(Test.objects.filter(author__username=request.user.username))
     }
     return render(request, 'main/lecturer/addQuestion.html', info)
 
@@ -229,6 +233,7 @@ def add_question_result(request):
     """
     test = Test.objects.get(name=request.POST['test'])
     question = {
+        '_id': ObjectId(),
         'formulation': request.POST['question'],
         'tasks_num': request.POST['tasks_num'],
         'multiselect': 'multiselect' in request.POST,
@@ -238,22 +243,38 @@ def add_question_result(request):
     try:
         """
             request.POST:
-            - option_{i} - possible answer
-            - is_true_{t} - if exists in request.POST then option_{t} is true
+            - if not 'with_images':
+                - option_{i} = {option} - possible answer
+            - if 'multiselect':
+                - is_true_{i} = 'on' - if exists in request.POST then option_{i} is true
+            - if single answer:
+                - is_true = {i} -  option_{i} is true
+            request.FILES:
+            - if 'with_images':
+                - option_{i} - <InMemoryUploadedFile>(image option)
         """
-        options = {
-            request.POST[key]: int(key.split('_')[1])
-            for key in request.POST if 'option_' in key
-        }
-        # images - where store?
         if question['multiselect']:
-            true_options = [int(key.split('_')[2]) for key in request.POST if 'is_true_' in key]
+            right_options_nums = [key.split('_')[2] for key in request.POST if 'is_true_' in key]
         else:
-            true_options = [int(request.POST['is_true'])]
+            right_options_nums = [request.POST['is_true']]
+        if question['with_images']:
+            options = {
+                key.split('_')[1]: request.FILES[key]
+                for key in request.FILES if 'option_' in key
+            }
+            for option_num in options:
+                path = f'{test.subject.name}/{test.name}/{question["_id"]}/{option_num}.jpg'
+                default_storage.save(path, ContentFile(options[option_num].read()))
+                options[option_num] = path
+        else:
+            options = {
+                key.split('_')[1]: request.POST[key]
+                for key in request.POST if 'option_' in key
+            }
         for option_num in options:
             question['options'].append({
-                'option': option_num,
-                'is_true': options[option_num] in true_options
+                'option': options[option_num],
+                'is_true': option_num in right_options_nums
             })
         mdb = QuestionsStorage.connect_to_mongodb(
             host=MONGO_HOST,
@@ -324,7 +345,8 @@ def run_test(request):
         user_id=request.user.id
     )
     info = {
-        'questions': questions, 'test_duration': test.duration,
+        'questions': questions,
+        'test_duration': test.duration,
         'test_name': test.name,
         'right_answers': right_answers,
     }

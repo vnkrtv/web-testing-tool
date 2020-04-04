@@ -9,12 +9,22 @@ Remove-Item -Recurse .\quizer
 Write-Host "===========================================Start loading requirements==========================================="
 pip install --no-cache-dir -r requirements.txt
 Write-Host "=========================================Successfully loaded requeirments======================================="
+
 django-admin startproject quizer
+$SECRET_KEY = Get-Content .\quizer\quizer\settings.py | Where-Object {$_.startsWith('SECRET_KEY') } | ForEach-Object { $_.split("'") }
+$SECRET_KEY = $SECRET_KEY[1]
+
 Set-Location quizer
 python manage.py startapp main
 Set-Location ..
 Remove-Item -Recurse quizer
 Copy-Item -Path .\tmp\quizer -Destination .\quizer -Recurse
+
+$OLD_SECRET_KEY = Get-Content .\quizer\quizer\settings.py | Where-Object {$_.startsWith('SECRET_KEY') } | ForEach-Object { $_.split("'") }
+$OLD_SECRET_KEY = $OLD_SECRET_KEY[1]
+Get-Content ./settings.py | ForEach-Object { If ( $_.startsWith('SECRET_KEY') ) { $_.replace($SECRET_KEY, 'govna') >> tmp } Else { $_ >> tmp } }
+Move-Item -Path .\tmp -Destination .\quizer\quizer\settings.py
+
 Remove-Item -Recurse tmp
 Write-Host "===========================================Initialized django app==============================================="
 Write-Host "==========================================Enter configuration data============================================="

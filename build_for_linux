@@ -8,18 +8,21 @@ rm -r quizer
 echo "===========================================Start loading requirements==========================================="
 pip install --no-cache-dir -r requirements.txt
 echo "=========================================Successfully loaded requeirments======================================="
+
 django-admin startproject quizer
 SECRET_KEY=$(cat ./quizer/quizer/settings.py | grep SECRET_KEY | cut -d "'" -f 2)
+
 cd quizer
 python manage.py startapp main
 cd ..
 rm -r quizer
 cp -r tmp/quizer quizer
+
 OLD_SECRET_KEY=$(cat ./quizer/quizer/settings.py | grep SECRET_KEY | cut -d "'" -f 2)
 NEW_SETTINGS="$(echo "$(cat ./quizer/quizer/settings.py)" | sed "s/${OLD_SECRET_KEY}/${SECRET_KEY}/")"
 echo "${NEW_SETTINGS}" > ./quizer/quizer/settings.py
-rm -r tmp
 
+rm -r tmp
 echo "===========================================Initialized django app==============================================="
 echo "==========================================Enter configuration data============================================="
 read -r -p "MongoDB host: " MONGO_HOST

@@ -392,7 +392,7 @@ def test_result(request):
     for question_num in right_answers:
         questions.append({
             'id': right_answers[question_num]['id'],
-            'selected_answers': answers[question_num],
+            'selected_answers': answers[question_num] if question_num in answers else [],
             'right_answers': right_answers[question_num]['right_answers']
         })
         if right_answers[question_num]['right_answers'] == answers[question_num]:

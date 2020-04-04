@@ -22,7 +22,7 @@ Copy-Item -Path .\tmp\quizer -Destination .\quizer -Recurse
 
 $OLD_SECRET_KEY = Get-Content .\quizer\quizer\settings.py | Where-Object {$_.startsWith('SECRET_KEY') } | ForEach-Object { $_.split("'") }
 $OLD_SECRET_KEY = $OLD_SECRET_KEY[1]
-Get-Content ./settings.py | ForEach-Object { If ( $_.startsWith('SECRET_KEY') ) { $_.replace($SECRET_KEY, 'govna') >> tmp } Else { $_ >> tmp } }
+Get-Content ./settings.py | ForEach-Object { If ( $_.startsWith('SECRET_KEY') ) { $_.replace($OLD_SECRET_KEY, $SECRET_KEY) >> tmp } Else { $_ >> tmp } }
 Move-Item -Path .\tmp -Destination .\quizer\quizer\settings.py
 
 Remove-Item -Recurse tmp

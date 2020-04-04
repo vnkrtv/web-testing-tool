@@ -5,7 +5,6 @@ Quizer template rendering functions
 import random
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
-from django.conf import settings
 from django.contrib.auth import login, logout, authenticate
 from django.shortcuts import render
 from bson import ObjectId

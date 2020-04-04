@@ -173,7 +173,7 @@ class AuthorizationTest(MainTest):
 
     def test_student_auth(self) -> None:
         """
-        Tests user belonging to 'student' group authorization
+        Test for authorization of user belonging to 'student' group
         """
         client = Client()
         client.logout()
@@ -185,6 +185,9 @@ class AuthorizationTest(MainTest):
         self.assertContains(response, 'Пользователь')
 
     def test_lecturer_auth(self) -> None:
+        """
+        Test for authorization of user belonging to 'lecturer' group
+        """
         client = Client()
         client.logout()
         response = client.post(reverse('main:index'), {
@@ -196,6 +199,9 @@ class AuthorizationTest(MainTest):
         self.assertContains(response, 'Преподаватель')
 
     def test_anonymous_auth(self) -> None:
+        """
+        Test for authorization of a user not registered in the system
+        """
         client = Client()
         client.logout()
         response = client.post(reverse('main:index'), {
@@ -207,6 +213,9 @@ class AuthorizationTest(MainTest):
         self.assertContains(response, 'Ошибка: неправильное имя пользователя или пароль!')
 
     def test_anonymous_redirect(self) -> None:
+        """
+        Test redirecting a logged-out user to the login page when trying to get to the home page
+        """
         client = Client()
         client.logout()
         response = client.get(reverse('main:tests'), follow=True)
@@ -216,7 +225,15 @@ class AuthorizationTest(MainTest):
 
 
 class AccessRightsTest(MainTest):
+    """
+    Testing access rights of various user groups
+    """
+
     def test_student_access(self) -> None:
+        """
+        Testing that user belonging to 'student' group does not
+        have permission to view 'lecturer' pages
+        """
         client = Client()
         client.login(
             username=self.student.username,
@@ -230,6 +247,10 @@ class AccessRightsTest(MainTest):
         self.assertContains(response, 'You are not permitted to see this page.')
 
     def test_lecturer_access(self) -> None:
+        """
+        Testing that user belonging to 'lecturer' group does not
+        have permission to view 'student' pages
+        """
         client = Client()
         client.login(
             username=self.lecturer.username,
@@ -245,7 +266,15 @@ class AccessRightsTest(MainTest):
 
 
 class TestAddingAndEditingTest(MainTest):
+    """
+    Tests adding and editing tests using web interfrace
+    """
+
     def test_student_has_no_access(self) -> None:
+        """
+        Testing, that student is not permitted
+        to add new tests using web interface
+         """
         client = Client()
         client.login(
             username=self.student.username,
@@ -256,6 +285,9 @@ class TestAddingAndEditingTest(MainTest):
         self.assertContains(response, 'You are not permitted to see this page.')
 
     def test_adding_new_test(self) -> None:
+        """
+        Testing adding new test by using web interface
+        """
         client = Client()
         client.login(
             username=self.lecturer.username,
@@ -279,6 +311,9 @@ class TestAddingAndEditingTest(MainTest):
         self.assertEqual(len(Test.objects.all()), 2)
 
     def test_editing_test(self) -> None:
+        """
+        Testing editing test by using web interface
+        """
         client = Client()
         client.login(
             username=self.lecturer.username,
@@ -290,7 +325,15 @@ class TestAddingAndEditingTest(MainTest):
 
 
 class AddQuestionTest(MainTest):
+    """
+    Tests adding new questions using web interface
+    """
+
     def test_student_has_no_access(self) -> None:
+        """
+        Testing, that student is not permitted
+        to add new questions using web interface
+         """
         client = Client()
         client.login(
             username=self.student.username,
@@ -301,6 +344,10 @@ class AddQuestionTest(MainTest):
         self.assertContains(response, 'You are not permitted to see this page.')
 
     def test_adding_question(self) -> None:
+        """
+        Testing adding new questions by using web interface,
+        testing 'add_one' and 'get_many' QuestionsStorage methods
+        """
         client = Client()
         client.login(
             username=self.lecturer.username,
@@ -329,7 +376,16 @@ class AddQuestionTest(MainTest):
 
 
 class TestsResultsStorageTest(MainTest):
+    """
+    Tests for TestsResultsStorage class which stored all tests
+    and their results in 'tests_results' collection in database,
+    tests for running new test and stopping it using web interface
+    """
+
     def setUp(self) -> None:
+        """
+        Runs new test by sending post request to '/run_test_result/' page
+        """
         super().setUp()
         self.client = Client()
         self.client.login(
@@ -343,6 +399,11 @@ class TestsResultsStorageTest(MainTest):
         self.assertEqual(len(self.tests_results_storage.get_running_tests_ids()), 1)
 
     def test_running_new_test(self) -> None:
+        """
+        Testing running new test and stopping it using web interface,
+        testing  'add_running_test', 'get_running_tests_ids' and
+        'stop_running_test' TestsResultsStorage methods
+        """
         self.assertEqual(self.response.status_code, 200)
         self.assertContains(self.response, 'Тест запущен')
 
@@ -356,17 +417,13 @@ class TestsResultsStorageTest(MainTest):
         self.assertContains(response, self.test.name)
         self.assertEqual(0, len(self.tests_results_storage.get_running_tests_ids()))
 
-    def test_get_running_tests_ids_method(self) -> None:
-        running_tests_ids = self.tests_results_storage.get_running_tests_ids()
-        self.assertEqual(running_tests_ids, [self.test.id])
-
-        response = self.client.post(reverse('main:stop_running_test'), {
-            'test_name': self.test.name,
-        }, follow=True)
-        self.assertContains(response, self.test.name)
-        self.assertEqual(0, len(self.tests_results_storage.get_running_tests_ids()))
-
     def test_running_tests_student_page(self) -> None:
+        """
+        Testing running new test and stopping it using web interface,
+        testing 'student' '/tests' page,
+        testing  'add_running_test', 'get_running_tests_ids' and
+        'stop_running_test' TestsResultsStorage methods
+        """
         self.client.logout()
         self.client.login(
             username=self.student.username,
@@ -388,6 +445,12 @@ class TestsResultsStorageTest(MainTest):
         self.assertEqual(0, len(self.tests_results_storage.get_running_tests_ids()))
 
     def test_running_tests_lecturer_page(self) -> None:
+        """
+        Testing running new test and stopping it using web interface,
+        testing 'lecturer' '/running_tests' page,
+        testing  'add_running_test', 'get_running_tests_ids' and
+        'stop_running_test' TestsResultsStorage methods
+        """
         response = self.client.post(reverse('main:running_tests'), {}, follow=True)
 
         self.assertEqual(response.status_code, 200)
@@ -401,29 +464,18 @@ class TestsResultsStorageTest(MainTest):
 
 
 class RunningTestsAnswersStorageTest(TestsResultsStorageTest):
-    def test_students_available_tests_page(self) -> None:
-        client = Client()
-        client.login(
-            username=self.student.username,
-            password='top_secret'
-        )
-        response = client.post(reverse('main:tests'), {}, follow=True)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(1, len(self.tests_results_storage.get_running_tests_ids()))
-        self.assertContains(response, self.test.name)
-
-        self.client.logout()
-        self.client.login(
-            username=self.lecturer.username,
-            password='top_secret'
-        )
-        response = self.client.post(reverse('main:stop_running_test'), {
-            'test_name': self.test.name,
-        }, follow=True)
-        self.assertContains(response, self.test.name)
-        self.assertEqual(0, len(self.tests_results_storage.get_running_tests_ids()))
+    """
+    Extends tests of the TestsResultsStorageTest class -
+    testing the passage of tests by 'student',
+    tests for RunningTestsAnswersStorage which temporary stores
+    true answers for test passing by 'student'
+    """
 
     def test_student_running_test_page(self) -> None:
+        """
+        Tests for passing running test by 'student' and getting
+        its result by 'student' and 'lecturer' using web interface
+        """
         client = Client()
         client.login(
             username=self.student.username,
@@ -434,7 +486,9 @@ class RunningTestsAnswersStorageTest(TestsResultsStorageTest):
         }, follow=True)
 
         self.assertEqual(response.status_code, 200)
-        right_answers = self.running_tests_answers_storage.get(user_id=self.student.id)['right_answers']
+        right_answers = self.running_tests_answers_storage.get(
+            user_id=self.student.id
+        ).get('right_answers')
         self.assertEqual(len(right_answers), self.test.tasks_num)
 
         answers = {}
@@ -449,7 +503,6 @@ class RunningTestsAnswersStorageTest(TestsResultsStorageTest):
             'time': self.test.duration // 2,
             'csrfmiddlewaretoken': 'token',
             **answers
-
         }, follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Результат')

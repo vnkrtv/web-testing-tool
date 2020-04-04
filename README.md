@@ -17,7 +17,7 @@ Coming soon:
 ### Installation
 - ```git clone https://github.com/LeadNess/Quizer.git```
 - ```cd Quizer```
-- Depending on the system: ```./build_for_linux``` or ```powershell .\build_for_win.ps1```. Build django application.
+- Build django application - ```./build_for_linux``` or ```powershell .\build_for_win.ps1```
 - ```./build_docker``` - create 'quizer' docker image
 ### Usage
 Run app by command:   
@@ -37,7 +37,7 @@ There is also 1 added subject 'Python', 1 added test 'PZ1' and 2 added questions
 - main/views.py:  
 ```Your code has been rated at 10/10```  
 - main/tests.py:  
-```Your code has been rated at 8.45/10``` - documentation coming soon  
+```Your code has been rated at 10/10```
 - main/decorators.py:  
 ```Your code has been rated at 10/10``` 
 #### coverage   

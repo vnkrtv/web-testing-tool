@@ -343,7 +343,7 @@ class TestsResultsStorage(MongoDB):
 
     def get_latest_test_results(self, test_id: int, lecturer_id: int) -> list:
         """
-        Get results for latest test
+        Get results of latest test
 
         :param test_id: <int>
         :param lecturer_id: <int>, lecturer who ran test

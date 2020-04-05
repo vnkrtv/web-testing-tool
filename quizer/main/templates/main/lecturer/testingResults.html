@@ -4,18 +4,24 @@
  	<div class='jumbotron'>
  		<h2>Результаты тестирования</h2><br>
  		<h3>Тест: {{ test.name }}</h3>
+ 		<ul class="list-group">
  		{% for result in results %}
- 			<hr class="my-4">
-			<h3>{{ result.username }}</h3>
-			<p>Результат: {{ result.right_answers_num }}/{{ result.tasks_num }}</p>
-			{% for question in result.questions %}
-    			{% if question.is_true %}
-    				{{ forloop.counter }}. Верно
-				{% else %}
-					{{ forloop.counter }}. Ошибка - выбранный ответ({{ question.selected_answers }}), правильный ответ({{ question.right_answers }})     
-				{% endif %}
-				<br>
-	        {% endfor %}
+ 			<li class="list-group-item">
+				<h3>{{ forloop.counter }}. {{ result.username }}</h3>
+				<p>Результат: {{ result.right_answers_num }}/{{ result.tasks_num }}</p>
+				<ul class="list-group list-group-flush">
+				{% for question in result.questions %}
+	    			{% if question.is_true %}
+	    				<li class="list-group-item list-group-item-success">{{ forloop.counter }}. Верно</li>
+					{% else %}
+					    <li class="list-group-item list-group-item-danger">
+					    	{{ forloop.counter }}. Выбрано: {{ question.selected_answers }}, верно: {{ question.right_answers }}
+						</li>     
+					{% endif %}
+		        {% endfor %}
+		        </ul>
+		    </li>
  		{% endfor %}
+ 		</ul>
  	</div>
 {% endblock %}

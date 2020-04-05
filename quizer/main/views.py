@@ -330,7 +330,7 @@ def run_test(request):
     right_answers = {}
     for i, question in enumerate(questions):
         right_answers[str(i + 1)] = {
-            'right_answers': [i + 1 for i, option in enumerate(question['options']) if option['is_true']],
+            'right_answers': [str(i + 1) for i, option in enumerate(question['options']) if option['is_true']],
             'id': str(question['_id'])
         }
     mdb = RunningTestsAnswersStorage.connect_to_mongodb(
@@ -380,7 +380,7 @@ def test_result(request):
         """
         buf = key.split('_')
         if len(buf) == 1:
-            answers[buf[0]] = [int(response[key][0])]
+            answers[buf[0]] = [response[key][0]]
         else:
             if buf[0] in answers:
                 answers[buf[0]].append(buf[1])
@@ -395,11 +395,12 @@ def test_result(request):
             'selected_answers': answers[question_num] if question_num in answers else [],
             'right_answers': right_answers[question_num]['right_answers']
         })
-        if right_answers[question_num]['right_answers'] == answers[question_num]:
+        if question_num in answers and right_answers[question_num]['right_answers'] == answers[question_num]:
             right_answers_count += 1
             questions[-1]['is_true'] = True
         else:
             questions[-1]['is_true'] = False
+    print(answers, right_answers)
     result = {
         'user_id': request.user.id,
         'username': request.user.username,

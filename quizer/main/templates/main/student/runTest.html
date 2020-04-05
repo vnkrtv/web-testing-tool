@@ -8,47 +8,48 @@
 		       document.getElementById("stop_button").click();      
 		       return;
 		    }
-		    document.getElementById("time").value = ticks
+		    document.getElementById("time").value = ticks;
+		    document.getElementById("time-div").innerHTML = `Времени осталось: ${ticks} с`;
 		    ticks--;
 		    setTimeout(runTest,1000);
 		}
 	</script>
 	<form action="{% url 'main:test_result' %}" method="post">
-		<span class="d-block p-2 bg-primary text-white">
-			<label for='time'>
-				Времени осталось: <input id="time" type="text" name='time' class="btn btn-dark btn-sm" size='2'> с
-			</label>
-	    </span>
-	    <script type="text/javascript">runTest();</script>
-	    <br>
-	    <br>
-		{% csrf_token %}
-	    {% for question in questions %}
-		 	<span class="d-block p-2 bg-primary text-white">{{ forloop.counter }}. {{ question.formulation }}</span>
-		 		<table class="table table-striped table-dark">
-		            <tbody>
-		            	{% for option in question.options %}
-		            		<tr>
-		            			<label for='{{ forloop.parentloop.counter }}_{{ forloop.counter }}'>
-			            			{% if question.multiselect %}
-			                    		<td><input type="checkbox" id='{{ forloop.parentloop.counter }}_{{ forloop.counter }}' name='{{ forloop.parentloop.counter }}_{{ forloop.counter }}'></td>
-			            			{% else %}
-			                    		<td><input type="radio" id='{{ forloop.parentloop.counter }}_{{ forloop.counter }}' name='{{ forloop.parentloop.counter }}' value="{{ forloop.counter }}"></td>
-			            			{% endif %}
-			            		</label>
-			            		{% if question.with_images %}
-					        		<td><img src="/media/{{ option.option }}" alt="Server pribolel" width="400" height="341"></td>
-			            		{% else %}
-			                    	<td>{{ option.option }}</td>           		    
-			            		{% endif %}           	    
-			                </tr>
-		            	{% endfor %}
-		            </tbody>
-		    </table>
+		<div class="jumbotron">
+		<div id="time-div" style="font-size: 175%;"></div>
+		<label for='time'>
+			<input id="time" type="hidden" name='time'>
+		</label>
+		<br>
+		<ul class="list-group">
+	    	<script type="text/javascript">runTest();</script>
+			{% csrf_token %}
+	    	{% for question in questions %}
+		 	<li class="list-group-item">{{ forloop.counter }}. {{ question.formulation }}
+		 		<ul class="list-group list-group-flush">
+	            	{% for option in question.options %}
+            		<li class="list-group-item">
+            			<label for='{{ forloop.parentloop.counter }}_{{ forloop.counter }}'>
+	            			{% if question.multiselect %}
+	                    		<input type="checkbox" id='{{ forloop.parentloop.counter }}_{{ forloop.counter }}' name='{{ forloop.parentloop.counter }}_{{ forloop.counter }}'>
+	            			{% else %}
+	                    		<input type="radio" id='{{ forloop.parentloop.counter }}_{{ forloop.counter }}' name='{{ forloop.parentloop.counter }}' value="{{ forloop.counter }}">
+	            			{% endif %}
+	            		</label>
+	            		{% if question.with_images %}
+			        		<img src="/media/{{ option.option }}" alt="Server pribolel" width="400" height="341">
+	            		{% else %}
+	                    	{{ option.option }}          		    
+	            		{% endif %}           	    
+	                </li>
+	            	{% endfor %}
+				</ul>
+		    </li>
 		    <br>
-	 	{% endfor %}
-        <span class="d-block p-2 bg-primary text-white">
-            <input id='stop_button' type="submit" class="btn btn-dark btn-sm" value="Закончить тест">
-        </span>
+	 		{% endfor %}
+        </ul>
+        <br>
+        <button class="btn btn-primary" id="stop_button">Закончить тест</button>
+        </div>
     </form>
 {% endblock %}

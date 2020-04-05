@@ -227,8 +227,23 @@ def edit_test_result(request):
     """
     Displays page with result of editing test
     """
-
-    return render(request, 'main/lecturer/.html', {})
+    test = Test.objects.get(id=request.POST['test_id'])
+    new_test = Test(
+        id=test.id,
+        name=request.POST['test_name'],
+        author=request.user,
+        subject=test.subject,
+        description=request.POST['description'],
+        tasks_num=request.POST['tasks_num'],
+        duration=request.POST['duration']
+    )
+    Test.delete(test)
+    new_test.save()
+    info = {
+        'title': 'Редактиктирование теста',
+        'message': "Тест '%s' по предмету '%s' успешно изменен." % (new_test.name, new_test.subject),
+    }
+    return render(request, 'main/lecturer/info.html', info)
 
 
 @unauthenticated_user

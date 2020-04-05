@@ -157,6 +157,18 @@ class QuestionsStorage(MongoDB):
             'formulation': question_formulation
         })
 
+    def delete_many(self, test_id: int) -> int:
+        """
+        Delete all question for Test(id='test_id')
+
+        :param test_id: <int>
+        :return: count od deleted questions
+        """
+        deleted_questions_count = self._col.delete_many({
+            'test_id': test_id,
+        }).deleted_count
+        return deleted_questions_count
+
 
 class RunningTestsAnswersStorage(MongoDB):
     """

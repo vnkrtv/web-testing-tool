@@ -6,7 +6,7 @@ import random
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
 from django.contrib.auth import login, logout, authenticate
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from bson import ObjectId
 from .decorators import unauthenticated_user, allowed_users
 from .models import Test, Subject, RunningTestsAnswersStorage, TestsResultsStorage, QuestionsStorage
@@ -212,22 +212,13 @@ def edit_test(request):
 
 @unauthenticated_user
 @allowed_users(allowed_roles=['lecturer'])
-def edit_test_redirect(request, ):
+def edit_test_redirect(request):
     """
 
     """
     test = Test.objects.get(name=request.POST['test_name'])
     template = 'editingTestPage' if 'edit_btn' in request.POST else 'deleteTestPage'
-    return render(request, url=url, f'main/lecturer/{template}.html', {'test': test})
-
-@unauthenticated_user
-@allowed_users(allowed_roles=['lecturer'])
-def editing_test_page(request):
-    """
-
-    """
-    test = Test.objects.get(name=request.POST['test_name'])
-    return render(request, 'main/lecturer/editingTestPage.html', {'test': test})
+    return render(request, f'main/lecturer/{template}.html', {'test': test})
 
 
 @unauthenticated_user
@@ -242,22 +233,25 @@ def edit_test_result(request):
 
 @unauthenticated_user
 @allowed_users(allowed_roles=['lecturer'])
-def delete_test_page(request):
-    """
-    """
-    test = Test.objects.get(name=request.POST['test_name'])
-    return render(request, 'main/lecturer/deleteTestPage.html', {'test': test})
-
-
-@unauthenticated_user
-@allowed_users(allowed_roles=['lecturer'])
 def delete_test_result(request):
     """
     Displays page with result of editing test
     """
-    test = Test.objects.get(name=request.POST['test_name'])
-    template = 'editingTestPage' if 'edit_btn' in request.POST else 'deleteTestPage'
-    return render(request, f'main/lecturer/{template}.html', {'test': test})
+    test = Test.objects.get(id=request.POST['test_id'])
+    if 'del' in request.POST:
+        mdb = QuestionsStorage.connect_to_mongodb(
+            host=MONGO_HOST,
+            port=MONGO_PORT,
+            db_name=MONGO_DBNAME
+        )
+        deleted_questions_count = mdb.delete_many(test_id=test.id)
+        info = {
+            'title': 'Результат удаления',
+            'message': "Тест '%s' и %d вопросов к нему были успешно удалены." % (test.name, deleted_questions_count)
+        }
+        Test.delete(test)
+        return render(request, 'main/lecturer/info.html', info)
+    return redirect('/edit_test')
 
 
 @unauthenticated_user

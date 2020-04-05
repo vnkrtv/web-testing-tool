@@ -11,10 +11,10 @@
 				<p>Количество заданий в тесте: {{ test.tasks_num }}<br>
 				Время на выполнение: {{ test.duration }} с<br>
 			    Вопросов к тесту: {{ test.questions_num }}</p>
-				<form action="{% url 'main:edit_test_redirect' %}" method="post">
+				<form action="{% url 'main:edit_test_redirect' %}" method="post" id="form">
     			{% csrf_token %}
     				<input type="hidden" name="test_name" id="test_name" value="{{ test.name }}">
-					<button class="btn btn-primary" id="edit_btn" name="">Редактировать</button>
+					<button class="btn btn-primary" id="edit_btn" name="edit_btn">Редактировать</button>
 					<button class="btn btn-danger" id="del_btn" name="del_btn">Удалить</button>
 				</form>
 			</label>

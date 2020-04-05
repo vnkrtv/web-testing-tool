@@ -13,7 +13,8 @@
 				<form action="{% url 'main:edit_test_result' %}" method="post">
     			{% csrf_token %}
     				<input type="hidden" name="test_name" id="test_name" value="{{ test.name }}">
-					<button class="btn btn-primary">Редактировать</button>
+					<button class="btn btn-primary" id="edit_btn" name="edit_btn">Редактировать</button>
+					<button class="btn btn-danger" id="del_btn" name="del_btn">Удалить</button>
 				</form>
 			</label>
  		{% endfor %}

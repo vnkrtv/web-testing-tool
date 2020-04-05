@@ -205,11 +205,9 @@ def edit_test_result(request):
     """
     Displays page with result of editing test
     """
-    info = {
-        'title': 'Окно редактирования теста',
-        'message': 'Coming soon...',
-    }
-    return render(request, 'main/lecturer/info.html', info)
+    test = Test.objects.get(name=request.POST['test_name'])
+    template = 'editingTestPage' if 'edit_btn' in request.POST else 'deleteTestPage'
+    return render(request, f'main/lecturer/{template}.html', {'test': test})
 
 
 @unauthenticated_user
@@ -400,7 +398,6 @@ def test_result(request):
             questions[-1]['is_true'] = True
         else:
             questions[-1]['is_true'] = False
-    print(answers, right_answers)
     result = {
         'user_id': request.user.id,
         'username': request.user.username,

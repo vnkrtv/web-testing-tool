@@ -1,0 +1,15 @@
+{% extends "main/lecturerWrapper.html" %}
+
+{% block content %}
+ 	<div class='jumbotron'>
+ 		<h2>Подтверждение удаления</h2>
+ 		<p>Вы действительно хотите удалить тест '{{ test.name }}'?<br>
+ 		Тогда все связанные с ним вопросы будут удалены</p>
+ 		<form action="{% url 'main:edit_test_result' %}" method="post">
+		{% csrf_token %}
+			<input type="hidden" name="test_id" id="test_id" value="{{ test.id }}">
+			<button class="btn btn-primary" id="edit_btn" name="edit_btn">Да</button>
+			<button class="btn btn-danger" id="del_btn" name="del_btn">Нет</button>
+		</form>
+ 	</div>
+{% endblock %}

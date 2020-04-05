@@ -1,0 +1,36 @@
+{% extends "main/lecturerWrapper.html" %}
+
+{% block content %}
+ 	<div class='jumbotron'>
+ 		<h2>Окно редактирования теста</h2><br>
+ 		<form action="{% url 'main:edit_test_result' %}" method="post">
+		{% csrf_token %}
+			<div class="form-row">
+		  	<div class="col-md-4 mb-3">
+		  		<label for="test_name">Название теста
+		      		<input type="text" class="form-control" id="test_name" name="test_name" value="{{ test.name }}" required>
+		      	</label>
+		  	</div>
+		  </div>
+		  <div class="form-row">
+		     <div class="col-md-4 mb-3">
+		      <label for="description">Описание</label>
+		      <textarea class="form-control" rows="3" cols="30" id="description" name="description">{{ test.description }}</textarea>
+		    </div>
+		  </div>
+		  <div class="form-row">
+		     <div class="col-md-4 mb-3">
+		      <label for="description">Количество заданий</label>
+		      <input type="number" class="form-control" id="tasks_num" name="tasks_num" min="1" value="{{ test.tasks_num }}" required>
+		    </div>
+		  </div>
+		  <div class="form-row">
+		     <div class="col-md-4 mb-3">
+		      <label for="description">Длительность теста в секундах</label>
+		      <input type="number" class="form-control" id="duration" name="duration" min="1" value="{{ test.duration }}" required>
+		    </div>
+		  </div>
+		  <button class="btn btn-primary" type="submit">Изменить</button>
+		</form>
+ 	</div>
+{% endblock %}

@@ -193,15 +193,65 @@ def edit_test(request):
     """
     Displays page with all lecturer's tests
     """
-    info = {
-        'tests': list(Test.objects.filter(author__username=request.user.username)),
-    }
-    return render(request, 'main/lecturer/editTest.html', info)
+    mdb = QuestionsStorage.connect_to_mongodb(
+        host=MONGO_HOST,
+        port=MONGO_PORT,
+        db_name=MONGO_DBNAME
+    )
+    tests = []
+    for test in list(Test.objects.filter(author__username=request.user.username)):
+        tests.append({
+            'name': test.name,
+            'description': test.description,
+            'tasks_num': test.tasks_num,
+            'duration': test.duration,
+            'questions_num': len(mdb.get_many(test_id=test.id))
+        })
+    return render(request, 'main/lecturer/editTest.html', {'tests': tests})
+
+
+@unauthenticated_user
+@allowed_users(allowed_roles=['lecturer'])
+def edit_test_redirect(request, ):
+    """
+
+    """
+    test = Test.objects.get(name=request.POST['test_name'])
+    template = 'editingTestPage' if 'edit_btn' in request.POST else 'deleteTestPage'
+    return render(request, url=url, f'main/lecturer/{template}.html', {'test': test})
+
+@unauthenticated_user
+@allowed_users(allowed_roles=['lecturer'])
+def editing_test_page(request):
+    """
+
+    """
+    test = Test.objects.get(name=request.POST['test_name'])
+    return render(request, 'main/lecturer/editingTestPage.html', {'test': test})
 
 
 @unauthenticated_user
 @allowed_users(allowed_roles=['lecturer'])
 def edit_test_result(request):
+    """
+    Displays page with result of editing test
+    """
+
+    return render(request, 'main/lecturer/.html', {})
+
+
+@unauthenticated_user
+@allowed_users(allowed_roles=['lecturer'])
+def delete_test_page(request):
+    """
+    """
+    test = Test.objects.get(name=request.POST['test_name'])
+    return render(request, 'main/lecturer/deleteTestPage.html', {'test': test})
+
+
+@unauthenticated_user
+@allowed_users(allowed_roles=['lecturer'])
+def delete_test_result(request):
     """
     Displays page with result of editing test
     """

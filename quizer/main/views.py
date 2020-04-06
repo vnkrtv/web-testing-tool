@@ -214,11 +214,25 @@ def edit_test(request):
 @allowed_users(allowed_roles=['lecturer'])
 def edit_test_redirect(request):
     """
-
+    Redirecting 'lecturer' to specific page depending on his choose
     """
     test = Test.objects.get(name=request.POST['test_name'])
-    template = 'editingTestPage' if 'edit_btn' in request.POST else 'deleteTestPage'
-    return render(request, f'main/lecturer/{template}.html', {'test': test})
+    mdb = QuestionsStorage.connect_to_mongodb(
+        host=MONGO_HOST,
+        port=MONGO_PORT,
+        db_name=MONGO_DBNAME
+    )
+    questions = [question['formulation'] for question in mdb.get_many(test_id=test.id)]
+    info = {
+        'test': Test.objects.get(name=request.POST['test_name']),
+        'questions': questions
+    }
+    template = {
+        'edit_test_btn': 'editingTestPage',
+        'del_test_btn': 'deleteTestPage',
+        'del_qstn_btn': 'deleteQuestionPage'
+    }[request.POST["btn"]]
+    return render(request, f'main/lecturer/{template}.html', info)
 
 
 @unauthenticated_user
@@ -248,9 +262,35 @@ def edit_test_result(request):
 
 @unauthenticated_user
 @allowed_users(allowed_roles=['lecturer'])
+def delete_question_result(request):
+    """
+    Displays page with result of deleting question
+    """
+    request_dict = dict(request.POST)
+    request_dict.pop('csrfmiddlewaretoken')
+    test = Test.objects.get(id=request_dict.pop('test_id')[0])
+    mdb = QuestionsStorage.connect_to_mongodb(
+        host=MONGO_HOST,
+        port=MONGO_PORT,
+        db_name=MONGO_DBNAME
+    )
+    for question_formulation in request_dict:
+        mdb.delete_one(
+            question_formulation=question_formulation,
+            test_id=test.id
+        )
+    info = {
+        'title': 'Результат удаления',
+        'message': "Вопросы к тесту '%s' в количестве %d были успешно удалены." % (test.name, len(request_dict))
+    }
+    return render(request, 'main/lecturer/info.html', info)
+
+
+@unauthenticated_user
+@allowed_users(allowed_roles=['lecturer'])
 def delete_test_result(request):
     """
-    Displays page with result of editing test
+    Displays page with result of deleting test
     """
     test = Test.objects.get(id=request.POST['test_id'])
     if 'del' in request.POST:

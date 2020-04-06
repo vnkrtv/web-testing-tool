@@ -6,11 +6,11 @@ Implemented system features:
 - adding users and new study subjects using Django admin panel as superuser
 - separation of access rights for 2 groups - 'student' and 'lecturer'
 - adding tests and questions with images to them using the web interface as a user belonging to 'lecturer' group
+- editing existing questions and tests
 - launching of existing tests by the user of 'lecturer' group, possibility of passing running tests by users of the 'student' group  
 - possibility to view the results of students passing tests, storing all results in database with the possibility of further analysis  
 
 Coming soon:
-- editing existing questions and tests
 - adding questions and tests from existing files
 - analysis of student test results
 ### Installation

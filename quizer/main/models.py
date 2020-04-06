@@ -142,10 +142,11 @@ class QuestionsStorage(MongoDB):
         :param test_id: <int>
         :return: <list>, list of questions
         """
-        questions = self._col.find({
+        question = self._col.find_one({
+            'formulation': question_formulation,
             'test_id': test_id
         })
-        return list(questions) if questions else []
+        return question
 
     def get_many(self, test_id: int) -> list:
         """
@@ -191,8 +192,8 @@ class QuestionsStorage(MongoDB):
         test = Test.objects.get(id=test_id)
         for question in questions:
             if question['with_images']:
-                path = Path(f'{settings.MEDIA_ROOT}/{test.subject.name}/{test.name}/{question["_id"]}')
-                shutil.rmtree(path)
+                p = Path(f'{settings.MEDIA_ROOT}/{test.subject.name}/{test.name}/{question["_id"]}')
+                shutil.rmtree(p)
         deleted_questions_count = self._col.delete_many({
             'test_id': test_id,
         }).deleted_count

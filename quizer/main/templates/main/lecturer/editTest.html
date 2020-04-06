@@ -14,8 +14,9 @@
 				<form action="{% url 'main:edit_test_redirect' %}" method="post" id="form">
     			{% csrf_token %}
     				<input type="hidden" name="test_name" id="test_name" value="{{ test.name }}">
-					<button class="btn btn-primary" id="edit_btn" name="edit_btn">Редактировать</button>
-					<button class="btn btn-danger" id="del_btn" name="del_btn">Удалить</button>
+					<button class="btn btn-primary" id="btn" name="btn" value="edit_test_btn">Редактировать</button>
+					<button class="btn btn-danger" id="btn" name="btn" value="del_qstn_btn">Удалить вопросы к тесту</button>
+					<button class="btn btn-danger" id="btn" name="btn" value="del_test_btn">Удалить</button>
 				</form>
 			</label>
  		{% endfor %}

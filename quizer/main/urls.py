@@ -17,6 +17,7 @@ urlpatterns = [
     url(r'^edit_test/$', views.edit_test, name='edit_test'),
     url(r'^editing_test/$', views.edit_test_redirect, name='edit_test_redirect'),
     url(r'^edit_test_result/$', views.edit_test_result, name='edit_test_result'),
+    url(r'^delete_question_result/$', views.delete_question_result, name='delete_question_result'),
     url(r'^delete_test_result/$', views.delete_test_result, name='delete_test_result'),
     url(r'^add_question/$', views.add_question, name='add_question'),
     url(r'^add_question_result/$', views.add_question_result, name='add_question_result'),

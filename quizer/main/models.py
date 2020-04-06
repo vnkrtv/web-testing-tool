@@ -3,6 +3,8 @@
 Models and classes for working with MongoDB and objects stored in it
 """
 import time
+import shutil
+from pathlib import Path
 from datetime import datetime
 from django.db import models
 from django.conf import settings
@@ -132,6 +134,19 @@ class QuestionsStorage(MongoDB):
         question['test_id'] = test_id
         self._col.insert_one(question)
 
+    def get_one(self, question_formulation: str, test_id: int) -> list:
+        """
+        Get question with formulation 'question_formulation' and 'test_id' test_id
+
+        :param question_formulation: <str>
+        :param test_id: <int>
+        :return: <list>, list of questions
+        """
+        questions = self._col.find({
+            'test_id': test_id
+        })
+        return list(questions) if questions else []
+
     def get_many(self, test_id: int) -> list:
         """
         Get all questions for Test(id='test_id')
@@ -152,6 +167,14 @@ class QuestionsStorage(MongoDB):
         :param test_id: <int>
         :return: None
         """
+        question = self.get_one(
+            question_formulation=question_formulation,
+            test_id=test_id
+        )
+        test = Test.objects.get(id=test_id)
+        if question['with_images']:
+            path = Path(f'{settings.MEDIA_ROOT}/{test.subject.name}/{test.name}/{question["_id"]}')
+            shutil.rmtree(path)
         self._col.delete_one({
             'test_id': test_id,
             'formulation': question_formulation
@@ -164,6 +187,12 @@ class QuestionsStorage(MongoDB):
         :param test_id: <int>
         :return: count od deleted questions
         """
+        questions = self.get_many(test_id=test_id)
+        test = Test.objects.get(id=test_id)
+        for question in questions:
+            if question['with_images']:
+                path = Path(f'{settings.MEDIA_ROOT}/{test.subject.name}/{test.name}/{question["_id"]}')
+                shutil.rmtree(path)
         deleted_questions_count = self._col.delete_many({
             'test_id': test_id,
         }).deleted_count

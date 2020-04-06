@@ -1,6 +1,6 @@
 # pylint: disable=import-error, line-too-long, no-else-return, pointless-string-statement, relative-beyond-top-level
 """
-Quizer template rendering functions
+Quizer templates rendering functions
 """
 import random
 from django.core.files.storage import default_storage

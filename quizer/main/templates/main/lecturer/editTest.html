@@ -3,6 +3,7 @@
 {% block content %}
  	<div class='jumbotron'>
  		<h2>Доступные тесты</h2><br>
+ 		<p>Здесь отображаются все тесты, добавленные {{ user.username }}.</p>
  		{% for test in tests %}
  			<hr class="my-4">
 			<label for='test_name'>

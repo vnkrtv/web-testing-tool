@@ -32,6 +32,6 @@ COPY quizer /app/quizer
 # && echo 'from django.contrib.auth.models import User; a = User.objects.get(username="admin"); a.groups.add(1); a.save()'  | python3 quizer/manage.py shell
 # && echo 'from django.contrib.auth.models import User; s = User(id=2); s.username = "user"; s.set_password("password"); s.groups.add(2); s.save()' | python3 quizer/manage.py shell
 
-COPY entry_commands /entry_commands.sh
+COPY entry_commands /entry_commands
 EXPOSE 8000
 ENTRYPOINT ["/entry_commands"]

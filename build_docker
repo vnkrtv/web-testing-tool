@@ -4,7 +4,7 @@ rm -r "./docker/quizer" 2> /dev/null
 cp "./requirements.txt" "./docker/requirements.txt"
 cp -r "./quizer" "./docker/quizer"
 cp ./docker/config.py ./docker/quizer/quizer/config.py
-mv ./docker/config.py ./docker/quizer/main/config.py
+cp ./docker/config.py ./docker/quizer/main/config.py
 rm -r "./docker/quizer/__pycache__" 2> /dev/null
 echo "========================================Start building Quizer Docker image========================================"
 sudo docker build -t quizer docker

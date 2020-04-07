@@ -80,7 +80,7 @@ class MongoDB:
         :param collection_name: collection name
         :return: tuple of (MongoClient, db, collection)
         """
-        client = MongoClient(host, port)
+        client = MongoClient(host, int(port))
         db = client[db_name]
         col = db[collection_name]
         return client, db, col

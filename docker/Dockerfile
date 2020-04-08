@@ -3,8 +3,7 @@ MAINTAINER quizer
 
 RUN apt-get update && apt-get install -y build-essential python3 \
  && apt-get install -y python3-setuptools \
- && apt-get install -y python3-pip \
- && apt-get install -y python3-venv
+ && apt-get install -y python3-pip
 
 RUN apt-get update && apt-get install -y mongodb \
  && mkdir -p /data/db \
@@ -12,9 +11,7 @@ RUN apt-get update && apt-get install -y mongodb \
 
 COPY requirements.txt /app/requirements.txt
 WORKDIR /app
-RUN python3 -m venv venv \
- && . venv/bin/activate \
- && pip3 install --no-cache-dir -r requirements.txt \
+RUN pip3 install --no-cache-dir -r requirements.txt \
  && django-admin.py startproject quizer \
  && python3 quizer/manage.py startapp main
 

@@ -1,7 +1,6 @@
 #!/bin/bash
 
 service mongodb start
-. /app/venv/bin/activate
 python3 /app/quizer/manage.py makemigrations
 python3 /app/quizer/manage.py migrate
 echo 'from django.contrib.auth.models import Group; l = Group(id=1, name="lecturer"); l.save()' | python3 /app/quizer/manage.py shell

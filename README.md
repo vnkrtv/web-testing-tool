@@ -29,7 +29,11 @@ There are 2 users in this option:
 - user 'user' with password 'password', who belongs to group 'student'    
 
 There is also 1 added subject 'Python', 1 added test 'PZ1' and 2 added questions.
-### Testing
+### Testing    
+Run all tests with coverage by running:   
+```shell script
+coverage run quizer/manage.py test main
+```
 #### pylint   
 - main/models.py:  
 ```Your code has been rated at 10/10```  

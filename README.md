@@ -49,14 +49,16 @@ quizer/main/admin.py                         3      0   100%
 quizer/main/apps.py                          4      0   100%
 quizer/main/config.py                        5      0   100%
 quizer/main/decorators.py                   21      0   100%
-quizer/main/models.py                       89      6    93%
-quizer/main/tests.py                       194      0   100%
+quizer/main/migrations/0001_initial.py       7      0   100%
+quizer/main/migrations/__init__.py           0      0   100%
+quizer/main/models.py                      108     16    85%
+quizer/main/tests.py                       177      0   100%
 quizer/main/urls.py                          4      0   100%
-quizer/main/views.py                       151     14    91%
+quizer/main/views.py                       229     90    61%
 ------------------------------------------------------------
-TOTAL                                      471     20    96%
+TOTAL                                      558    106    81%
 
 ```
-For detailed report run:  
-- ```x-www-browser ./htmlcov/index.html``` - for Linux
-- ```Invoke-Expression .\htmlcov\index.html```  - for Windows
+For detailed report run:
+- ```coverage html```  
+- ```x-www-browser ./htmlcov/index.html``` for Linux or ```Invoke-Expression .\htmlcov\index.html``` for Windows

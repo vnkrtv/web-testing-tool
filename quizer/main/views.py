@@ -395,6 +395,82 @@ def add_question_result(request):
 
 
 @unauthenticated_user
+@allowed_users(allowed_roles=['lecturer'])
+def load_questions(request):
+    """
+    Displays page with an empty form for loading questions from file
+    """
+    tests = Test.objects.filter(author__username=request.user.username)
+    return render(request, 'main/lecturer/loadQuestions.html', {'tests': tests})
+
+
+@unauthenticated_user
+@allowed_users(allowed_roles=['lecturer'])
+def load_questions_result(request):
+    """
+    Displays result of loading questions from file
+    """
+    test = Test.objects.get(name=request.POST['test'])
+    mdb = QuestionsStorage.connect_to_mongodb(
+        host=MONGO_HOST,
+        port=MONGO_PORT,
+        db_name=MONGO_DBNAME
+    )
+    try:
+        content = request.FILES['file'].read().decode('utf-8')
+        questions_list = content.split('\n\n')
+        questions_list.remove('')
+        questions_count = 0
+        for question in questions_list:
+            buf = question.split('\n')
+            formulation = buf[0]
+            multiselect = False
+            options = []
+            for line in buf[1:]:
+                if '-' in line:
+                    options.append({
+                        'option': line.split('-')[1][1:],
+                        'is_true': False
+                    })
+                elif '*' in line:
+                    options.append({
+                        'option': line.split('*')[1][1:],
+                        'is_true': True
+                    })
+                elif '+' in line:
+                    multiselect = True
+                    options.append({
+                        'option': line.split('+')[1][1:],
+                        'is_true': True
+                    })
+                else:
+                    raise UnicodeDecodeError
+            questions_count += 1
+            mdb.add_one(
+                question={
+                    'formulation': formulation,
+                    'tasks_num': len(options),
+                    'multiselect': multiselect,
+                    'with_images': False,
+                    'options': options
+                },
+                test_id=test.id
+            )
+    except UnicodeDecodeError:
+        info = {
+            'title': 'Ошибка',
+            'message': 'Файл некорректного формата.',
+        }
+        return render(request, 'main/lecturer/info.html', info)
+
+    info = {
+        'title': 'Новые вопросы',
+        'message': "Вопросы к тесту '%s' в количестве %d успешно добавлены." % (test.name, questions_count),
+    }
+    return render(request, 'main/lecturer/info.html', info)
+
+
+@unauthenticated_user
 @allowed_users(allowed_roles=['student'])
 def get_marks(request):
     """

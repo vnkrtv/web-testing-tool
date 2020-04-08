@@ -110,8 +110,8 @@
 				option_input.required = 'required';
 				option_input.accept="image/*"
 
-				option_label.appendChild(option_input);
 				fileContainer.appendChild(option_label);
+				fileContainer.appendChild(option_input);
 
 				const radioContainer = document.createElement('div');
 				radioContainer.className = 'custom-control custom-checkbox my-1 mr-sm-2';
@@ -210,8 +210,8 @@
 				option_input.required = 'required';
 				option_input.accept="image/*"
 
-				option_label.appendChild(option_input);
 				fileContainer.appendChild(option_label);
+				fileContainer.appendChild(option_input);
 
 
 				const checkboxContainer = document.createElement('div');
@@ -305,4 +305,5 @@
 		  </script>
 		  <button class="btn btn-primary" type="submit">Добавить</button>
 		</form>
+		</div>
 {% endblock %}

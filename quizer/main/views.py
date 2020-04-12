@@ -262,9 +262,9 @@ def edit_test_result(request):
 
 @unauthenticated_user
 @allowed_users(allowed_roles=['lecturer'])
-def delete_question_result(request):
+def delete_questions_result(request):
     """
-    Displays page with result of deleting question
+    Displays page with result of deleting questions
     """
     request_dict = dict(request.POST)
     request_dict.pop('csrfmiddlewaretoken')
@@ -419,10 +419,13 @@ def load_questions_result(request):
     try:
         content = request.FILES['file'].read().decode('utf-8')
         questions_list = content.split('\n\n')
-        questions_list.remove('')
+        if '' in questions_list:
+            questions_list.remove('')
         questions_count = 0
         for question in questions_list:
             buf = question.split('\n')
+            if '' in buf:
+                buf.remove('')
             formulation = buf[0]
             multiselect = False
             options = []

@@ -11,7 +11,7 @@
 		      	</label>
 	  		</div>
 	    </div>
- 		<form action="{% url 'main:delete_question_result' %}" method="post">
+ 		<form action="{% url 'main:delete_questions_result' %}" method="post">
 			{% csrf_token %}
 		    Вопросы
 		    <ul id="questions_container" class="list-group"></ul>

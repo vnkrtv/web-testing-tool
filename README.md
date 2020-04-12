@@ -6,12 +6,12 @@ Implemented system features:
 - adding users and new study subjects using Django admin panel as superuser
 - separation of access rights for 2 groups - 'student' and 'lecturer'
 - adding tests and questions with images to them using the web interface as a user belonging to 'lecturer' group
+- adding questions from existing files   
 - editing existing questions and tests
 - launching of existing tests by the user of 'lecturer' group, possibility of passing running tests by users of the 'student' group  
 - possibility to view the results of students passing tests, storing all results in database with the possibility of further analysis  
 
 Coming soon:
-- adding questions and tests from existing files
 - analysis of student test results
 ### Installation
 - ```git clone https://github.com/LeadNess/Quizer.git```
@@ -42,7 +42,7 @@ Run all tests with coverage by running (venv must be activated):
 - main/decorators.py:  
 ```Your code has been rated at 10/10``` 
 #### coverage   
-```shell script
+```
 Name                                     Stmts   Miss  Cover
 ------------------------------------------------------------
 quizer/main/admin.py                         3      0   100%
@@ -51,13 +51,12 @@ quizer/main/config.py                        5      0   100%
 quizer/main/decorators.py                   21      0   100%
 quizer/main/migrations/0001_initial.py       7      0   100%
 quizer/main/migrations/__init__.py           0      0   100%
-quizer/main/models.py                      108     16    85%
-quizer/main/tests.py                       177      0   100%
+quizer/main/models.py                      108      5    95%
+quizer/main/tests.py                       258      0   100%
 quizer/main/urls.py                          4      0   100%
-quizer/main/views.py                       229     90    61%
+quizer/main/views.py                       232     23    90%
 ------------------------------------------------------------
-TOTAL                                      558    106    81%
-
+TOTAL                                      642     28    96%
 ```
 For detailed report run:
 - ```coverage html```  

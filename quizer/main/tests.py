@@ -4,6 +4,7 @@ Main app tests, covered views.py and models.py.
 Tests should be started using manage.py, because at the same time MONGO_DBNAME
 value is replaced with 'test_${MONGO_DBNAME}' in config.py during the test run
 """
+import os
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.auth.models import User, Group
@@ -165,6 +166,19 @@ class QuestionsStorageTest(MainTest):
         updated_questions = self.questions_storage.get_many(test_id=self.test.id)
         self.assertEqual(len(questions) - 1, len(updated_questions))
 
+    def test_deleting_all_questions(self) -> None:
+        """
+        Test for 'delete_many' and 'get_many' QuestionsStorage methods
+        """
+        questions = self.questions_storage.get_many(test_id=self.test.id)
+        self.assertNotEqual(0, len(questions))
+
+        self.questions_storage.delete_many(
+            test_id=self.test.id
+        )
+        updated_questions = self.questions_storage.get_many(test_id=self.test.id)
+        self.assertEqual(0, len(updated_questions))
+
 
 class AuthorizationTest(MainTest):
     """
@@ -265,9 +279,9 @@ class AccessRightsTest(MainTest):
         self.assertContains(response, 'You are not permitted to see this page.')
 
 
-class TestAddingAndEditingTest(MainTest):
+class TestAddingTest(MainTest):
     """
-    Tests adding and editing tests using web interfrace
+    Tests adding tests using web interface
     """
 
     def test_student_has_no_access(self) -> None:
@@ -310,6 +324,26 @@ class TestAddingAndEditingTest(MainTest):
         self.assertContains(response, message)
         self.assertEqual(len(Test.objects.all()), 2)
 
+
+class TestEditingTest(MainTest):
+    """
+    Tests editing tests using web interface
+    """
+
+    def test_student_has_no_access(self) -> None:
+        """
+        Testing, that student is not permitted
+        to edit tests using web interface
+         """
+        client = Client()
+        client.login(
+            username=self.student.username,
+            password='top_secret'
+        )
+        response = client.post(reverse('main:edit_test'), {}, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'You are not permitted to see this page.')
+
     def test_editing_test(self) -> None:
         """
         Testing editing test by using web interface
@@ -322,6 +356,155 @@ class TestAddingAndEditingTest(MainTest):
         response = client.post(reverse('main:edit_test'), {}, follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Доступные тесты')
+
+        old_test = Test.objects.get(id=self.test.id)
+
+        response = client.post(reverse('main:edit_test_redirect'), {
+            'test_name': self.test.name,
+            'btn': 'edit_test_btn'
+        }, follow=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Окно редактирования теста')
+        self.assertContains(response, self.test.name)
+
+        updated_description = 'Updated description'
+        response = client.post(reverse('main:edit_test_result'), {
+            'test_id': self.test.id,
+            'test_name': self.test.name,
+            'description': updated_description,
+            'tasks_num': self.test.tasks_num,
+            'duration': self.test.duration
+        }, follow=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, old_test.name)
+        self.assertContains(response, "успешно изменен.")
+
+        updated_test = Test.objects.get(id=self.test.id)
+
+        self.assertNotEqual(old_test.description, updated_test.description)
+        self.assertEqual(updated_test.description, updated_description)
+
+    def test_deleting_test(self) -> None:
+        """
+        Testing deleting test using web interface
+        """
+        client = Client()
+        client.login(
+            username=self.lecturer.username,
+            password='top_secret'
+        )
+        response = client.post(reverse('main:edit_test'), {}, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Доступные тесты')
+
+        response = client.post(reverse('main:edit_test_redirect'), {
+            'test_name': self.test.name,
+            'btn': 'del_test_btn'
+        }, follow=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Вы действительно хотите удалить тест")
+
+        response = client.post(reverse('main:delete_test_result'), {
+            'test_id': self.test.id,
+            'del': 'on'
+        }, follow=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Результат удаления')
+        self.assertContains(response, self.test.name)
+
+        self.assertEqual(len(Test.objects.filter(id=self.test.id)), 0)
+
+    def test_deleting_test_questions(self) -> None:
+        """
+        Testing deleting all test's questions using web interface
+        """
+        client = Client()
+        client.login(
+            username=self.lecturer.username,
+            password='top_secret'
+        )
+        response = client.post(reverse('main:edit_test'), {}, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Доступные тесты')
+
+        response = client.post(reverse('main:edit_test_redirect'), {
+            'test_name': self.test.name,
+            'btn': 'del_qstn_btn'
+        }, follow=True)
+
+        questions = self.questions_storage.get_many(test_id=self.test.id)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Вопросы к тесту")
+        self.assertContains(response, self.test.name)
+
+        response = client.post(reverse('main:delete_questions_result'), {
+            'test_id': self.test.id,
+            'csrfmiddlewaretoken': 'token',
+            **{question['formulation']: 'on' for question in questions}
+        }, follow=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Результат удаления')
+        self.assertContains(response, self.test.name)
+
+        updated_questions = self.questions_storage.get_many(test_id=self.test.id)
+        self.assertEqual(len(updated_questions), 0)
+        self.assertNotEqual(len(updated_questions), len(questions))
+
+
+class LoadingQuestionsTest(MainTest):
+    """
+    Tests loading new questions from file using web interface
+    """
+
+    def test_loading_questions(self) -> None:
+        """
+        Testing adding new questions by loading them from file
+        """
+        client = Client()
+        client.login(
+            username=self.lecturer.username,
+            password='top_secret'
+        )
+        response = client.post(reverse('main:load_questions'), {}, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Загрузить вопросы')
+
+        old_questions = self.questions_storage.get_many(test_id=self.test.id)
+
+        file_data = """Как создать вопрос?
++ добавив верные ответы
++ которых может быть несколько
+- и есть неверные
+- обеспечивается случайный порядок вопросов и ответов
+
+Как создать вопрос со множественным выбором, но одним ответом?
+* правильный вопрос выделить звездочкой
+- а остальные ответы
+- всё ещё с минусами
+"""
+        with open('tmp.txt', 'w') as file:
+            file.write(file_data)
+
+        with open('tmp.txt', 'r+') as file:
+            response = client.post(reverse('main:load_questions_result'), {
+                'test': self.test.name,
+                'file': file
+            }, follow=True)
+
+        os.remove(file.name)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Новые вопросы')
+        self.assertContains(response, self.test.name)
+
+        updated_questions = self.questions_storage.get_many(test_id=self.test.id)
+        self.assertEqual(len(updated_questions), len(old_questions) + 2)
 
 
 class AddQuestionTest(MainTest):
@@ -523,3 +706,11 @@ class RunningTestsAnswersStorageTest(TestsResultsStorageTest):
         self.assertContains(response, 'Тест: %s' % self.test.name)
         self.assertContains(response, self.student.username)
         self.assertEqual(0, len(self.tests_results_storage.get_running_tests_ids()))
+
+        latest_test_results = self.tests_results_storage.get_latest_test_results(
+            lecturer_id=self.lecturer.id,
+            test_id=self.test.id
+        )
+
+        self.assertEqual(len(latest_test_results), 1)
+        self.assertEqual(latest_test_results[0]['username'], self.student.username)

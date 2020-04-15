@@ -1,10 +1,9 @@
 venv/
 .idea/
-media/
+quizer/media/
 htmlcov/
-docker/quizer
-docker/requirements.txt
-quizer/config/default_config.json
+quizer/main/migrations/
 *.pyc
-000*
 .coverage
+
+!quizer/media/logo.png

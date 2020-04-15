@@ -13,14 +13,6 @@ from .models import Test, Subject, RunningTestsAnswersStorage, TestsResultsStora
 from .config import MONGO_PORT, MONGO_HOST, MONGO_DBNAME
 
 
-def login_page(request):
-    """
-    Displays login page
-    """
-    logout(request)
-    return render(request, 'main/login.html')
-
-
 @unauthenticated_user
 def get_tests(request):
     """
@@ -54,14 +46,13 @@ def get_tests(request):
     return render(request, 'main/student/tests.html', info)
 
 
-def index(request):
+def login_page(request):
     """
     In case of successful authorization redirect to get_tests page, else displays login page with error
     """
-    if request.user.is_authenticated:
-        return get_tests(request)
+    logout(request)
     if 'username' not in request.POST or 'password' not in request.POST:
-        return render(request, 'main/login.html', {'error': 'Ошибка: неправильное имя пользователя или пароль!'})
+        return render(request, 'main/login.html')
     user = authenticate(
         username=request.POST['username'],
         password=request.POST['password']
@@ -69,7 +60,7 @@ def index(request):
     if user is not None:
         if user.is_active:
             login(request, user)
-            return get_tests(request)
+            return redirect('/tests/')
         else:
             return render(request, 'main/login.html', {'error': 'Ошибка: аккаунт пользователя отключен!'})
     else:
@@ -83,6 +74,18 @@ def run_test_result(request):
     Displays page with test run result
     """
     test = Test.objects.get(name=request.POST['test_name'])
+    mdb = QuestionsStorage.connect_to_mongodb(
+        host=MONGO_HOST,
+        port=MONGO_PORT,
+        db_name=MONGO_DBNAME
+    )
+    questions = mdb.get_many(test_id=test.id)
+    if len(questions) < test.tasks_num:
+        info = {
+            'title': 'Ошибка',
+            'message': 'Тест не запущен, так как вопросов в базе меньше %d.' % test.tasks_num,
+        }
+        return render(request, 'main/lecturer/info.html', info)
     mdb = TestsResultsStorage.connect_to_mongodb(
         host=MONGO_HOST,
         port=MONGO_PORT,
@@ -126,7 +129,7 @@ def add_test_result(request):
     test.save()
     info = {
         'title': 'Новый тест',
-        'message': 'Тест %s по предмету %s успешно добавлен.' % (test.name, subject),
+        'message': "Тест '%s' по предмету '%s' успешно добавлен." % (test.name, subject),
     }
     return render(request, 'main/lecturer/info.html', info)
 
@@ -308,18 +311,6 @@ def delete_test_result(request):
 
 @unauthenticated_user
 @allowed_users(allowed_roles=['lecturer'])
-def add_question(request):
-    """
-    Displays page with an empty form for filling out information about new question
-    """
-    info = {
-        'tests': list(Test.objects.filter(author__username=request.user.username))
-    }
-    return render(request, 'main/lecturer/addQuestion.html', info)
-
-
-@unauthenticated_user
-@allowed_users(allowed_roles=['lecturer'])
 def add_question_result(request):
     """
     Displays page with result of adding new question
@@ -389,16 +380,6 @@ def add_question_result(request):
         'message': "Вопрос '%s' к тесту '%s' успешно добавлен." % (question['formulation'], test.name),
     }
     return render(request, 'main/lecturer/info.html', info)
-
-
-@unauthenticated_user
-@allowed_users(allowed_roles=['lecturer'])
-def load_questions(request):
-    """
-    Displays page with an empty form for loading questions from file
-    """
-    tests = Test.objects.filter(author__username=request.user.username)
-    return render(request, 'main/lecturer/loadQuestions.html', {'tests': tests})
 
 
 @unauthenticated_user

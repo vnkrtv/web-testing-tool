@@ -253,7 +253,7 @@ class AccessRightsTest(MainTest):
             username=self.student.username,
             password='top_secret'
         )
-        response = client.post(reverse('main:add_question'), {
+        response = client.post(reverse('main:edit_test'), {
             'username': self.student.username,
             'password': 'top_secret'
         }, follow=True)
@@ -320,7 +320,7 @@ class TestAddingTest(MainTest):
             'duration': 45
         }, follow=True)
         self.assertEqual(response.status_code, 200)
-        message = 'Тест %s по предмету %s успешно добавлен.' % ('Second test', self.subject.name)
+        message = "Тест '%s' по предмету '%s' успешно добавлен." % ('Second test', self.subject.name)
         self.assertContains(response, message)
         self.assertEqual(len(Test.objects.all()), 2)
 
@@ -471,7 +471,15 @@ class LoadingQuestionsTest(MainTest):
             username=self.lecturer.username,
             password='top_secret'
         )
-        response = client.post(reverse('main:load_questions'), {}, follow=True)
+        response = client.post(reverse('main:edit_test'), {}, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Доступные тесты')
+
+        response = client.post(reverse('main:edit_test_redirect'), {
+            'test_name': self.test.name,
+            'btn': 'load_qstn_btn'
+        }, follow=True)
+
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Загрузить вопросы')
 
@@ -512,20 +520,6 @@ class AddQuestionTest(MainTest):
     Tests adding new questions using web interface
     """
 
-    def test_student_has_no_access(self) -> None:
-        """
-        Testing, that student is not permitted
-        to add new questions using web interface
-         """
-        client = Client()
-        client.login(
-            username=self.student.username,
-            password='top_secret'
-        )
-        response = client.post(reverse('main:add_question'), {}, follow=True)
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'You are not permitted to see this page.')
-
     def test_adding_question(self) -> None:
         """
         Testing adding new questions by using web interface,
@@ -536,7 +530,15 @@ class AddQuestionTest(MainTest):
             username=self.lecturer.username,
             password='top_secret'
         )
-        response = client.post(reverse('main:add_question'), {}, follow=True)
+        response = client.post(reverse('main:edit_test'), {}, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Доступные тесты')
+
+        response = client.post(reverse('main:edit_test_redirect'), {
+            'test_name': self.test.name,
+            'btn': 'add_qstn_btn'
+        }, follow=True)
+
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Новый вопрос')
 

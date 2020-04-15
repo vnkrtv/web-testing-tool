@@ -18,17 +18,29 @@ Coming soon:
 - ```cd Quizer```
 - Build django application - ```./build_for_linux``` or ```powershell .\build_for_win.ps1```
 - ```./build_docker``` - create 'quizer' docker image
-### Usage
+### Usage 
 Run app by command:   
 - ```docker run quizer```  
   
-When you can connect to app in browser by following link: http://172.17.0.2:8000.
+When you can connect to app in browser by following link: http://172.17.0.2:80.
 This is a test version of the program, created for demonstration purposes.   
 There are 2 users in this option:
 - user 'admin' with password 'admin', who belongs to group 'lecturer' and who is also a superuser (so you can enter django admin panel)
 - user 'user' with password 'password', who belongs to group 'student'    
 
-There is also 1 added subject 'Python', 1 added test 'PZ1' and 2 added questions.
+There are also 2 added subjects 'Python' and 'OSS', 3 tests and 2 questions for one of them.
+
+To run test, you need:
+- auth as user belong to group 'lecturer'
+- go to '/tests/' page and run one of them. You can select test by subject and its name
+    
+After that you can pass test:
+- auth as user belong to group 'student'
+- go to '/tests/' page and run it
+
+To stop test and see students results:
+- auth as user belong to group 'lecturer' and launched the test
+- go to '/running_tests/' page and stop it. Then you see detailed testing result of each student 
 ### Testing    
 Run all tests with coverage by running (venv must be activated):   
 ```coverage run quizer/manage.py test main```

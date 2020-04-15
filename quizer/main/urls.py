@@ -6,7 +6,6 @@ app_name = 'main'
 
 urlpatterns = [
     url(r'^$', views.login_page, name='login_page'),
-    url(r'^home/$', views.index, name='index'),
     url(r'^tests/$', views.get_tests, name='tests'),
 
     url(r'^run_new_test/$', views.run_test_result, name='run_test_result'),
@@ -19,9 +18,7 @@ urlpatterns = [
     url(r'^edit_test_result/$', views.edit_test_result, name='edit_test_result'),
     url(r'^delete_questions_result/$', views.delete_questions_result, name='delete_questions_result'),
     url(r'^delete_test_result/$', views.delete_test_result, name='delete_test_result'),
-    url(r'^add_question/$', views.add_question, name='add_question'),
     url(r'^add_question_result/$', views.add_question_result, name='add_question_result'),
-    url(r'^load_questions/$', views.load_questions, name='load_questions'),
     url(r'^load_questions_result/$', views.load_questions_result, name='load_questions_result'),
 
     url(r'^marks/$', views.get_marks, name='marks'),

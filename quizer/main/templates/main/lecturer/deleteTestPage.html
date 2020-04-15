@@ -8,8 +8,10 @@
  		<form action="{% url 'main:delete_test_result' %}" method="post">
 		{% csrf_token %}
 			<input type="hidden" name="test_id" id="test_id" value="{{ test.id }}">
-			<button class="btn btn-danger" id="del" name="del">Да, удалить</button>
-			<button class="btn btn-primary">Нет, оставить</button>
+			<div class="btn-group">
+				<button class="btn btn-danger" id="del" name="del">Да, удалить</button>
+				<button class="btn btn-primary">Нет, оставить</button>
+			</div>
 		</form>
  	</div>
 {% endblock %}

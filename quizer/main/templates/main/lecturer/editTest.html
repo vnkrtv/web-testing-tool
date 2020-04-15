@@ -3,23 +3,146 @@
 {% block content %}
  	<div class='jumbotron'>
  		<h2>Доступные тесты</h2><br>
- 		<p>Здесь отображаются все тесты, добавленные {{ user.username }}.</p>
- 		{% for test in tests %}
- 			<hr class="my-4">
-			<label for='test_name'>
-				<h3>{{ test.name }}</h3>
-				<p>{{ test.description }}</p>
-				<p>Количество заданий в тесте: {{ test.tasks_num }}<br>
-				Время на выполнение: {{ test.duration }} с<br>
-			    Вопросов к тесту: {{ test.questions_num }}</p>
-				<form action="{% url 'main:edit_test_redirect' %}" method="post" id="form">
-    			{% csrf_token %}
-    				<input type="hidden" name="test_name" id="test_name" value="{{ test.name }}">
-					<button class="btn btn-primary" id="btn" name="btn" value="edit_test_btn">Редактировать</button>
-					<button class="btn btn-danger" id="btn" name="btn" value="del_qstn_btn">Удалить вопросы к тесту</button>
-					<button class="btn btn-danger" id="btn" name="btn" value="del_test_btn">Удалить</button>
-				</form>
-			</label>
- 		{% endfor %}
+ 		<div>
+ 			<div class="row">
+				<div class="col-sm">
+					<p>Здесь отображаются все добавленные тесты.</p>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-sm">
+					<label class="my-1 mr-2">Предмет
+		      			<select class="custom-select my-1 mr-sm-2" id="subject" name="subject" required="required">
+					  	{% for subject in subjects %}
+					  		<option value="{{ subject }}">{{ subject }}</option>
+					  	{% endfor %}
+					    </select>
+		      		</label>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-sm">
+			      	<label class="my-1 mr-2">Фильтр по названию
+			      		<input type="text" class="form-control" id="name_filter" name="name_filter">
+			      	</label>
+		      	</div>
+	  		</div>
+	    </div>
+	    <form action="{% url 'main:edit_test_redirect' %}" method="post">
+	    	{% csrf_token %}
+	    	<div id='tests_container'></div>
+	    </form>
+ 		<script type="text/javascript">
+ 			function getDivElement(i) {
+	    		const container = document.createElement('div');
+				//container.className = "list-group-item";
+				
+
+				const hr = document.createElement('hr');
+				hr.className = "my-4";
+
+				const label = document.createElement('label');
+				label.htmlFor = "test_name";
+
+
+				const test_name_h3 = document.createElement('h3');
+				test_name_h3.innerHTML = `${tests[i].name}`
+
+				const description_p = document.createElement('p');
+				description_p.innerHTML = `${tests[i].description}`
+
+				const info_p = document.createElement('p');
+				info_p.innerHTML = `Предмет: ${tests[i].subject.name }<br>
+				Количество заданий в тесте: ${tests[i].tasks_num}<br>
+				Время на выполнение: ${tests[i].duration} с<br>
+			    Вопросов к тесту: ${tests[i].questions_num}`;
+
+				const input = document.createElement('input');
+				input.type = "hidden";
+				input.name = "test_name";
+				input.id = "test_name";
+				input.value = `${tests[i].name}`;
+
+
+				const row = document.createElement('div');
+				row.className = "btn-group";
+
+				const edit_btn = document.createElement('button');
+				edit_btn.className = "btn btn-primary";
+				edit_btn.innerHTML = "Редактировать";
+				edit_btn.id = "btn";
+				edit_btn.name = "btn";
+				edit_btn.value = "edit_test_btn";
+
+				const del_qstn_btn = document.createElement('button');
+				del_qstn_btn.className = "btn btn-danger";
+				del_qstn_btn.innerHTML = "Удалить вопросы к тесту";
+				del_qstn_btn.id = "btn";
+				del_qstn_btn.name = "btn";
+				del_qstn_btn.value = "del_qstn_btn";
+
+				const del_test_btn = document.createElement('button');
+				del_test_btn.className = "btn btn-danger";
+				del_test_btn.innerHTML = "Удалить";
+				del_test_btn.id = "btn";
+				del_test_btn.name = "btn";
+				del_test_btn.value = "del_test_btn";
+
+				row.appendChild(edit_btn);
+				row.appendChild(del_qstn_btn);
+				row.appendChild(del_test_btn);
+
+
+				label.appendChild(test_name_h3);
+				label.appendChild(description_p);
+				label.appendChild(info_p);
+				label.appendChild(input);
+				label.appendChild(row);
+				//label.appendChild(edit_btn);
+				//label.appendChild(del_qstn_btn);
+				//label.appendChild(del_test_btn);
+
+
+				container.appendChild(hr);
+				container.appendChild(label);
+
+				return container;
+	    	}
+
+ 			const tests = JSON.parse('{{ tests }}'.replace(/&#39;/gi, '"'));
+	    	const tests_count = parseInt('{{ tests|length }}');
+	    	const tests_container = document.getElementById("tests_container");
+
+	    	const subject = document.getElementById("subject");
+	    	const name_filter = document.getElementById("name_filter");
+
+	    	for (let i = 0; i < tests_count; ++i) {
+	    		if (tests[i].subject.name == subject.options[0].text) {
+					tests_container.appendChild(getDivElement(i));
+				}
+	    	}
+
+	    	subject.onkeyup = subject.onchange = () =>  {
+	    		tests_container.innerHTML = '';
+	    		for (let i = 0; i < tests_count; ++i) {
+	    			if (tests[i].name.includes(name_filter.value)) {
+	    				if (tests[i].subject.name == subject.options[subject.selectedIndex].text) {
+	    					tests_container.appendChild(getDivElement(i));
+	    				}
+	    			}
+	    		}
+	    	};
+			
+	    	name_filter.onkeyup = name_filter.onchange = () =>  {
+	    		tests_container.innerHTML = '';
+	    		for (let i = 0; i < tests_count; ++i) {
+	    			if (tests[i].name.includes(name_filter.value)) {
+	    				if (tests[i].subject.name == subject.options[subject.selectedIndex].text) {
+	    					tests_container.appendChild(getDivElement(i));
+	    				}
+	    			}
+	    		}
+	    	};
+ 		</script>
  	</div>
 {% endblock %}

@@ -48,6 +48,29 @@ class Test(models.Model):
     tasks_num = models.IntegerField('Количество заданий в тесте', default=0)
     duration = models.IntegerField('Длительность теста в секундах', default=300)
 
+    def to_dict(self) -> dict:
+        """
+        Test model representation as dictionary
+
+        :return: <dict>
+        """
+        d = {
+            'id': self.id,
+            'name': self.name,
+            'description': self.description,
+            'tasks_num': self.tasks_num,
+            'duration': self.duration,
+            'subject': {
+                'id': self.subject.id,
+                'name': self.subject.name
+            },
+            'author': {
+                'id': self.author.id,
+                'username': self.author.username
+            }
+        }
+        return d
+
     def __str__(self):
         return self.name
 
@@ -369,6 +392,15 @@ class TestsResultsStorage(MongoDB):
         """
         running_tests = self._col.find({'is_running': True})
         return [test['test_id'] for test in running_tests] if running_tests else []
+
+    def get_running_tests(self) -> list:
+        """
+        Return list of running tests
+
+        :return: <list: dict>
+        """
+        running_tests = self._col.find({'is_running': True})
+        return list(running_tests) if running_tests else []
 
     def stop_running_test(self, test_id: int, lecturer_id: int) -> None:
         """

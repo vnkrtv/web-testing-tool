@@ -35,10 +35,11 @@ def get_tests(request):
     )
     running_tests_ids = mdb.get_running_tests_ids()
     if request.user.groups.filter(name='lecturer'):
-        lecturers_tests = Test.objects.filter(author__username=request.user.username)
-        not_running_lecturers_tests = filter(lambda test: test.id not in running_tests_ids, lecturers_tests)
+        tests = Test.objects.all()
+        not_running_tests = [t for t in tests if t.id not in running_tests_ids]
         info = {
-            'tests': list(not_running_lecturers_tests),
+            'subjects': list(Subject.objects.all()),
+            'tests': [t.to_dict() for t in not_running_tests],
         }
         return render(request, 'main/lecturer/testsPanel.html', info)
     if len(running_tests_ids) == 0:
@@ -141,22 +142,17 @@ def get_running_tests(request):
         port=MONGO_PORT,
         db_name=MONGO_DBNAME
     )
-    running_tests_ids = mdb.get_running_tests_ids()
-    lecturers_tests = Test.objects.filter(author__username=request.user.username)
-    running_lecturers_tests = list(filter(lambda item: item.id in running_tests_ids, lecturers_tests))
+    running_tests = mdb.get_running_tests()
     tests = []
-    for test in running_lecturers_tests:
-        results = mdb.get_running_test_results(
-            test_id=test.id,
-            lecturer_id=request.user.id
-        )
-        tests.append({
-            'name': test.name,
-            'description': test.description,
-            'tasks_num': test.tasks_num,
-            'duration': test.duration,
-            'finished_students_num': len(results)
-        })
+    for running_test in running_tests:
+        if running_test['launched_lecturer_id'] == request.user.id:
+            test = Test.objects.get(id=running_test['test_id']).to_dict()
+            results = mdb.get_running_test_results(
+                test_id=test['id'],
+                lecturer_id=request.user.id
+            )
+            test['finished_students_num'] = len(results)
+            tests.append(test)
     return render(request, 'main/lecturer/runningTests.html', {'tests': tests})
 
 
@@ -191,23 +187,22 @@ def stop_running_test(request):
 @allowed_users(allowed_roles=['lecturer'])
 def edit_test(request):
     """
-    Displays page with all lecturer's tests
+    Displays page with all tests
     """
     mdb = QuestionsStorage.connect_to_mongodb(
         host=MONGO_HOST,
         port=MONGO_PORT,
         db_name=MONGO_DBNAME
     )
-    tests = []
-    for test in list(Test.objects.filter(author__username=request.user.username)):
-        tests.append({
-            'name': test.name,
-            'description': test.description,
-            'tasks_num': test.tasks_num,
-            'duration': test.duration,
-            'questions_num': len(mdb.get_many(test_id=test.id))
-        })
-    return render(request, 'main/lecturer/editTest.html', {'tests': tests})
+    tests = [t.to_dict() for t in Test.objects.all()]
+    for test in tests:
+        test['questions_num'] = len(mdb.get_many(test_id=test['id']))
+
+    info = {
+        'subjects': list(Subject.objects.all()),
+        'tests': tests,
+    }
+    return render(request, 'main/lecturer/editTest.html', info)
 
 
 @unauthenticated_user

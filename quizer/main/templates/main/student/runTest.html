@@ -31,9 +31,9 @@
             		<li class="list-group-item">
             			<label for='{{ forloop.parentloop.counter }}_{{ forloop.counter }}'>
 	            			{% if question.multiselect %}
-	                    		<input type="checkbox" id='{{ forloop.parentloop.counter }}_{{ forloop.counter }}' name='{{ forloop.parentloop.counter }}_{{ forloop.counter }}'>
+	                    		<input type="checkbox" id='{{ forloop.parentloop.counter }}_{{ option.option }}' name='{{ forloop.parentloop.counter }}_{{ option.option }}'>
 	            			{% else %}
-	                    		<input type="radio" id='{{ forloop.parentloop.counter }}_{{ forloop.counter }}' name='{{ forloop.parentloop.counter }}' value="{{ forloop.counter }}">
+	                    		<input type="radio" id='{{ forloop.parentloop.counter }}_{{ option.option }}' name='{{ forloop.parentloop.counter }}' value="{{ option.option }}">
 	            			{% endif %}
 	            		</label>
 	            		{% if question.with_images %}

@@ -231,7 +231,7 @@ class RunningTestsAnswersStorage(MongoDB):
         :param right_answers: <dict>
             {
                 'question_number_1': {
-                    'right_answers': [1, 2 ... <list: int>],
+                    'right_answers': ['First true option', 'Second true option' ... <list: str>],
                     'id': str(ObjectId()),
                 'question_number_2': {
                     ...
@@ -334,8 +334,8 @@ class TestsResultsStorage(MongoDB):
                 'questions': [
                     {
                         'id': <str>, str(ObjectId()),
-                        'selected_answers': <list: int>,
-                        'right_answers': <list: int>
+                        'selected_answers': <list: str>,
+                        'right_answers': <list: str>
                     },
                     ...
                 ]

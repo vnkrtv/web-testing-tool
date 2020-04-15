@@ -502,11 +502,15 @@ def run_test(request):
             'message': 'Вопросов к данному тесту меньше %d' % test.tasks_num,
         }
         return render(request, 'main/student/info.html', info)
+
     questions = random.sample(questions, k=test.tasks_num)
+    for question in questions:
+        random.shuffle(question['options'])
+
     right_answers = {}
     for i, question in enumerate(questions):
         right_answers[str(i + 1)] = {
-            'right_answers': [str(i + 1) for i, option in enumerate(question['options']) if option['is_true']],
+            'right_answers': [option for option in question['options'] if option['is_true']],
             'id': str(question['_id'])
         }
     mdb = RunningTestsAnswersStorage.connect_to_mongodb(
@@ -569,13 +573,14 @@ def test_result(request):
         questions.append({
             'id': right_answers[question_num]['id'],
             'selected_answers': answers[question_num] if question_num in answers else [],
-            'right_answers': right_answers[question_num]['right_answers']
+            'right_answers': [item['option'] for item in right_answers[question_num]['right_answers']]
         })
-        if question_num in answers and right_answers[question_num]['right_answers'] == answers[question_num]:
-            right_answers_count += 1
-            questions[-1]['is_true'] = True
-        else:
-            questions[-1]['is_true'] = False
+        if question_num in answers:
+            if [item['option'] for item in right_answers[question_num]['right_answers']] == answers[question_num]:
+                right_answers_count += 1
+                questions[-1]['is_true'] = True
+            else:
+                questions[-1]['is_true'] = False
     result = {
         'user_id': request.user.id,
         'username': request.user.username,

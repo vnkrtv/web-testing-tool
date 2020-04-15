@@ -11,8 +11,7 @@ pip install --no-cache-dir -r requirements.txt
 Write-Host "=========================================Successfully loaded requeirments======================================="
 
 django-admin startproject quizer
-$SECRET_KEY = Get-Content .\quizer\quizer\settings.py | Where-Object {$_.startsWith('SECRET_KEY') } | ForEach-Object { $_.split("'") }
-$SECRET_KEY = $SECRET_KEY[1]
+$SECRET_KEY = (Get-Content .\quizer\quizer\settings.py | Where-Object {$_.startsWith('SECRET_KEY') } | ForEach-Object { $_.split("'") })[1]
 
 Set-Location quizer
 python manage.py startapp main

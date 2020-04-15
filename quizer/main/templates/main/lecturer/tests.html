@@ -44,30 +44,26 @@
 				label.htmlFor = "test_name";
 
 				const test_name_h3 = document.createElement('h3');
-				test_name_h3.innerHTML = `${tests[i].name}`
+				test_name_h3.innerHTML = `${tests[i].name}`;
 
 				const description_p = document.createElement('p');
-				description_p.innerHTML = `${tests[i].description}`
+				description_p.innerHTML = `${tests[i].description}`;
 
 				const info_p = document.createElement('p');
 				info_p.innerHTML = `Предмет: ${tests[i].subject.name }<br>
 				Количество заданий в тесте: ${tests[i].tasks_num}<br>
 				Время на выполнение: ${tests[i].duration} с`;
 
-				const input = document.createElement('input');
-				input.type = "hidden";
-				input.name = "test_name";
-				input.id = "test_name";
-				input.value = `${tests[i].name}`;
-
 				const btn = document.createElement('button');
 				btn.className = "btn btn-primary";
 				btn.innerHTML = "Запустить";
+				btn.id =  "test_name";
+				btn.name =  "test_name";
+				btn.value = `${tests[i].name}`;
 
 				label.appendChild(test_name_h3);
 				label.appendChild(description_p);
 				label.appendChild(info_p);
-				label.appendChild(input);
 				label.appendChild(btn);
 
 				container.appendChild(hr);

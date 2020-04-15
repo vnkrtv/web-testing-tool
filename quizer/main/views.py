@@ -33,7 +33,7 @@ def get_tests(request):
             'subjects': list(Subject.objects.all()),
             'tests': [t.to_dict() for t in not_running_tests],
         }
-        return render(request, 'main/lecturer/testsPanel.html', info)
+        return render(request, 'main/lecturer/tests.html', info)
     if len(running_tests_ids) == 0:
         info = {
             'title': 'Доступные тесты отсутствуют',
@@ -214,7 +214,9 @@ def edit_test_redirect(request):
     """
     Redirecting 'lecturer' to specific page depending on his choose
     """
-    test = Test.objects.get(name=request.POST['test_name'])
+    key = [key for key in request.POST if 'test_name_' in key][0]
+    test_name = key.split('test_name_')[1]
+    test = Test.objects.get(name=test_name)
     mdb = QuestionsStorage.connect_to_mongodb(
         host=MONGO_HOST,
         port=MONGO_PORT,
@@ -222,7 +224,7 @@ def edit_test_redirect(request):
     )
     questions = [question['formulation'] for question in mdb.get_many(test_id=test.id)]
     info = {
-        'test': Test.objects.get(name=request.POST['test_name']),
+        'test': Test.objects.get(name=test_name),
         'questions': questions
     }
     template = {
@@ -231,7 +233,7 @@ def edit_test_redirect(request):
         'load_qstn_btn': 'loadQuestions',
         'del_test_btn': 'deleteTestPage',
         'del_qstn_btn': 'deleteQuestionPage'
-    }[request.POST["btn"]]
+    }[request.POST[key]]
     return render(request, f'main/lecturer/{template}.html', info)
 
 

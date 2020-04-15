@@ -2,7 +2,7 @@
 
 {% block content %}
  	<div class='jumbotron'>
- 		<h2>Доступные тесты</h2><br>
+		<h2>Доступные тесты</h2><br>
  		<div>
  			<div class="row">
 				<div class="col-sm">
@@ -35,15 +35,12 @@
  		<script type="text/javascript">
  			function getDivElement(i) {
 	    		const container = document.createElement('div');
-				//container.className = "list-group-item";
-				
-
+		
 				const hr = document.createElement('hr');
 				hr.className = "my-4";
 
 				const label = document.createElement('label');
 				label.htmlFor = "test_name";
-
 
 				const test_name_h3 = document.createElement('h3');
 				test_name_h3.innerHTML = `${tests[i].name}`
@@ -63,9 +60,8 @@
 				input.id = "test_name";
 				input.value = `${tests[i].name}`;
 
-
-				const row = document.createElement('div');
-				row.className = "btn-group";
+				const btn_cont = document.createElement('div');
+				btn_cont.className = "btn-group";
 
 				const edit_btn = document.createElement('button');
 				edit_btn.className = "btn btn-primary";
@@ -74,34 +70,45 @@
 				edit_btn.name = "btn";
 				edit_btn.value = "edit_test_btn";
 
+				const add_qstn_btn = document.createElement('button');
+				add_qstn_btn.className = "btn btn-success";
+				add_qstn_btn.innerHTML = "Добавить вопрос";
+				add_qstn_btn.id = "btn";
+				add_qstn_btn.name = "btn";
+				add_qstn_btn.value = "add_qstn_btn";
+
+				const load_qstn_btn = document.createElement('button');
+				load_qstn_btn.className = "btn btn-success";
+				load_qstn_btn.innerHTML = "Загрузить вопросы";
+				load_qstn_btn.id = "btn";
+				load_qstn_btn.name = "btn";
+				load_qstn_btn.value = "load_qstn_btn";
+
 				const del_qstn_btn = document.createElement('button');
 				del_qstn_btn.className = "btn btn-danger";
-				del_qstn_btn.innerHTML = "Удалить вопросы к тесту";
+				del_qstn_btn.innerHTML = "Удалить вопросы";
 				del_qstn_btn.id = "btn";
 				del_qstn_btn.name = "btn";
 				del_qstn_btn.value = "del_qstn_btn";
 
 				const del_test_btn = document.createElement('button');
 				del_test_btn.className = "btn btn-danger";
-				del_test_btn.innerHTML = "Удалить";
+				del_test_btn.innerHTML = "Удалить тест";
 				del_test_btn.id = "btn";
 				del_test_btn.name = "btn";
 				del_test_btn.value = "del_test_btn";
 
-				row.appendChild(edit_btn);
-				row.appendChild(del_qstn_btn);
-				row.appendChild(del_test_btn);
-
+				btn_cont.appendChild(edit_btn);
+				btn_cont.appendChild(add_qstn_btn);
+				btn_cont.appendChild(load_qstn_btn);
+				btn_cont.appendChild(del_qstn_btn);
+				btn_cont.appendChild(del_test_btn);
 
 				label.appendChild(test_name_h3);
 				label.appendChild(description_p);
 				label.appendChild(info_p);
 				label.appendChild(input);
-				label.appendChild(row);
-				//label.appendChild(edit_btn);
-				//label.appendChild(del_qstn_btn);
-				//label.appendChild(del_test_btn);
-
+				label.appendChild(btn_cont);
 
 				container.appendChild(hr);
 				container.appendChild(label);

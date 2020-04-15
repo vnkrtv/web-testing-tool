@@ -2,29 +2,21 @@
 
 {% block content %}
  	<div class='jumbotron'>
- 		<h2>Загрузить вопросы</h2><br>
+ 		<h2>Загрузить вопросы</h2>
  		<form action="{% url 'main:load_questions_result' %}" enctype="multipart/form-data" method="post">
  		{% csrf_token %}
- 		  <div class="form-row">
-		     <div class="col-md-4 mb-3">
-				<label class="my-1 mr-2" for="subject_name">Тест
-				  <select class="custom-select my-1 mr-sm-2" id="test" name="test" required="required">
-				  	{% for test in tests %}
-				  		<option value="{{ test }}">{{ test }}</option>
-				  	{% endfor %}
-				  </select>
-				 </label>
-		      </div>
-		  </div>
-		  <div class="form-row">
-		  	<div class="col-md-4 mb-3">
-				  <div class="form-group">
-				  	<label for="file">Выберите файл</label>
-				    <input type="file" class="form-control-file" id="file" name="file" required="required"> 
-				  </div>
-		  	</div>
-		  </div>
-		  <button class="btn btn-primary" type="submit">Загрузить</button>
+ 		    <label for="test">
+				<input type="hidden" id="test" name="test" value="{{ test }}">
+		    </label>
+		    <div class="form-row">
+		  	    <div class="col-md-4 mb-3">
+				    <div class="form-group">
+				  		<label for="file">Выберите файл</label>
+				    	<input type="file" class="form-control-file" id="file" name="file" required="required"> 
+				    </div>
+		  	    </div>
+		    </div>
+		    <button class="btn btn-primary" type="submit">Загрузить</button>
 		</form>
 	</div>
 {% endblock %}

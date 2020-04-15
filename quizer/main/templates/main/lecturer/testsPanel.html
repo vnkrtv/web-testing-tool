@@ -36,15 +36,12 @@
  		<script type="text/javascript">
  			function getDivElement(i) {
 	    		const container = document.createElement('div');
-				//container.className = "list-group-item";
-				
 
 				const hr = document.createElement('hr');
 				hr.className = "my-4";
 
 				const label = document.createElement('label');
 				label.htmlFor = "test_name";
-
 
 				const test_name_h3 = document.createElement('h3');
 				test_name_h3.innerHTML = `${tests[i].name}`
@@ -72,7 +69,6 @@
 				label.appendChild(info_p);
 				label.appendChild(input);
 				label.appendChild(btn);
-
 
 				container.appendChild(hr);
 				container.appendChild(label);

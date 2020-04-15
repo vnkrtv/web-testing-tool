@@ -224,6 +224,8 @@ def edit_test_redirect(request):
     }
     template = {
         'edit_test_btn': 'editingTestPage',
+        'add_qstn_btn': 'addQuestion',
+        'load_qstn_btn': 'loadQuestions',
         'del_test_btn': 'deleteTestPage',
         'del_qstn_btn': 'deleteQuestionPage'
     }[request.POST["btn"]]

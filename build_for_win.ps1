@@ -62,7 +62,8 @@ If ($MONGO_DBNAME -eq "")
 Write-Output "MONGO_DBNAME = '$MONGO_DBNAME'" >> config.py
 
 Copy-Item -Path .\config.py -Destination .\quizer\quizer\config.py
-Move-Item -Path .\config.py -Destination .\quizer\main\config.py
+Copy-Item -Path .\config.py -Destination .\quizer\main\config.py
+Remove-Item .\config.py
 
 python .\quizer\manage.py makemigrations
 python .\quizer\manage.py migrate

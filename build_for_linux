@@ -63,7 +63,8 @@ fi
 echo "MONGO_DBNAME = '${MONGO_DBNAME}'" >> config.py
 
 cp config.py ./quizer/quizer/config.py
-mv config.py ./quizer/main/config.py
+cp config.py ./quizer/main/config.py
+rm config.py
 
 python quizer/manage.py makemigrations
 python quizer/manage.py migrate

@@ -1,10 +1,12 @@
 #!/bin/bash
+
 python3 -m venv venv
 echo "Created virtual environment..."
-source ./venv/bin/activate
+. ./venv/bin/activate
 mkdir tmp
 cp -r quizer tmp/quizer
 rm -r quizer
+
 echo "===========================================Start loading requirements==========================================="
 pip install --no-cache-dir -r requirements.txt
 echo "=========================================Successfully loaded requeirments======================================="
@@ -51,14 +53,14 @@ if [ "${MONGO_PASSWORD}" == "" ]
 then
   MONGO_PASSWORD=""
 fi
-echo "MONGO_USER = '${MONGO_PASSWORD}'" >> config.py
+echo "MONGO_PASSWORD = '${MONGO_PASSWORD}'" >> config.py
 
 read -r -p "MongoDB database name: " MONGO_DBNAME
 if [ "${MONGO_DBNAME}" == "" ]
 then
   MONGO_DBNAME="quizer"
 fi
-echo "MONGO_USER = '${MONGO_DBNAME}'" >> config.py
+echo "MONGO_DBNAME = '${MONGO_DBNAME}'" >> config.py
 
 cp config.py ./quizer/quizer/config.py
 mv config.py ./quizer/main/config.py

@@ -191,7 +191,7 @@ class AuthorizationTest(MainTest):
         """
         client = Client()
         client.logout()
-        response = client.post(reverse('main:index'), {
+        response = client.post(reverse('main:login_page'), {
             'username': self.student.username,
             'password': 'top_secret'
         }, follow=True)
@@ -204,7 +204,7 @@ class AuthorizationTest(MainTest):
         """
         client = Client()
         client.logout()
-        response = client.post(reverse('main:index'), {
+        response = client.post(reverse('main:login_page'), {
             'username': self.lecturer.username,
             'password': 'top_secret'
         }, follow=True)
@@ -218,7 +218,7 @@ class AuthorizationTest(MainTest):
         """
         client = Client()
         client.logout()
-        response = client.post(reverse('main:index'), {
+        response = client.post(reverse('main:login_page'), {
             'username': 'anonymous',
             'password': 'anonymous'
         }, follow=True)
@@ -320,8 +320,7 @@ class TestAddingTest(MainTest):
             'duration': 45
         }, follow=True)
         self.assertEqual(response.status_code, 200)
-        message = "Тест '%s' по предмету '%s' успешно добавлен." % ('Second test', self.subject.name)
-        self.assertContains(response, message)
+        self.assertContains(response, 'Second test')
         self.assertEqual(len(Test.objects.all()), 2)
 
 
@@ -360,8 +359,7 @@ class TestEditingTest(MainTest):
         old_test = Test.objects.get(id=self.test.id)
 
         response = client.post(reverse('main:edit_test_redirect'), {
-            'test_name': self.test.name,
-            'btn': 'edit_test_btn'
+            f'test_name_{self.test.name}': 'edit_test_btn'
         }, follow=True)
 
         self.assertEqual(response.status_code, 200)
@@ -400,8 +398,7 @@ class TestEditingTest(MainTest):
         self.assertContains(response, 'Доступные тесты')
 
         response = client.post(reverse('main:edit_test_redirect'), {
-            'test_name': self.test.name,
-            'btn': 'del_test_btn'
+            f'test_name_{self.test.name}': 'del_test_btn'
         }, follow=True)
 
         self.assertEqual(response.status_code, 200)
@@ -432,8 +429,7 @@ class TestEditingTest(MainTest):
         self.assertContains(response, 'Доступные тесты')
 
         response = client.post(reverse('main:edit_test_redirect'), {
-            'test_name': self.test.name,
-            'btn': 'del_qstn_btn'
+            f'test_name_{self.test.name}': 'del_qstn_btn'
         }, follow=True)
 
         questions = self.questions_storage.get_many(test_id=self.test.id)
@@ -476,8 +472,7 @@ class LoadingQuestionsTest(MainTest):
         self.assertContains(response, 'Доступные тесты')
 
         response = client.post(reverse('main:edit_test_redirect'), {
-            'test_name': self.test.name,
-            'btn': 'load_qstn_btn'
+            f'test_name_{self.test.name}': 'load_qstn_btn',
         }, follow=True)
 
         self.assertEqual(response.status_code, 200)
@@ -535,8 +530,7 @@ class AddQuestionTest(MainTest):
         self.assertContains(response, 'Доступные тесты')
 
         response = client.post(reverse('main:edit_test_redirect'), {
-            'test_name': self.test.name,
-            'btn': 'add_qstn_btn'
+            f'test_name_{self.test.name}': 'add_qstn_btn',
         }, follow=True)
 
         self.assertEqual(response.status_code, 200)

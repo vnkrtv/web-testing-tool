@@ -27,35 +27,35 @@ echo "${NEW_SETTINGS}" > ./quizer/quizer/settings.py
 rm -r tmp
 echo "===========================================Initialized django app==============================================="
 echo "==========================================Enter configuration data============================================="
-read -r -p "MongoDB host: " MONGO_HOST
+read -r -p "MongoDB host (default: localhost) " MONGO_HOST
 if [ "${MONGO_HOST}" == "" ]
 then
   MONGO_HOST="localhost"
 fi
 echo "MONGO_HOST = '${MONGO_HOST}'" >> config.py
 
-read -r -p "MongoDB port: " MONGO_PORT
+read -r -p "MongoDB port (default: 27017): " MONGO_PORT
 if [ "${MONGO_PORT}" == "" ]
 then
   MONGO_PORT="27017"
 fi
 echo "MONGO_PORT = '${MONGO_PORT}'" >> config.py
 
-read -r -p "MongoDB user: " MONGO_USER
+read -r -p "MongoDB user (default: '' <yet not supported>): " MONGO_USER
 if [ "${MONGO_USER}" == "" ]
 then
   MONGO_USER=""
 fi
 echo "MONGO_USER = '${MONGO_USER}'" >> config.py
 
-read -r -p "MongoDB password: " MONGO_PASSWORD
+read -r -p "MongoDB password (default: '' <yet not supported>): " MONGO_PASSWORD
 if [ "${MONGO_PASSWORD}" == "" ]
 then
   MONGO_PASSWORD=""
 fi
 echo "MONGO_PASSWORD = '${MONGO_PASSWORD}'" >> config.py
 
-read -r -p "MongoDB database name: " MONGO_DBNAME
+read -r -p "MongoDB database name (default: 'quizer'): " MONGO_DBNAME
 if [ "${MONGO_DBNAME}" == "" ]
 then
   MONGO_DBNAME="quizer"

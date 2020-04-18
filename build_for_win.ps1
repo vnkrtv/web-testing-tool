@@ -26,35 +26,35 @@ Move-Item -Path .\settings -Destination .\quizer\quizer\settings.py
 Remove-Item -Recurse tmp
 Write-Host "===========================================Initialized django app==============================================="
 Write-Host "==========================================Enter configuration data============================================="
-$MONGO_HOST = Read-Host "MongoDB host: "
+$MONGO_HOST = Read-Host "MongoDB host (default: 'localhost'): "
 If ($MONGO_HOST -eq "")
 {
   $MONGO_HOST="localhost"
 }
 Write-Output "MONGO_HOST = '$MONGO_HOST'" >> config.py
 
-$MONGO_PORT = Read-Host "MongoDB port: "
+$MONGO_PORT = Read-Host "MongoDB port (default: 27017): "
 If ($MONGO_PORT -eq "")
 {
   $MONGO_PORT="27017"
 }
 Write-Output "MONGO_PORT = '$MONGO_PORT'" >> config.py
 
-$MONGO_USER = Read-Host "MongoDB user: "
+$MONGO_USER = Read-Host "MongoDB user (default: '' <yet not supported>): "
 If ($MONGO_HOST -eq "")
 {
   $MONGO_USER=""
 }
 Write-Output "MONGO_USER = '$MONGO_USER'" >> config.py
 
-$MONGO_PASSWORD = Read-Host "MongoDB password: "
+$MONGO_PASSWORD = Read-Host "MongoDB password (default: '' <yet not supported>): "
 If ($MONGO_PASSWORD -eq "")
 {
   $MONGO_PASSWORD=""
 }
 Write-Output "MONGO_PASSWORD = '$MONGO_PASSWORD'" >> config.py
 
-$MONGO_DBNAME = Read-Host "MongoDB database name: "
+$MONGO_DBNAME = Read-Host "MongoDB database name (default: 'quizer'): "
 If ($MONGO_DBNAME -eq "")
 {
   $MONGO_DBNAME="quizer"

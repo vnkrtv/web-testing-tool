@@ -1,7 +1,7 @@
-# Quizer
+# web-testing-tool
 
 ### Description
-Testing system implemented on Django. Data storage is implemented in the DBMS MongoDB.  
+Testing tool implemented on Django. Data storage is implemented in the DBMS MongoDB.  
 Implemented system features:
 - adding users and new study subjects using Django admin panel as superuser
 - separation of access rights for 2 groups - 'student' and 'lecturer'

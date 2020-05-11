@@ -1,5 +1,5 @@
 FROM       ubuntu:latest
-MAINTAINER quizer
+MAINTAINER LeadNess
 
 RUN apt-get update && apt-get install -y build-essential python3 \
  && apt-get install -y python3-setuptools \

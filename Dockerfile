@@ -17,6 +17,6 @@ RUN pip3 install --no-cache-dir -r requirements.txt \
 
 COPY quizer /app/quizer
 
-COPY entry_commands /entry_commands
+COPY deploy/entrypoint /entrypoint
 EXPOSE 80
-ENTRYPOINT ["/entry_commands"]
+ENTRYPOINT ["/entrypoint"]

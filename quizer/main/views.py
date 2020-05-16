@@ -1,16 +1,17 @@
 # pylint: disable=import-error, line-too-long, no-else-return, pointless-string-statement, relative-beyond-top-level
 """
-Quizer templates rendering functions
+Quizer backend
 """
 import random
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
 from django.contrib.auth import login, logout, authenticate
 from django.shortcuts import render, redirect
+from django.conf import settings
 from bson import ObjectId
-from .decorators import unauthenticated_user, allowed_users
-from .models import Test, Subject, RunningTestsAnswersStorage, TestsResultsStorage, QuestionsStorage
-from .config import MONGO_PORT, MONGO_HOST, MONGO_DBNAME
+from . import mongo
+from .decorators import unauthenticated_user, allowed_users, post_method
+from .models import Test, Subject
 
 
 @unauthenticated_user
@@ -20,12 +21,8 @@ def get_tests(request):
     For lecturer - displays list of tests that can be run
     For student - displays list of running tests
     """
-    mdb = TestsResultsStorage.connect_to_mongodb(
-        host=MONGO_HOST,
-        port=MONGO_PORT,
-        db_name=MONGO_DBNAME
-    )
-    running_tests_ids = mdb.get_running_tests_ids()
+    storage = mongo.TestsResultsStorage.connect(client=mongo.get_client())
+    running_tests_ids = storage.get_running_tests_ids()
     if request.user.groups.filter(name='lecturer'):
         tests = Test.objects.all()
         not_running_tests = [t for t in tests if t.id not in running_tests_ids]
@@ -55,11 +52,13 @@ def login_page(request):
         return render(request, 'main/login.html')
     user = authenticate(
         username=request.POST['username'],
-        password=request.POST['password']
-    )
+        password=request.POST['password'])
     if user is not None:
         if user.is_active:
             login(request, user)
+            mongo.set_client(
+                host=settings.DATABASES['default']['HOST'],
+                port=settings.DATABASES['default']['PORT'])
             return redirect('/tests/')
         else:
             return render(request, 'main/login.html', {'error': 'Ошибка: аккаунт пользователя отключен!'})
@@ -67,6 +66,7 @@ def login_page(request):
         return render(request, 'main/login.html', {'error': 'Ошибка: неправильное имя пользователя или пароль!'})
 
 
+@post_method
 @unauthenticated_user
 @allowed_users(allowed_roles=['lecturer'])
 def run_test_result(request):
@@ -74,27 +74,18 @@ def run_test_result(request):
     Displays page with test run result
     """
     test = Test.objects.get(name=request.POST['test_name'])
-    mdb = QuestionsStorage.connect_to_mongodb(
-        host=MONGO_HOST,
-        port=MONGO_PORT,
-        db_name=MONGO_DBNAME
-    )
-    questions = mdb.get_many(test_id=test.id)
+    storage = mongo.QuestionsStorage.connect(client=mongo.get_client())
+    questions = storage.get_many(test_id=test.id)
     if len(questions) < test.tasks_num:
         info = {
             'title': 'Ошибка',
             'message': 'Тест не запущен, так как вопросов в базе меньше %d.' % test.tasks_num,
         }
         return render(request, 'main/lecturer/info.html', info)
-    mdb = TestsResultsStorage.connect_to_mongodb(
-        host=MONGO_HOST,
-        port=MONGO_PORT,
-        db_name=MONGO_DBNAME
-    )
-    mdb.add_running_test(
+    storage = mongo.TestsResultsStorage.connect(client=mongo.get_client())
+    storage.add_running_test(
         test_id=test.id,
-        lecturer_id=request.user.id
-    )
+        lecturer_id=request.user.id)
     info = {
         'title': 'Тест запущен',
         'message': "Состояние его прохождения можно отследить во вкладке 'Запущенные тесты'",
@@ -111,6 +102,7 @@ def add_test(request):
     return render(request, 'main/lecturer/addTest.html', {'subjects': list(Subject.objects.all())})
 
 
+@post_method
 @unauthenticated_user
 @allowed_users(allowed_roles=['lecturer'])
 def add_test_result(request):
@@ -124,8 +116,7 @@ def add_test_result(request):
         subject=Subject.objects.get(name=subject),
         description=request.POST['description'],
         tasks_num=request.POST['tasks_num'],
-        duration=request.POST['duration']
-    )
+        duration=request.POST['duration'])
     test.save()
     info = {
         'title': 'Новый тест',
@@ -140,25 +131,21 @@ def get_running_tests(request):
     """
     Displays page with running lecturer's tests
     """
-    mdb = TestsResultsStorage.connect_to_mongodb(
-        host=MONGO_HOST,
-        port=MONGO_PORT,
-        db_name=MONGO_DBNAME
-    )
-    running_tests = mdb.get_running_tests()
+    storage = mongo.TestsResultsStorage.connect(client=mongo.get_client())
+    running_tests = storage.get_running_tests()
     tests = []
     for running_test in running_tests:
         if running_test['launched_lecturer_id'] == request.user.id:
             test = Test.objects.get(id=running_test['test_id']).to_dict()
-            results = mdb.get_running_test_results(
+            results = storage.get_running_test_results(
                 test_id=test['id'],
-                lecturer_id=request.user.id
-            )
+                lecturer_id=request.user.id)
             test['finished_students_num'] = len(results)
             tests.append(test)
     return render(request, 'main/lecturer/runningTests.html', {'tests': tests})
 
 
+@post_method
 @unauthenticated_user
 @allowed_users(allowed_roles=['lecturer'])
 def stop_running_test(request):
@@ -166,19 +153,13 @@ def stop_running_test(request):
     Displays page with results of passing stopped test
     """
     test = Test.objects.get(name=request.POST['test_name'])
-    mdb = TestsResultsStorage.connect_to_mongodb(
-        host=MONGO_HOST,
-        port=MONGO_PORT,
-        db_name=MONGO_DBNAME
-    )
-    results = mdb.get_running_test_results(
+    storage = mongo.TestsResultsStorage.connect(client=mongo.get_client())
+    results = storage.get_running_test_results(
         test_id=test.id,
-        lecturer_id=request.user.id
-    )
-    mdb.stop_running_test(
+        lecturer_id=request.user.id)
+    storage.stop_running_test(
         test_id=test.id,
-        lecturer_id=request.user.id
-    )
+        lecturer_id=request.user.id)
     info = {
         'test': test,
         'results': results,
@@ -192,14 +173,10 @@ def edit_test(request):
     """
     Displays page with all tests
     """
-    mdb = QuestionsStorage.connect_to_mongodb(
-        host=MONGO_HOST,
-        port=MONGO_PORT,
-        db_name=MONGO_DBNAME
-    )
+    storage = mongo.QuestionsStorage.connect(client=mongo.get_client())
     tests = [t.to_dict() for t in Test.objects.all()]
     for test in tests:
-        test['questions_num'] = len(mdb.get_many(test_id=test['id']))
+        test['questions_num'] = len(storage.get_many(test_id=test['id']))
 
     info = {
         'subjects': list(Subject.objects.all()),
@@ -208,6 +185,7 @@ def edit_test(request):
     return render(request, 'main/lecturer/editTest.html', info)
 
 
+@post_method
 @unauthenticated_user
 @allowed_users(allowed_roles=['lecturer'])
 def edit_test_redirect(request):
@@ -217,12 +195,8 @@ def edit_test_redirect(request):
     key = [key for key in request.POST if 'test_name_' in key][0]
     test_name = key.split('test_name_')[1]
     test = Test.objects.get(name=test_name)
-    mdb = QuestionsStorage.connect_to_mongodb(
-        host=MONGO_HOST,
-        port=MONGO_PORT,
-        db_name=MONGO_DBNAME
-    )
-    questions = [question['formulation'] for question in mdb.get_many(test_id=test.id)]
+    storage = mongo.QuestionsStorage.connect(client=mongo.get_client())
+    questions = [question['formulation'] for question in storage.get_many(test_id=test.id)]
     info = {
         'test': Test.objects.get(name=test_name),
         'questions': questions
@@ -237,6 +211,7 @@ def edit_test_redirect(request):
     return render(request, f'main/lecturer/{template}.html', info)
 
 
+@post_method
 @unauthenticated_user
 @allowed_users(allowed_roles=['lecturer'])
 def edit_test_result(request):
@@ -251,8 +226,7 @@ def edit_test_result(request):
         subject=test.subject,
         description=request.POST['description'],
         tasks_num=request.POST['tasks_num'],
-        duration=request.POST['duration']
-    )
+        duration=request.POST['duration'])
     Test.delete(test)
     new_test.save()
     info = {
@@ -262,6 +236,7 @@ def edit_test_result(request):
     return render(request, 'main/lecturer/info.html', info)
 
 
+@post_method
 @unauthenticated_user
 @allowed_users(allowed_roles=['lecturer'])
 def delete_questions_result(request):
@@ -271,16 +246,11 @@ def delete_questions_result(request):
     request_dict = dict(request.POST)
     request_dict.pop('csrfmiddlewaretoken')
     test = Test.objects.get(id=request_dict.pop('test_id')[0])
-    mdb = QuestionsStorage.connect_to_mongodb(
-        host=MONGO_HOST,
-        port=MONGO_PORT,
-        db_name=MONGO_DBNAME
-    )
+    storage = mongo.QuestionsStorage.connect(client=mongo.get_client())
     for question_formulation in request_dict:
-        mdb.delete_one(
+        storage.delete_one(
             question_formulation=question_formulation,
-            test_id=test.id
-        )
+            test_id=test.id)
     info = {
         'title': 'Результат удаления',
         'message': "Вопросы к тесту '%s' в количестве %d были успешно удалены." % (test.name, len(request_dict))
@@ -288,6 +258,7 @@ def delete_questions_result(request):
     return render(request, 'main/lecturer/info.html', info)
 
 
+@post_method
 @unauthenticated_user
 @allowed_users(allowed_roles=['lecturer'])
 def delete_test_result(request):
@@ -296,12 +267,8 @@ def delete_test_result(request):
     """
     test = Test.objects.get(id=request.POST['test_id'])
     if 'del' in request.POST:
-        mdb = QuestionsStorage.connect_to_mongodb(
-            host=MONGO_HOST,
-            port=MONGO_PORT,
-            db_name=MONGO_DBNAME
-        )
-        deleted_questions_count = mdb.delete_many(test_id=test.id)
+        storage = mongo.QuestionsStorage.connect(client=mongo.get_client())
+        deleted_questions_count = storage.delete_many(test_id=test.id)
         info = {
             'title': 'Результат удаления',
             'message': "Тест '%s' и %d вопросов к нему были успешно удалены." % (test.name, deleted_questions_count)
@@ -311,6 +278,7 @@ def delete_test_result(request):
     return redirect('/edit_test')
 
 
+@post_method
 @unauthenticated_user
 @allowed_users(allowed_roles=['lecturer'])
 def add_question_result(request):
@@ -362,15 +330,10 @@ def add_question_result(request):
                 'option': options[option_num],
                 'is_true': option_num in right_options_nums
             })
-        mdb = QuestionsStorage.connect_to_mongodb(
-            host=MONGO_HOST,
-            port=MONGO_PORT,
-            db_name=MONGO_DBNAME
-        )
+        mdb = mongo.QuestionsStorage.connect(client=mongo.get_client())
         mdb.add_one(
             question=question,
-            test_id=test.id
-        )
+            test_id=test.id)
     except KeyError:
         info = {
             'title': 'Ошибка',
@@ -384,6 +347,7 @@ def add_question_result(request):
     return render(request, 'main/lecturer/info.html', info)
 
 
+@post_method
 @unauthenticated_user
 @allowed_users(allowed_roles=['lecturer'])
 def load_questions_result(request):
@@ -391,11 +355,7 @@ def load_questions_result(request):
     Displays result of loading questions from file
     """
     test = Test.objects.get(name=request.POST['test'])
-    mdb = QuestionsStorage.connect_to_mongodb(
-        host=MONGO_HOST,
-        port=MONGO_PORT,
-        db_name=MONGO_DBNAME
-    )
+    storage = mongo.QuestionsStorage.connect(client=mongo.get_client())
     try:
         content = request.FILES['file'].read().decode('utf-8')
         questions_list = content.split('\n\n')
@@ -429,7 +389,7 @@ def load_questions_result(request):
                 else:
                     raise UnicodeDecodeError
             questions_count += 1
-            mdb.add_one(
+            storage.add_one(
                 question={
                     'formulation': formulation,
                     'tasks_num': len(options),
@@ -437,8 +397,7 @@ def load_questions_result(request):
                     'with_images': False,
                     'options': options
                 },
-                test_id=test.id
-            )
+                test_id=test.id)
     except UnicodeDecodeError:
         info = {
             'title': 'Ошибка',
@@ -463,6 +422,7 @@ def get_marks(request):
     return render(request, 'main/student/marks.html', info)
 
 
+@post_method
 @unauthenticated_user
 @allowed_users(allowed_roles=['student'])
 def run_test(request):
@@ -470,12 +430,8 @@ def run_test(request):
     Displays page with test for student
     """
     test = Test.objects.get(name=request.POST['test_name'])
-    mdb = QuestionsStorage.connect_to_mongodb(
-        host=MONGO_HOST,
-        port=MONGO_PORT,
-        db_name=MONGO_DBNAME
-    )
-    questions = mdb.get_many(test_id=test.id)
+    storage = mongo.QuestionsStorage.connect(client=mongo.get_client())
+    questions = storage.get_many(test_id=test.id)
     if len(questions) < test.tasks_num:
         info = {
             'title': 'Ошибка',
@@ -493,16 +449,11 @@ def run_test(request):
             'right_answers': [option for option in question['options'] if option['is_true']],
             'id': str(question['_id'])
         }
-    mdb = RunningTestsAnswersStorage.connect_to_mongodb(
-        host=MONGO_HOST,
-        port=MONGO_PORT,
-        db_name=MONGO_DBNAME
-    )
-    mdb.add(
+    storage = mongo.RunningTestsAnswersStorage.connect(client=mongo.get_client())
+    storage.add(
         right_answers=right_answers,
         test_id=test.id,
-        user_id=request.user.id
-    )
+        user_id=request.user.id)
     info = {
         'questions': questions,
         'test_duration': test.duration,
@@ -512,21 +463,18 @@ def run_test(request):
     return render(request, 'main/student/runTest.html', info)
 
 
+@post_method
 @unauthenticated_user
 @allowed_users(allowed_roles=['student'])
 def test_result(request):
     """
     Displays page with results of passing test
     """
-    mdb = RunningTestsAnswersStorage.connect_to_mongodb(
-        host=MONGO_HOST,
-        port=MONGO_PORT,
-        db_name=MONGO_DBNAME
-    )
-    passed_test_answers = mdb.get(user_id=request.user.id)
+    storage = mongo.RunningTestsAnswersStorage.connect(client=mongo.get_client())
+    passed_test_answers = storage.get(user_id=request.user.id)
     right_answers = passed_test_answers['right_answers']
     test_id = passed_test_answers['test_id']
-    mdb.delete(user_id=request.user.id)
+    storage.delete(user_id=request.user.id)
 
     response = dict(request.POST)
     response.pop('csrfmiddlewaretoken')
@@ -569,13 +517,8 @@ def test_result(request):
         'right_answers_num': right_answers_count,
         'questions': questions
     }
-    mdb = TestsResultsStorage.connect_to_mongodb(
-        host=MONGO_HOST,
-        port=MONGO_PORT,
-        db_name=MONGO_DBNAME
-    )
-    mdb.add_results_to_running_test(
+    storage = mongo.TestsResultsStorage.connect(client=mongo.get_client())
+    storage.add_results_to_running_test(
         test_result=result,
-        test_id=test_id
-    )
+        test_id=test_id)
     return render(request, 'main/student/testResult.html', {'right_answers_count': right_answers_count})

@@ -16,8 +16,8 @@ Coming soon:
 ### Installation
 - ```git clone https://github.com/LeadNess/Quizer.git```
 - ```cd Quizer```
-- Build django application - ```./build_for_linux``` or ```powershell .\build_for_win.ps1```
-- ```./build_docker``` - create 'quizer' docker image
+- Build django application - ```./deploy/build_for_linux``` or ```powershell .\deploy\build_for_win.ps1```
+- ```./deploy/build_docker``` - create 'quizer' docker image
 ### Usage 
 Run app by command:   
 - ```docker run quizer```  

@@ -27,17 +27,20 @@ def get_tests(request):
         tests = Test.objects.all()
         not_running_tests = [t for t in tests if t.id not in running_tests_ids]
         info = {
+            'title': 'Тесты | Quizer',
             'subjects': list(Subject.objects.all()),
             'tests': [t.to_dict() for t in not_running_tests],
         }
         return render(request, 'main/lecturer/tests.html', info)
     if len(running_tests_ids) == 0:
         info = {
-            'title': 'Доступные тесты отсутствуют',
+            'title': 'Тесты | Quizer',
+            'message_title': 'Доступные тесты отсутствуют',
             'message': 'Ни один из тестов пока не запущен.',
         }
         return render(request, 'main/student/info.html', info)
     info = {
+        'title': 'Тесты | Quizer',
         'tests': [Test.objects.get(id=_id) for _id in running_tests_ids],
     }
     return render(request, 'main/student/tests.html', info)
@@ -79,7 +82,8 @@ def run_test_result(request):
     questions = storage.get_many(test_id=test.id)
     if len(questions) < test.tasks_num:
         info = {
-            'title': 'Ошибка',
+            'title': 'Запуск теста | Quizer',
+            'message_title': 'Ошибка',
             'message': 'Тест не запущен, так как вопросов в базе меньше %d.' % test.tasks_num,
         }
         return render(request, 'main/lecturer/info.html', info)
@@ -88,7 +92,8 @@ def run_test_result(request):
         test_id=test.id,
         lecturer_id=request.user.id)
     info = {
-        'title': 'Тест запущен',
+        'title': 'Запуск теста | Quizer',
+        'message_title': 'Тест запущен',
         'message': "Состояние его прохождения можно отследить во вкладке 'Запущенные тесты'",
     }
     return render(request, 'main/lecturer/info.html', info)
@@ -120,7 +125,8 @@ def add_test_result(request):
         duration=request.POST['duration'])
     test.save()
     info = {
-        'title': 'Новый тест',
+        'title': 'Новый тест | Quizer',
+        'message_title': 'Новый тест',
         'message': "Тест '%s' по предмету '%s' успешно добавлен." % (test.name, subject),
     }
     return render(request, 'main/lecturer/info.html', info)
@@ -143,7 +149,11 @@ def get_running_tests(request):
                 lecturer_id=request.user.id)
             test['finished_students_num'] = len(results)
             tests.append(test)
-    return render(request, 'main/lecturer/runningTests.html', {'tests': tests})
+    info = {
+        'title': 'Запущенные тесты | Quizer',
+        'tests': tests
+    }
+    return render(request, 'main/lecturer/runningTests.html', info)
 
 
 @post_method
@@ -162,6 +172,7 @@ def stop_running_test(request):
         test_id=test.id,
         lecturer_id=request.user.id)
     info = {
+        'title': 'Результаты тестирования | Quizer',
         'test': test,
         'results': results,
     }
@@ -180,6 +191,7 @@ def edit_test(request):
         test['questions_num'] = len(storage.get_many(test_id=test['id']))
 
     info = {
+        'title': 'Редактировать тест | Quizer',
         'subjects': list(Subject.objects.all()),
         'tests': tests,
     }
@@ -200,7 +212,14 @@ def edit_test_redirect(request):
     questions = [question['formulation'] for question in storage.get_many(test_id=test.id)]
     info = {
         'test': Test.objects.get(name=test_name),
-        'questions': questions
+        'questions': questions,
+        'title': {
+            'edit_test_btn': 'Редактировать тест | Quizer',
+            'add_qstn_btn': 'Добавить вопрос | Quizer',
+            'load_qstn_btn': 'Загрузить вопросы | Quizer',
+            'del_test_btn': 'Удалить тест | Quizer',
+            'del_qstn_btn': 'Удалить вопросы | Quizer'
+        }[request.POST[key]]
     }
     template = {
         'edit_test_btn': 'editingTestPage',
@@ -231,7 +250,8 @@ def edit_test_result(request):
     Test.delete(test)
     new_test.save()
     info = {
-        'title': 'Редактиктирование теста',
+        'title': 'Тест отредактирован | Quizer',
+        'message_title': 'Редактиктирование теста',
         'message': "Тест '%s' по предмету '%s' успешно изменен." % (new_test.name, new_test.subject),
     }
     return render(request, 'main/lecturer/info.html', info)
@@ -253,7 +273,8 @@ def delete_questions_result(request):
             question_formulation=question_formulation,
             test_id=test.id)
     info = {
-        'title': 'Результат удаления',
+        'title': 'Вопросы удалены | Quizer',
+        'message_title': 'Результат удаления',
         'message': "Вопросы к тесту '%s' в количестве %d были успешно удалены." % (test.name, len(request_dict))
     }
     return render(request, 'main/lecturer/info.html', info)
@@ -271,7 +292,8 @@ def delete_test_result(request):
         storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())
         deleted_questions_count = storage.delete_many(test_id=test.id)
         info = {
-            'title': 'Результат удаления',
+            'title': 'Тест удален | Quizer',
+            'message_title': 'Результат удаления',
             'message': "Тест '%s' и %d вопросов к нему были успешно удалены." % (test.name, deleted_questions_count)
         }
         Test.delete(test)
@@ -337,12 +359,14 @@ def add_question_result(request):
             test_id=test.id)
     except KeyError:
         info = {
-            'title': 'Ошибка',
+            'title': 'Ошибка | Quizer',
+            'message_title': 'Ошибка',
             'message': 'Форма некорректно заполнена',
         }
         return render(request, 'main/lecturer/info.html', info)
     info = {
-        'title': 'Новый вопрос',
+        'title': 'Вопрос добавлен | Quizer',
+        'message_title': 'Новый вопрос',
         'message': "Вопрос '%s' к тесту '%s' успешно добавлен." % (question['formulation'], test.name),
     }
     return render(request, 'main/lecturer/info.html', info)
@@ -401,13 +425,15 @@ def load_questions_result(request):
                 test_id=test.id)
     except UnicodeDecodeError:
         info = {
-            'title': 'Ошибка',
+            'title': 'Ошибка | Quizer',
+            'message_title': 'Ошибка',
             'message': 'Файл некорректного формата.',
         }
         return render(request, 'main/lecturer/info.html', info)
 
     info = {
-        'title': 'Новые вопросы',
+        'title': 'Вопросы загружены | Quizer',
+        'message_title': 'Новые вопросы',
         'message': "Вопросы к тесту '%s' в количестве %d успешно добавлены." % (test.name, questions_count),
     }
     return render(request, 'main/lecturer/info.html', info)
@@ -419,7 +445,9 @@ def get_marks(request):
     """
     Displays page with students marks
     """
-    info = {}
+    info = {
+        'title': 'Оценки | Quizer'
+    }
     return render(request, 'main/student/marks.html', info)
 
 
@@ -433,13 +461,6 @@ def run_test(request):
     test = Test.objects.get(name=request.POST['test_name'])
     storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())
     questions = storage.get_many(test_id=test.id)
-    if len(questions) < test.tasks_num:
-        info = {
-            'title': 'Ошибка',
-            'message': 'Вопросов к данному тесту меньше %d' % test.tasks_num,
-        }
-        return render(request, 'main/student/info.html', info)
-
     questions = random.sample(questions, k=test.tasks_num)
     for question in questions:
         random.shuffle(question['options'])
@@ -456,6 +477,7 @@ def run_test(request):
         test_id=test.id,
         user_id=request.user.id)
     info = {
+        'title': 'Тест | Quizer',
         'questions': questions,
         'test_duration': test.duration,
         'test_name': test.name,
@@ -522,4 +544,8 @@ def test_result(request):
     storage.add_results_to_running_test(
         test_result=result,
         test_id=test_id)
-    return render(request, 'main/student/testResult.html', {'right_answers_count': right_answers_count})
+    info = {
+        'title': 'Результат тестирования | Quizer',
+        'right_answers_count': right_answers_count
+    }
+    return render(request, 'main/student/testResult.html', info)

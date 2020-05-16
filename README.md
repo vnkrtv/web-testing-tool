@@ -71,10 +71,11 @@ Name                        Stmts   Miss  Cover
 quizer/main/decorators.py      27      1    96%
 quizer/main/models.py          27      0   100%
 quizer/main/mongo.py           92      5    95%
-quizer/main/views.py          245     25    90%
+quizer/main/views.py          244     23    91%
 -----------------------------------------------
-TOTAL                         391     31    92%
+TOTAL                         390     29    93%
 ```
 For detailed report run:
+- ```coverage report```  
 - ```coverage html```  
 - ```x-www-browser ./htmlcov/index.html``` for Linux or ```Invoke-Expression .\htmlcov\index.html``` for Windows

@@ -10,53 +10,51 @@ import pymongo
 from django.conf import settings
 from .models import Test
 
-_client: pymongo.MongoClient
+_db_conn: pymongo.database.Database
 
 
-def set_client(host: str, port: int) -> None:
+def set_conn(host: str, port: int, db_name: str) -> None:
     """
-    Establish user connection to MongoDB
+    Establish user connection to MongoDB database 'db_name'
 
     :param host: MongoDB host
     :param port: MongoDB port
+    :param db_name: MongoDB database name
     """
-    global _client
-    _client = pymongo.MongoClient(host, port)
+    global _db_conn
+    _db_conn = pymongo.MongoClient(host, port)[db_name]
 
 
-def get_client() -> pymongo.MongoClient:
+def get_conn() -> pymongo.database.Database:
     """
-    Get user connection to MongoDB
+    Get user connection to MongoDB database 'db_name'
 
-    :return: MongoClient - connection to MongoDB
+    :return: Database - connection to database
     """
-    global _client
-    return _client
+    global _db_conn
+    return _db_conn
 
 
 class MongoDB:
     """
     Base class for classes working with MongoDB
 
-    _client: MongoClient() object
     _db:     MongoDB database
     _col:    MongoDB collection
     """
 
-    _client: pymongo.MongoClient
     _db: pymongo.database.Database
     _col: pymongo.collection.Collection
 
-    def get_collection(self, client: pymongo.MongoClient, collection_name: str) -> None:
+    def set_collection(self, db: pymongo.database.Database, collection_name: str) -> None:
         """
-        Get connection to MongoDB and connect to current collection 'collection_name'
+        Get connection to MongoDB database and connect to current collection 'collection_name'
 
-        :param client: MongoClient
+        :param db: MongoDB Database
         :param collection_name: name of database collection
         """
-        self._client = client
-        self._db = client[settings.DATABASES['default']['NAME']]
-        self._col = self._db[collection_name]
+        self._db = db
+        self._col = db[collection_name]
 
 
 class QuestionsStorage(MongoDB):
@@ -65,16 +63,16 @@ class QuestionsStorage(MongoDB):
     """
 
     @staticmethod
-    def connect(client: pymongo.MongoClient):
+    def connect(db: pymongo.database.Database):
         """
         Establish connection to database collection 'questions'
 
-        :param client: MongoClient - connection to MongoDB
+        :param db: Database - connection to MongoDB database
         :return: QuestionStorage object
         """
         storage = QuestionsStorage()
-        storage.get_collection(
-            client=client,
+        storage.set_collection(
+            db=db,
             collection_name='questions')
         return storage
 
@@ -174,16 +172,16 @@ class RunningTestsAnswersStorage(MongoDB):
     """
 
     @staticmethod
-    def connect(client: pymongo.MongoClient):
+    def connect(db: pymongo.database.Database):
         """
         Establish connection to database collection 'running_tests_answers'
 
-        :param client: MongoClient - connection to MongoDB
+        :param db: Database - connection to MongoDB database
         :return: RunningTestsAnswersStorage object
         """
         storage = RunningTestsAnswersStorage()
-        storage.get_collection(
-            client=client,
+        storage.set_collection(
+            db=db,
             collection_name='running_tests_answers')
         return storage
 
@@ -241,16 +239,16 @@ class TestsResultsStorage(MongoDB):
     """
 
     @staticmethod
-    def connect(client: pymongo.MongoClient):
+    def connect(db: pymongo.database.Database):
         """
         Establish connection to database collection 'tests_results'
 
-        :param client: MongoClient - connection to MongoDB
+        :param db: Database - connection to MongoDB database
         :return: TestsResultsStorage object
         """
         storage = TestsResultsStorage()
-        storage.get_collection(
-            client=client,
+        storage.set_collection(
+            db=db,
             collection_name='tests_results')
         return storage
 

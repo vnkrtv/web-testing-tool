@@ -52,23 +52,19 @@ Run all tests with coverage by running (venv must be activated):
 - main/tests.py:  
 ```Your code has been rated at 10/10```
 - main/decorators.py:  
+```Your code has been rated at 10/10```
+- main/mongo.py:  
 ```Your code has been rated at 10/10``` 
 #### coverage   
 ```
-Name                                     Stmts   Miss  Cover
-------------------------------------------------------------
-quizer/main/admin.py                         3      0   100%
-quizer/main/apps.py                          4      0   100%
-quizer/main/config.py                        5      0   100%
-quizer/main/decorators.py                   21      0   100%
-quizer/main/migrations/0001_initial.py       7      0   100%
-quizer/main/migrations/__init__.py           0      0   100%
-quizer/main/models.py                      108      5    95%
-quizer/main/tests.py                       258      0   100%
-quizer/main/urls.py                          4      0   100%
-quizer/main/views.py                       232     23    90%
-------------------------------------------------------------
-TOTAL                                      642     28    96%
+Name                        Stmts   Miss  Cover
+-----------------------------------------------
+quizer/main/decorators.py      27      1    96%
+quizer/main/models.py          27      0   100%
+quizer/main/mongo.py           92      5    95%
+quizer/main/views.py          245     25    90%
+-----------------------------------------------
+TOTAL                         391     31    92%
 ```
 For detailed report run:
 - ```coverage html```  

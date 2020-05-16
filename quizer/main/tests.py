@@ -1,15 +1,14 @@
 # pylint: disable=import-error, invalid-name, too-few-public-methods, relative-beyond-top-level
 """
-Main app tests, covered views.py and models.py.
-Tests should be started using manage.py, because at the same time MONGO_DBNAME
-value is replaced with 'test_${MONGO_DBNAME}' in config.py during the test run
+Main app tests, covered views.py, models.py and mongo.py
 """
 import os
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.auth.models import User, Group
-from .models import Subject, Test, TestsResultsStorage, RunningTestsAnswersStorage, QuestionsStorage
-from .config import MONGO_HOST, MONGO_PORT, MONGO_DBNAME
+from django.conf import settings
+from .models import Subject, Test
+from . import mongo
 
 
 class MainTest(TestCase):
@@ -19,7 +18,7 @@ class MainTest(TestCase):
 
     def setUp(self) -> None:
         """
-        Add objects to temporary test 'test_${MONGO_DBNAME} database:
+        Add objects to temporary test database:
         - groups 'lecturer' and 'student'
         - 'lecturer' user and 'student' user
         - study subject 'Subject'
@@ -28,53 +27,38 @@ class MainTest(TestCase):
         """
         self.lecturer = User.objects.create_user(
             username='lecturer',
-            password='top_secret'
-        )
+            password='top_secret')
         Group.objects.create(
             id=1,
-            name="lecturer"
-        )
+            name="lecturer")
         self.lecturer.groups.add(1)
 
         self.student = User.objects.create_user(
             username='user',
-            password='top_secret'
-        )
+            password='top_secret')
         Group.objects.create(
             id=2,
-            name="student"
-        )
+            name="student")
         self.student.groups.add(2)
 
         self.subject = Subject.objects.create(
-            lecturer=self.lecturer,
             name='Subject',
-            description='Description of subject'
-        )
+            description='Description of subject')
         self.test = Test.objects.create(
             subject=self.subject,
             author=self.lecturer,
             name='Hard test',
             description='Description of hard test for Subject',
             tasks_num=2,
-            duration=60
-        )
+            duration=60)
 
-        self.questions_storage = QuestionsStorage.connect_to_mongodb(
-            host=MONGO_HOST,
-            port=MONGO_PORT,
-            db_name=MONGO_DBNAME
-        )
-        self.running_tests_answers_storage = RunningTestsAnswersStorage.connect_to_mongodb(
-            host=MONGO_HOST,
-            port=MONGO_PORT,
-            db_name=MONGO_DBNAME
-        )
-        self.tests_results_storage = TestsResultsStorage.connect_to_mongodb(
-            host=MONGO_HOST,
-            port=MONGO_PORT,
-            db_name=MONGO_DBNAME
-        )
+        mongo.set_conn(
+            host=settings.DATABASES['default']['HOST'],
+            port=settings.DATABASES['default']['PORT'],
+            db_name=settings.DATABASES['default']['TEST']['NAME'])
+        self.questions_storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())
+        self.running_tests_answers_storage = mongo.RunningTestsAnswersStorage.connect(db=mongo.get_conn())
+        self.tests_results_storage = mongo.TestsResultsStorage.connect(db=mongo.get_conn())
 
         self.questions_storage.add_one(
             question={

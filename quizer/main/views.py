@@ -105,7 +105,11 @@ def add_test(request):
     """
     Displays page with an empty form for filling out information about new test
     """
-    return render(request, 'main/lecturer/addTest.html', {'subjects': list(Subject.objects.all())})
+    info = {
+        'title': 'Новый тест | Quizer',
+        'subjects': list(Subject.objects.all())
+    }
+    return render(request, 'main/lecturer/addTest.html', info)
 
 
 @post_method

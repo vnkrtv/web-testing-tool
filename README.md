@@ -13,19 +13,28 @@ Implemented system features:
 
 Coming soon:
 - analysis of student test results
-### Installation
+### Deploying  
+
+As docker container:
 - ```git clone https://github.com/LeadNess/Quizer.git```
 - ```cd Quizer```
-- Build django application - ```./deploy/build_for_linux``` or ```powershell .\deploy\build_for_win.ps1```
-- ```./deploy/build_docker``` - create 'quizer' docker image
+- ```docker build -t quizer .``` - create 'quizer' docker image with application and MongoDB
+- ```docker run -p 80:80 --name testing-app quizer ```
+
+For deploying on host system required MongoDB and python3:
+- ```git clone https://github.com/LeadNess/Quizer.git```
+- ```cd Quizer```
+- ```./deploy/build_for_linux``` or ```powershell .\deploy\build_for_win.ps1```
+- ```. ./venv/bin/activate``` or ```.\venv\Scripts\activate```
+- ```python ./quizer/manage.py runserver``` or ```python .\quizer\manage.py runserver```
 ### Usage 
 Run app by command:   
-- ```docker run quizer```  
+- ```docker run -p 80:80 --name testing-app quizer```  
   
-When you can connect to app in browser by following link: http://172.17.0.2:80.
+When you can connect to app in browser by following link: http://localhost:80.
 This is a test version of the program, created for demonstration purposes.   
 There are 2 users in this option:
-- user 'admin' with password 'admin', who belongs to group 'lecturer' and who is also a superuser (so you can enter django admin panel)
+- user 'admin' with password 'admin', who belongs to group 'lecturer' and who is also a superuser (so you can enter django admin panel and add new lecturers,students or superusers)
 - user 'user' with password 'password', who belongs to group 'student'    
 
 There are also 2 added subjects 'Python' and 'OSS', 3 tests and 2 questions for one of them.

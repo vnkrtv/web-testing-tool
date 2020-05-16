@@ -10,10 +10,7 @@ RUN apt-get update && apt-get install -y mongodb \
  && mkdir -p /data/code
 
 COPY requirements.txt /app/requirements.txt
-WORKDIR /app
-RUN pip3 install --no-cache-dir -r requirements.txt \
- && django-admin.py startproject quizer \
- && python3 quizer/manage.py startapp main
+RUN pip3 install --no-cache-dir -r /app/requirements.txt
 
 COPY quizer /app/quizer
 

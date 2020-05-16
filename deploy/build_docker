@@ -1,8 +1,0 @@
-#!/bin/sh
-cp "./requirements.txt" "./docker/requirements.txt"
-cp -r "./quizer" "./docker/quizer"
-echo "========================================Start building Quizer Docker image========================================"
-sudo docker build -t quizer ..
-rm "./docker/requirements.txt"
-rm -r "./docker/quizer"
-echo "====================Docker image has been built successfully. Enter 'docker run quizer' to run it================="

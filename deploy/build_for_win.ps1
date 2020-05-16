@@ -12,18 +12,13 @@ Write-Host "=========================================Successfully loaded requeir
 
 django-admin startproject quizer
 $SECRET_KEY = (Get-Content .\quizer\quizer\settings.py | Where-Object {$_.startsWith('SECRET_KEY') } | ForEach-Object { $_.split("'") })[1]
-
-Set-Location quizer
-python manage.py startapp main
-Set-Location ..
 Remove-Item -Recurse quizer
 Copy-Item -Path .\tmp\quizer -Destination .\quizer -Recurse
-
-$OLD_SECRET_KEY = (Get-Content .\quizer\quizer\settings.py | Where-Object {$_.startsWith('SECRET_KEY') } | ForEach-Object { $_.split("'") })[1]
-Get-Content .\quizer\quizer\settings.py | ForEach-Object { If ( $_.startsWith('SECRET_KEY') ) { $_.replace($OLD_SECRET_KEY, $SECRET_KEY) >> settings } Else { $_ >> settings } }
-Move-Item -Path .\settings -Destination .\quizer\quizer\settings.py
-
 Remove-Item -Recurse tmp
+
+$SETTINGS = Get-Content .\deploy\settings
+$SETTINGS = $SETTINGS.Replace('GENERATED_SECRET_KEY', $SECRET_KEY)
+
 Write-Host "===========================================Initialized django app==============================================="
 Write-Host "==========================================Enter configuration data============================================="
 $MONGO_HOST = Read-Host "MongoDB host (default: 'localhost'): "
@@ -31,39 +26,23 @@ If ($MONGO_HOST -eq "")
 {
   $MONGO_HOST="localhost"
 }
-Write-Output "MONGO_HOST = '$MONGO_HOST'" >> config.py
+$SETTINGS = $SETTINGS.Replace('MONGO_HOST', $MONGO_HOST)
 
 $MONGO_PORT = Read-Host "MongoDB port (default: 27017): "
 If ($MONGO_PORT -eq "")
 {
   $MONGO_PORT="27017"
 }
-Write-Output "MONGO_PORT = '$MONGO_PORT'" >> config.py
-
-$MONGO_USER = Read-Host "MongoDB user (default: '' <yet not supported>): "
-If ($MONGO_HOST -eq "")
-{
-  $MONGO_USER=""
-}
-Write-Output "MONGO_USER = '$MONGO_USER'" >> config.py
-
-$MONGO_PASSWORD = Read-Host "MongoDB password (default: '' <yet not supported>): "
-If ($MONGO_PASSWORD -eq "")
-{
-  $MONGO_PASSWORD=""
-}
-Write-Output "MONGO_PASSWORD = '$MONGO_PASSWORD'" >> config.py
+$SETTINGS = $SETTINGS.Replace('MONGO_PORT', $MONGO_PORT)
 
 $MONGO_DBNAME = Read-Host "MongoDB database name (default: 'quizer'): "
 If ($MONGO_DBNAME -eq "")
 {
   $MONGO_DBNAME="quizer"
 }
-Write-Output "MONGO_DBNAME = '$MONGO_DBNAME'" >> config.py
-
-Copy-Item -Path .\config.py -Destination .\quizer\quizer\config.py
-Copy-Item -Path .\config.py -Destination .\quizer\main\config.py
-Remove-Item .\config.py
+$SETTINGS = $SETTINGS.Replace('MONGO_DBNAME', $MONGO_DBNAME)
+$SETTINGS = $SETTINGS.Replace('MONGO_TESTDBNAME', 'test_' + $MONGO_DBNAME)
+Write-Output $SETTINGS > .\quizer\quizer\settings.py
 
 python .\quizer\manage.py makemigrations
 python .\quizer\manage.py migrate
@@ -79,4 +58,3 @@ python .\quizer\manage.py createsuperuser
 Write-Host 'from django.contrib.auth.models import User; a = User.objects.get(id=1); a.groups.add(1); a.save(); print("Added user %s to group %s" % (a.username, "lecturer"))'  | python .\quizer\manage.py shell
 Write-Host 'from django.contrib.auth.models import User; s = User(id=4, username="user"); s.set_password("password"); s.groups.add(2); s.save()' | python .\quizer\manage.py shell
 Write-Host "Added user 'user' with password 'password' to group 'student'"
-Write-Host "from main.models import QuestionsStorage; strg = QuestionsStorage.connect_to_mongodb(host='$MONGO_HOST', port='$MONGO_PORT', db_name='$MONGO_DBNAME'); strg.add_one(question={'formulation': 'First question with multiselect', 'tasks_num': 3, 'multiselect': True, 'with_images': False, 'options': [{'option': 'First true option', 'is_true': True}, {'option': 'Second false option', 'is_true': False}, {'option': 'Third true option', 'is_true': True}]}, test_id=1); strg.add_one(question={'formulation': 'Second question with single answer', 'tasks_num': 2, 'multiselect': False, 'with_images': False, 'options': [{'option': 'False option', 'is_true': False}, {'option': 'True option', 'is_true': True}]}, test_id=1)" | python .\quizer\manage.py shell

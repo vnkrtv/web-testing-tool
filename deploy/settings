@@ -8,7 +8,7 @@ PROJECT_ROOT = os.path.dirname(__file__)
 sys.path.insert(0, os.path.join(PROJECT_ROOT, 'quizer'))
 
 
-SECRET_KEY = GENERATED_SECRET_KEY
+SECRET_KEY = 'GENERATED_SECRET_KEY'
 
 
 DEBUG = True
@@ -63,10 +63,11 @@ WSGI_APPLICATION = 'quizer.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'djongo', 
-        'NAME': MONGO_DBNAME,
-        'HOST': MONGO_HOST,
+        'NAME': 'MONGO_DBNAME',
+        'HOST': 'MONGO_HOST',
+        'PORT': 'MONGO_PORT',
         'TEST': {
-            'NAME': MONGO_TESTDBNAME
+            'NAME': 'MONGO_TESTDBNAME'
         }
     }
 }

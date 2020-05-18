@@ -19,7 +19,12 @@ As docker container:
 - ```docker build -t quizer .``` - create 'quizer' docker image with application and MongoDB
 - ```docker run -p 80:80 --name testing-app quizer ```
 
-For deploying on host system required MongoDB and python3:
+Next it's possible to set up automatic application resume after server reboot. Ubuntu solves this problem with the systemd initialization system:  
+- ```sudo cp ./deploy/web-testing-tool.service /etc/systemd/system/web-testing-tool.service```
+- ```sudo systemctl daemon-reload```
+- ```sudo systemctl start web-testing-tool```
+
+It's also possible to build a working application on the host system to be able to improve it. Required MongoDB and python3:
 - ```git clone https://github.com/LeadNess/web-testing-tool.git```
 - ```cd web-testing-tool```
 - ```./deploy/build_for_linux``` or ```powershell .\deploy\build_for_win.ps1```
@@ -50,7 +55,7 @@ To stop test and see students results:
 - go to '/running_tests/' page and stop it. Then you see detailed testing result of each student 
 ### Testing    
 Run all tests with coverage by running (venv must be activated):   
-```coverage run quizer/manage.py test main```
+- ```coverage run quizer/manage.py test main```
 #### pylint   
 - main/models.py:  
 ```Your code has been rated at 10/10```  

@@ -1,0 +1,13 @@
+[Unit]
+Description=Testing tool
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=true
+ExecStart=/usr/bin/docker start testing-app
+ExecStop=/usr/bin/docker stop testing-app
+
+[Install]
+WantedBy=multi-user.target

@@ -5,7 +5,7 @@ htmlcov/
 quizer/main/migrations/
 *.pyc
 .coverage
-report*
+prac*
 
 !quizer/media/logo.png
 !quizer/media/favicon

@@ -25,14 +25,12 @@ class Test(models.Model):
     subject = models.ForeignKey(
         Subject,
         verbose_name='Предмет',
-        on_delete=models.CASCADE
-    )
+        on_delete=models.CASCADE)
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         verbose_name='Составитель',
         on_delete=models.CASCADE,
-        default=DEFAULT_AUTHOR_ID
-    )
+        default=DEFAULT_AUTHOR_ID)
     name = models.CharField('Тема теста', max_length=200)
     description = models.TextField('Описание теста', default="")
     tasks_num = models.IntegerField('Количество заданий в тесте', default=0)

@@ -11,8 +11,6 @@ Implemented system features:
 - launching of existing tests by the user of 'lecturer' group, possibility of passing running tests by users of the 'student' group  
 - possibility to view the results of students passing tests, storing all results in database with the possibility of further analysis  
 
-Coming soon:
-- analysis of student test results
 ### Deploying  
 
 As docker container:

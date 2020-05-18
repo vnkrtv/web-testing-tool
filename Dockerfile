@@ -14,6 +14,11 @@ RUN pip3 install --no-cache-dir -r /app/requirements.txt
 
 COPY quizer /app/quizer
 
-COPY deploy/entrypoint /entrypoint
+# MongoDB port
+EXPOSE 27017
+
+# App port
 EXPOSE 80
+
+COPY deploy/entrypoint /entrypoint
 ENTRYPOINT ["/entrypoint"]

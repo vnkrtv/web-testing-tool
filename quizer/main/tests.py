@@ -10,6 +10,18 @@ from django.conf import settings
 from .models import Subject, Test
 from . import mongo
 
+QUESTIONS_FILE_DATA = """Как создать вопрос?
++ добавив верные ответы
++ которых может быть несколько
+- и есть неверные
+- обеспечивается случайный порядок вопросов и ответов
+
+Как создать вопрос со множественным выбором, но одним ответом?
+* правильный вопрос выделить звездочкой
+- а остальные ответы
+- всё ещё с минусами
+"""
+
 
 class MainTest(TestCase):
     """
@@ -219,7 +231,7 @@ class AuthorizationTest(MainTest):
         response = client.get(reverse('main:tests'), follow=True)
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Зайти в систему')
+        self.assertContains(response, 'Войти в систему')
 
 
 class AccessRightsTest(MainTest):
@@ -464,19 +476,8 @@ class LoadingQuestionsTest(MainTest):
 
         old_questions = self.questions_storage.get_many(test_id=self.test.id)
 
-        file_data = """Как создать вопрос?
-+ добавив верные ответы
-+ которых может быть несколько
-- и есть неверные
-- обеспечивается случайный порядок вопросов и ответов
-
-Как создать вопрос со множественным выбором, но одним ответом?
-* правильный вопрос выделить звездочкой
-- а остальные ответы
-- всё ещё с минусами
-"""
         with open('tmp.txt', 'w') as file:
-            file.write(file_data)
+            file.write(QUESTIONS_FILE_DATA)
 
         with open('tmp.txt', 'r+') as file:
             response = client.post(reverse('main:load_questions_result'), {

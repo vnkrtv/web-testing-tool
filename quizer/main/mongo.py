@@ -10,7 +10,7 @@ import pymongo
 from django.conf import settings
 from .models import Test
 
-_db_conn: pymongo.database.Database
+_db_conn: pymongo.database.Database = None
 
 
 def set_conn(host: str, port: int, db_name: str) -> None:
@@ -32,6 +32,11 @@ def get_conn() -> pymongo.database.Database:
     :return: Database - connection to database
     """
     global _db_conn
+    if not _db_conn:
+        set_conn(
+            host=settings.DATABASES['default']['HOST'],
+            port=settings.DATABASES['default']['PORT'],
+            db_name=settings.DATABASES['default']['NAME'])
     return _db_conn
 
 
@@ -252,7 +257,7 @@ class TestsResultsStorage(MongoDB):
             collection_name='tests_results')
         return storage
 
-    def add_running_test(self, test_id: int, lecturer_id: int):
+    def add_running_test(self, test_id: int, lecturer_id: int) -> None:
         """
         Create object in collection corresponding to running test
 

@@ -14,14 +14,14 @@ Implemented system features:
 ### Deploying  
 
 As docker container:
-- ```git clone https://github.com/LeadNess/Quizer.git```
-- ```cd Quizer```
+- ```git clone https://github.com/LeadNess/web-testing-tool.git```
+- ```cd web-testing-tool```
 - ```docker build -t quizer .``` - create 'quizer' docker image with application and MongoDB
 - ```docker run -p 80:80 --name testing-app quizer ```
 
 For deploying on host system required MongoDB and python3:
-- ```git clone https://github.com/LeadNess/Quizer.git```
-- ```cd Quizer```
+- ```git clone https://github.com/LeadNess/web-testing-tool.git```
+- ```cd web-testing-tool```
 - ```./deploy/build_for_linux``` or ```powershell .\deploy\build_for_win.ps1```
 - ```. ./venv/bin/activate``` or ```.\venv\Scripts\activate```
 - ```python ./quizer/manage.py runserver``` or ```python .\quizer\manage.py runserver```

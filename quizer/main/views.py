@@ -3,6 +3,7 @@
 Quizer backend
 """
 import random
+import json
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
 from django.contrib.auth import login, logout, authenticate
@@ -26,24 +27,24 @@ def get_tests(request):
     if request.user.groups.filter(name='lecturer'):
         tests = Test.objects.all()
         not_running_tests = [t for t in tests if t.id not in running_tests_ids]
-        info = {
+        context = {
             'title': 'Тесты | Quizer',
             'subjects': list(Subject.objects.all()),
-            'tests': [t.to_dict() for t in not_running_tests],
+            'tests': json.dumps([t.to_dict() for t in not_running_tests]),
         }
-        return render(request, 'main/lecturer/tests.html', info)
+        return render(request, 'main/lecturer/tests.html', context)
     if len(running_tests_ids) == 0:
-        info = {
+        context = {
             'title': 'Тесты | Quizer',
             'message_title': 'Доступные тесты отсутствуют',
             'message': 'Ни один из тестов пока не запущен.',
         }
-        return render(request, 'main/student/info.html', info)
-    info = {
+        return render(request, 'main/student/info.html', context)
+    context = {
         'title': 'Тесты | Quizer',
         'tests': [Test.objects.get(id=_id) for _id in running_tests_ids],
     }
-    return render(request, 'main/student/tests.html', info)
+    return render(request, 'main/student/tests.html', context)
 
 
 def login_page(request):
@@ -81,22 +82,22 @@ def run_test_result(request):
     storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())
     questions = storage.get_many(test_id=test.id)
     if len(questions) < test.tasks_num:
-        info = {
+        context = {
             'title': 'Запуск теста | Quizer',
             'message_title': 'Ошибка',
             'message': 'Тест не запущен, так как вопросов в базе меньше %d.' % test.tasks_num,
         }
-        return render(request, 'main/lecturer/info.html', info)
+        return render(request, 'main/lecturer/info.html', context)
     storage = mongo.TestsResultsStorage.connect(db=mongo.get_conn())
     storage.add_running_test(
         test_id=test.id,
         lecturer_id=request.user.id)
-    info = {
+    context = {
         'title': 'Запуск теста | Quizer',
         'message_title': 'Тест запущен',
         'message': "Состояние его прохождения можно отследить во вкладке 'Запущенные тесты'",
     }
-    return render(request, 'main/lecturer/info.html', info)
+    return render(request, 'main/lecturer/info.html', context)
 
 
 @unauthenticated_user
@@ -105,11 +106,11 @@ def add_test(request):
     """
     Displays page with an empty form for filling out information about new test
     """
-    info = {
+    context = {
         'title': 'Новый тест | Quizer',
         'subjects': list(Subject.objects.all())
     }
-    return render(request, 'main/lecturer/addTest.html', info)
+    return render(request, 'main/lecturer/addTest.html', context)
 
 
 @post_method
@@ -128,12 +129,12 @@ def add_test_result(request):
         tasks_num=request.POST['tasks_num'],
         duration=request.POST['duration'])
     test.save()
-    info = {
+    context = {
         'title': 'Новый тест | Quizer',
         'message_title': 'Новый тест',
         'message': "Тест '%s' по предмету '%s' успешно добавлен." % (test.name, subject),
     }
-    return render(request, 'main/lecturer/info.html', info)
+    return render(request, 'main/lecturer/info.html', context)
 
 
 @unauthenticated_user
@@ -153,11 +154,11 @@ def get_running_tests(request):
                 lecturer_id=request.user.id)
             test['finished_students_num'] = len(results)
             tests.append(test)
-    info = {
+    context = {
         'title': 'Запущенные тесты | Quizer',
         'tests': tests
     }
-    return render(request, 'main/lecturer/runningTests.html', info)
+    return render(request, 'main/lecturer/runningTests.html', context)
 
 
 @post_method
@@ -175,12 +176,12 @@ def stop_running_test(request):
     storage.stop_running_test(
         test_id=test.id,
         lecturer_id=request.user.id)
-    info = {
+    context = {
         'title': 'Результаты тестирования | Quizer',
         'test': test,
         'results': results,
     }
-    return render(request, 'main/lecturer/testingResults.html', info)
+    return render(request, 'main/lecturer/testingResults.html', context)
 
 
 @unauthenticated_user
@@ -194,12 +195,12 @@ def edit_test(request):
     for test in tests:
         test['questions_num'] = len(storage.get_many(test_id=test['id']))
 
-    info = {
+    context = {
         'title': 'Редактировать тест | Quizer',
         'subjects': list(Subject.objects.all()),
-        'tests': tests,
+        'tests': json.dumps(tests)
     }
-    return render(request, 'main/lecturer/editTest.html', info)
+    return render(request, 'main/lecturer/editTest.html', context)
 
 
 @post_method
@@ -214,7 +215,7 @@ def edit_test_redirect(request):
     test = Test.objects.get(name=test_name)
     storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())
     questions = [question['formulation'] for question in storage.get_many(test_id=test.id)]
-    info = {
+    context = {
         'test': Test.objects.get(name=test_name),
         'questions': questions,
         'title': {
@@ -232,7 +233,7 @@ def edit_test_redirect(request):
         'del_test_btn': 'deleteTestPage',
         'del_qstn_btn': 'deleteQuestionPage'
     }[request.POST[key]]
-    return render(request, f'main/lecturer/{template}.html', info)
+    return render(request, f'main/lecturer/{template}.html', context)
 
 
 @post_method
@@ -253,12 +254,12 @@ def edit_test_result(request):
         duration=request.POST['duration'])
     Test.delete(test)
     new_test.save()
-    info = {
+    context = {
         'title': 'Тест отредактирован | Quizer',
         'message_title': 'Редактиктирование теста',
         'message': "Тест '%s' по предмету '%s' успешно изменен." % (new_test.name, new_test.subject),
     }
-    return render(request, 'main/lecturer/info.html', info)
+    return render(request, 'main/lecturer/info.html', context)
 
 
 @post_method
@@ -276,12 +277,12 @@ def delete_questions_result(request):
         storage.delete_one(
             question_formulation=question_formulation,
             test_id=test.id)
-    info = {
+    context = {
         'title': 'Вопросы удалены | Quizer',
         'message_title': 'Результат удаления',
         'message': "Вопросы к тесту '%s' в количестве %d были успешно удалены." % (test.name, len(request_dict))
     }
-    return render(request, 'main/lecturer/info.html', info)
+    return render(request, 'main/lecturer/info.html', context)
 
 
 @post_method
@@ -295,13 +296,13 @@ def delete_test_result(request):
     if 'del' in request.POST:
         storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())
         deleted_questions_count = storage.delete_many(test_id=test.id)
-        info = {
+        context = {
             'title': 'Тест удален | Quizer',
             'message_title': 'Результат удаления',
             'message': "Тест '%s' и %d вопросов к нему были успешно удалены." % (test.name, deleted_questions_count)
         }
         Test.delete(test)
-        return render(request, 'main/lecturer/info.html', info)
+        return render(request, 'main/lecturer/info.html', context)
     return redirect('/edit_test')
 
 
@@ -362,18 +363,18 @@ def add_question_result(request):
             question=question,
             test_id=test.id)
     except KeyError:
-        info = {
+        context = {
             'title': 'Ошибка | Quizer',
             'message_title': 'Ошибка',
             'message': 'Форма некорректно заполнена',
         }
-        return render(request, 'main/lecturer/info.html', info)
-    info = {
+        return render(request, 'main/lecturer/info.html', context)
+    context = {
         'title': 'Вопрос добавлен | Quizer',
         'message_title': 'Новый вопрос',
         'message': "Вопрос '%s' к тесту '%s' успешно добавлен." % (question['formulation'], test.name),
     }
-    return render(request, 'main/lecturer/info.html', info)
+    return render(request, 'main/lecturer/info.html', context)
 
 
 @post_method
@@ -428,19 +429,19 @@ def load_questions_result(request):
                 },
                 test_id=test.id)
     except UnicodeDecodeError:
-        info = {
+        context = {
             'title': 'Ошибка | Quizer',
             'message_title': 'Ошибка',
             'message': 'Файл некорректного формата.',
         }
-        return render(request, 'main/lecturer/info.html', info)
+        return render(request, 'main/lecturer/info.html', context)
 
-    info = {
+    context = {
         'title': 'Вопросы загружены | Quizer',
         'message_title': 'Новые вопросы',
         'message': "Вопросы к тесту '%s' в количестве %d успешно добавлены." % (test.name, questions_count),
     }
-    return render(request, 'main/lecturer/info.html', info)
+    return render(request, 'main/lecturer/info.html', context)
 
 
 @unauthenticated_user
@@ -449,10 +450,10 @@ def get_marks(request):
     """
     Displays page with students marks
     """
-    info = {
+    context = {
         'title': 'Оценки | Quizer'
     }
-    return render(request, 'main/student/marks.html', info)
+    return render(request, 'main/student/marks.html', context)
 
 
 @post_method
@@ -480,14 +481,14 @@ def run_test(request):
         right_answers=right_answers,
         test_id=test.id,
         user_id=request.user.id)
-    info = {
+    context = {
         'title': 'Тест | Quizer',
         'questions': questions,
         'test_duration': test.duration,
         'test_name': test.name,
         'right_answers': right_answers,
     }
-    return render(request, 'main/student/runTest.html', info)
+    return render(request, 'main/student/runTest.html', context)
 
 
 @post_method
@@ -548,8 +549,8 @@ def test_result(request):
     storage.add_results_to_running_test(
         test_result=result,
         test_id=test_id)
-    info = {
+    context = {
         'title': 'Результат тестирования | Quizer',
         'right_answers_count': right_answers_count
     }
-    return render(request, 'main/student/testResult.html', info)
+    return render(request, 'main/student/testResult.html', context)

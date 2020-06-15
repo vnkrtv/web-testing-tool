@@ -7,7 +7,6 @@ services:
   - docker
 
 before_script:
-  - pip install docker-compose
   - entrypoint="$(echo "$(cat deploy/entrypoint)")"
   - echo "${entrypoint/runserver 0.0.0.0:80/test main}" > deploy/entrypoint
 

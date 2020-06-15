@@ -8,10 +8,6 @@ services:
 
 before_script:
   - pip install docker-compose
-  - echo SECRET_KEY >> cfg
-  - echo NEO4J_PWD >> cfg
-  - echo n >> cfg
-  - ./deploy/deploy_containers < cfg
   - entrypoint="$(echo "$(cat deploy/entrypoint)")"
   - echo "${entrypoint/runserver 0.0.0.0:80/test main}" > deploy/entrypoint
 

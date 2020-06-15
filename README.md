@@ -1,5 +1,7 @@
 # web-testing-tool
 
+[![Build Status](https://travis-ci.com/LeadNess/web-testing-tool.svg?branch=master)](https://travis-ci.com/LeadNess/web-testing-tool)
+
 ### Description
 Testing tool implemented on Django. Data storage is implemented in the DBMS MongoDB.  
 Implemented system features:

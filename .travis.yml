@@ -8,7 +8,7 @@ services:
 
 before_script:
   - entrypoint="$(echo "$(cat deploy/entrypoint)")"
-  - echo "${entrypoint/runserver 0.0.0.0:80/test /app/quizer/main}" > deploy/entrypoint
+  - echo "${entrypoint/runserver 0.0.0.0:80/test main}" > deploy/entrypoint
 
 script:
   - docker build -t quizer .

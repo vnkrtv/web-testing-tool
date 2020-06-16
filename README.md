@@ -58,18 +58,7 @@ To stop test and see students results:
 ### Testing    
 Run all tests with coverage by running (venv must be activated):   
 - ```coverage run quizer/manage.py test main```
-#### pylint   
-- main/models.py:  
-```Your code has been rated at 10/10```  
-- main/views.py:  
-```Your code has been rated at 10/10```  
-- main/tests.py:  
-```Your code has been rated at 10/10```
-- main/decorators.py:  
-```Your code has been rated at 10/10```
-- main/mongo.py:  
-```Your code has been rated at 10/10``` 
-#### coverage   
+
 ```
 Name                        Stmts   Miss  Cover
 -----------------------------------------------
@@ -84,3 +73,8 @@ For detailed report run:
 - ```coverage report```  
 - ```coverage html```  
 - ```x-www-browser ./htmlcov/index.html``` for Linux or ```Invoke-Expression .\htmlcov\index.html``` for Windows
+
+### Code inspection
+
+For code inspection run - ```pylint quizer/main/*.py```:
+- ```Your code has been rated at 10/10```

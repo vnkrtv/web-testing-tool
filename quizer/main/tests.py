@@ -68,9 +68,12 @@ class MainTest(TestCase):
             host=settings.DATABASES['default']['HOST'],
             port=settings.DATABASES['default']['PORT'],
             db_name=settings.DATABASES['default']['TEST']['NAME'])
-        self.questions_storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())
-        self.running_tests_answers_storage = mongo.RunningTestsAnswersStorage.connect(db=mongo.get_conn())
-        self.tests_results_storage = mongo.TestsResultsStorage.connect(db=mongo.get_conn())
+        self.questions_storage = mongo.QuestionsStorage.connect(
+            db=mongo.get_conn())
+        self.running_tests_answers_storage = mongo.RunningTestsAnswersStorage.connect(
+            db=mongo.get_conn())
+        self.tests_results_storage = mongo.TestsResultsStorage.connect(
+            db=mongo.get_conn())
 
         self.questions_storage.add_one(
             question={

@@ -2,6 +2,8 @@
 
 [![Build Status](https://travis-ci.com/LeadNess/web-testing-tool.svg?branch=master)](https://travis-ci.com/LeadNess/web-testing-tool)
 ![Docker](https://github.com/LeadNess/web-testing-tool/workflows/Docker/badge.svg)
+![Ubuntu](https://github.com/LeadNess/web-testing-tool/workflows/Ubuntu/badge.svg)
+
 ### Description
 Testing tool implemented on Django. Data storage is implemented in the DBMS MongoDB.  
 Implemented system features:

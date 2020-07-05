@@ -24,7 +24,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Running MongoDB container
         run: |
-          - docker run -p 127.0.0.1:27017:27017 -d mongo
+          docker run -p 127.0.0.1:27017:27017 -d mongo
       - name: Build app
         run: |
           echo localhost >> cfg

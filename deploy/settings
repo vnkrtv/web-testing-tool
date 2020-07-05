@@ -65,7 +65,7 @@ DATABASES = {
         'ENGINE': 'djongo', 
         'NAME': 'MONGO_DBNAME',
         'HOST': 'MONGO_HOST',
-        'PORT': 'MONGO_PORT',
+        'PORT': MONGO_PORT,
         'TEST': {
             'NAME': 'MONGO_TESTDBNAME'
         }

@@ -358,7 +358,7 @@ class TestEditingTest(MainTest):
         old_test = Test.objects.get(id=self.test.id)
 
         response = client.post(reverse('main:edit_test_redirect'), {
-            f'test_name_{self.test.name}': 'edit_test_btn'
+            f'test_name_{self.test.id}': 'edit_test_btn'
         }, follow=True)
 
         self.assertEqual(response.status_code, 200)
@@ -397,7 +397,7 @@ class TestEditingTest(MainTest):
         self.assertContains(response, 'Доступные тесты')
 
         response = client.post(reverse('main:edit_test_redirect'), {
-            f'test_name_{self.test.name}': 'del_test_btn'
+            f'test_name_{self.test.id}': 'del_test_btn'
         }, follow=True)
 
         self.assertEqual(response.status_code, 200)
@@ -428,7 +428,7 @@ class TestEditingTest(MainTest):
         self.assertContains(response, 'Доступные тесты')
 
         response = client.post(reverse('main:edit_test_redirect'), {
-            f'test_name_{self.test.name}': 'del_qstn_btn'
+            f'test_name_{self.test.id}': 'del_qstn_btn'
         }, follow=True)
 
         questions = self.questions_storage.get_many(test_id=self.test.id)
@@ -471,7 +471,7 @@ class LoadingQuestionsTest(MainTest):
         self.assertContains(response, 'Доступные тесты')
 
         response = client.post(reverse('main:edit_test_redirect'), {
-            f'test_name_{self.test.name}': 'load_qstn_btn',
+            f'test_name_{self.test.id}': 'load_qstn_btn',
         }, follow=True)
 
         self.assertEqual(response.status_code, 200)
@@ -484,7 +484,7 @@ class LoadingQuestionsTest(MainTest):
 
         with open('tmp.txt', 'r+') as file:
             response = client.post(reverse('main:load_questions_result'), {
-                'test': self.test.name,
+                'test_id': self.test.id,
                 'file': file
             }, follow=True)
 
@@ -518,7 +518,7 @@ class AddQuestionTest(MainTest):
         self.assertContains(response, 'Доступные тесты')
 
         response = client.post(reverse('main:edit_test_redirect'), {
-            f'test_name_{self.test.name}': 'add_qstn_btn',
+            f'test_name_{self.test.id}': 'add_qstn_btn',
         }, follow=True)
 
         self.assertEqual(response.status_code, 200)
@@ -526,7 +526,7 @@ class AddQuestionTest(MainTest):
 
         old_questions = self.questions_storage.get_many(test_id=self.test.id)
         response = client.post(reverse('main:add_question_result'), {
-            'test': self.test.name,
+            'test_id': self.test.id,
             'question': 'New hard question',
             'tasks_num': 3,
             'multiselect': True,
@@ -560,7 +560,7 @@ class TestsResultsStorageTest(MainTest):
             password='top_secret'
         )
         self.response = self.client.post(reverse('main:run_test_result'), {
-            'test_name': self.test.name,
+            'test_id': self.test.id,
         }, follow=True)
         self.assertEqual(len(Test.objects.all()), 1)
         self.assertEqual(len(self.tests_results_storage.get_running_tests_ids()), 1)
@@ -579,7 +579,7 @@ class TestsResultsStorageTest(MainTest):
         self.assertNotContains(response, self.test.name)
 
         response = self.client.post(reverse('main:stop_running_test'), {
-            'test_name': self.test.name,
+            'test_id': self.test.id,
         }, follow=True)
         self.assertContains(response, self.test.name)
         self.assertEqual(0, len(self.tests_results_storage.get_running_tests_ids()))
@@ -606,7 +606,7 @@ class TestsResultsStorageTest(MainTest):
             password='top_secret'
         )
         response = self.client.post(reverse('main:stop_running_test'), {
-            'test_name': self.test.name,
+            'test_id': self.test.id,
         }, follow=True)
         self.assertContains(response, self.test.name)
         self.assertEqual(0, len(self.tests_results_storage.get_running_tests_ids()))
@@ -624,7 +624,7 @@ class TestsResultsStorageTest(MainTest):
         self.assertContains(response, self.test.name)
 
         response = self.client.post(reverse('main:stop_running_test'), {
-            'test_name': self.test.name,
+            'test_id': self.test.id,
         }, follow=True)
         self.assertContains(response, self.test.name)
         self.assertEqual(0, len(self.tests_results_storage.get_running_tests_ids()))
@@ -649,7 +649,7 @@ class RunningTestsAnswersStorageTest(TestsResultsStorageTest):
             password='top_secret'
         )
         response = client.post(reverse('main:run_test'), {
-            'test_name': self.test.name
+            'test_id': self.test.id
         }, follow=True)
 
         self.assertEqual(response.status_code, 200)
@@ -683,7 +683,7 @@ class RunningTestsAnswersStorageTest(TestsResultsStorageTest):
             password='top_secret'
         )
         response = self.client.post(reverse('main:stop_running_test'), {
-            'test_name': self.test.name,
+            'test_id': self.test.id,
         }, follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Результаты тестирования')

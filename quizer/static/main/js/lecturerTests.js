@@ -22,8 +22,8 @@ function getDivElement(i, tests) {
     btn.className = "btn btn-primary";
     btn.innerHTML = "Запустить";
     btn.id =  "test_name";
-    btn.name =  "test_name";
-    btn.value = `${tests[i].name}`;
+    btn.name =  "test_id";
+    btn.value = `${tests[i].id}`;
 
     label.appendChild(test_name_h3);
     label.appendChild(description_p);

@@ -8,8 +8,8 @@
  		<h2>Новый вопрос</h2>
  		<form action="{% url 'main:add_question_result' %}" enctype="multipart/form-data" method="post">
  		{% csrf_token %}
- 		    <label for="test">
-				<input type="hidden" id="test" name="test" value="{{ test }}">
+ 		    <label for="test_id">
+				<input type="hidden" name="test_id" value="{{ test.id }}">
 		    </label>
 		    <div class="form-row">
 			  	<div class="col-md-4 mb-3">

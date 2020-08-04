@@ -11,7 +11,7 @@
 					Время на выполнение: {{ test.duration }} с</p>
 					<form action="{% url 'main:run_test' %}" method="post">
         			{% csrf_token %}
-        				<input type="hidden" name="test_name" id="test_name" value="{{ test.name }}">
+        				<input type="hidden" name="test_id" id="test_id" value="{{ test.id }}">
 						<button class="btn btn-primary">Приступить</button>
     				</form>
 				</label>

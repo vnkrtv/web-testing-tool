@@ -78,7 +78,7 @@ def run_test_result(request):
     """
     Displays page with test run result
     """
-    test = Test.objects.get(name=request.POST['test_name'])
+    test = Test.objects.get(id=int(request.POST['test_id']))
     storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())
     questions = storage.get_many(test_id=test.id)
     if len(questions) < test.tasks_num:
@@ -168,7 +168,7 @@ def stop_running_test(request):
     """
     Displays page with results of passing stopped test
     """
-    test = Test.objects.get(name=request.POST['test_name'])
+    test = Test.objects.get(id=int(request.POST['test_id']))
     storage = mongo.TestsResultsStorage.connect(db=mongo.get_conn())
     results = storage.get_running_test_results(
         test_id=test.id,
@@ -211,12 +211,12 @@ def edit_test_redirect(request):
     Redirecting 'lecturer' to specific page depending on his choose
     """
     key = [key for key in request.POST if 'test_name_' in key][0]
-    test_name = key.split('test_name_')[1]
-    test = Test.objects.get(name=test_name)
+    test_id = int(key.split('test_name_')[1])
+    test = Test.objects.get(id=test_id)
     storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())
     questions = [question['formulation'] for question in storage.get_many(test_id=test.id)]
     context = {
-        'test': Test.objects.get(name=test_name),
+        'test': test,
         'questions': questions,
         'title': {
             'edit_test_btn': 'Редактировать тест | Quizer',
@@ -313,7 +313,7 @@ def add_question_result(request):
     """
     Displays page with result of adding new question
     """
-    test = Test.objects.get(name=request.POST['test'])
+    test = Test.objects.get(id=int(request.POST['test_id']))
     question = {
         '_id': ObjectId(),
         'formulation': request.POST['question'],
@@ -384,7 +384,7 @@ def load_questions_result(request):
     """
     Displays result of loading questions from file
     """
-    test = Test.objects.get(name=request.POST['test'])
+    test = Test.objects.get(id=int(request.POST['test_id']))
     storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())
     try:
         content = request.FILES['file'].read().decode('utf-8')
@@ -463,7 +463,7 @@ def run_test(request):
     """
     Displays page with test for student
     """
-    test = Test.objects.get(name=request.POST['test_name'])
+    test = Test.objects.get(id=int(request.POST['test_id']))
     storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())
     questions = storage.get_many(test_id=test.id)
     questions = random.sample(questions, k=test.tasks_num)

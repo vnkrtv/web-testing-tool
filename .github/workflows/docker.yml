@@ -22,14 +22,11 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Run Mongo
-        run: |
-          docker run -d mongo
       - name: Configure app
         run: |
+          pip install docker-compose
           entrypoint="$(echo "$(cat deploy/entrypoint)")"
           echo "${entrypoint/runserver 0.0.0.0:80/test main}" > deploy/entrypoint
       - name: Build docker container & running tests
         run: |
-          docker build -t quizer .
-          docker run quizer
+          docker-compose run web sh -c "echo Passed all tests!"

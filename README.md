@@ -21,7 +21,7 @@ As docker container:
 - ```git clone https://github.com/LeadNess/web-testing-tool.git```
 - ```cd web-testing-tool```
 - ```docker build -t quizer .``` - create 'quizer' docker image with application and MongoDB
-- ```docker run -p 80:80 --name testing-app quizer ```
+- ```docker run -p 80:80 -e MONGO_DNNAME=<MONGO_DNNAME> -e MONGO_HOST=<MONGO_HOST> -e MONGO_PORT=<MONGO_PORT>--name testing-app quizer ```
 
 Next it's possible to set up automatic application resume after server reboot. Ubuntu solves this problem with the systemd initialization system:  
 - ```sudo cp ./deploy/web-testing-tool.service /etc/systemd/system/web-testing-tool.service```

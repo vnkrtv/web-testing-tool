@@ -33,6 +33,6 @@ jobs:
         run: |
           dockerfile="$(echo "$(cat Dockerfile)")"
           MONGO_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' mongodb)
-          echo "${dockerfile/MONGO_HOST/$MONGO_IP}" > dockerfile
+          echo "${dockerfile/MONGO_HOST/$MONGO_IP}" > Dockerfile
           docker build -t quizer .
           docker run -e MONGO_HOST=$MONGO_IP quizer

@@ -7,7 +7,7 @@ RUN /usr/share/python3/venv/bin/pip install -U pip
 COPY requirements.txt /mnt/
 RUN /usr/share/python3/venv/bin/pip install -Ur /mnt/requirements.txt \
  && file="$(echo "$(cat /usr/share/python3/venv/lib/python3.7/site-packages/pymongo/mongo_client.py)")" \
- && echo "${file}" | sed 's/HOST = "localhost"/HOST = "mongo"/' > /usr/share/python3/venv/lib/python3.7/site-packages/pymongo/mongo_client.py
+ && echo "${file}" | sed 's/HOST = "localhost"/HOST = "mongodb"/' > /usr/share/python3/venv/lib/python3.7/site-packages/pymongo/mongo_client.py
 
 FROM snakepacker/python:3.7 as api
 

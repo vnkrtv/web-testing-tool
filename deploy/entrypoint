@@ -4,7 +4,7 @@ export MONGO_DBNAME=<MONGO_DBNAME>
 export MONGO_HOST=<MONGO_HOST>
 export MONGO_PORT=<MONGO_PORT>
 
-cd /app/quizer
+cd /usr/share/python3/VKInfoSite/quizer
 python3 manage.py makemigrations
 python3 manage.py migrate
 echo 'from django.contrib.auth.models import Group; l = Group(id=1, name="lecturer"); l.save()' | python3 manage.py shell

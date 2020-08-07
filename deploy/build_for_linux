@@ -18,7 +18,6 @@ cp -r tmp/quizer quizer
 rm -r tmp
 
 SETTINGS="$(echo "$(cat ./deploy/settings)")"
-ENTRYPOINT="$(echo "$(cat ./deploy/entrypoint)")"
 SETTINGS="${SETTINGS/GENERATED_SECRET_KEY/${SECRET_KEY}}"
 
 echo "===========================================Initialized django app==============================================="
@@ -28,24 +27,23 @@ if [ "${MONGO_HOST}" == "" ]
 then
   MONGO_HOST="localhost"
 fi
-ENTRYPOINT="${ENTRYPOINT/<MONGO_HOST>/${MONGO_HOST}}"
+SETTINGS="${SETTINGS/os.environ.get('MONGO_HOST', 'mongodb')/\'${MONGO_HOST}\'}"
 
 read -r -p "MongoDB port (default: 27017): " MONGO_PORT
 if [ "${MONGO_PORT}" == "" ]
 then
   MONGO_PORT="27017"
 fi
-ENTRYPOINT="${ENTRYPOINT/<MONGO_PORT>/${MONGO_PORT}}"
+SETTINGS="${SETTINGS/int(os.environ.get('MONGO_PORT', 27017))/\'${MONGO_PORT}\'}"
 
 read -r -p "MongoDB database name (default: 'quizer'): " MONGO_DBNAME
 if [ "${MONGO_DBNAME}" == "" ]
 then
   MONGO_DBNAME="quizer"
 fi
-ENTRYPOINT="${ENTRYPOINT/<MONGO_DBNAME>/${MONGO_DBNAME}}"
+SETTINGS="${SETTINGS/os.environ.get('MONGO_DBNAME', 'quizer')/\'${MONGO_DBNAME}\'}"
 
 echo "${SETTINGS}" > ./quizer/quizer/settings.py
-echo "${ENTRYPOINT}" > ./deploy/entrypoint
 
 python quizer/manage.py makemigrations
 python quizer/manage.py migrate

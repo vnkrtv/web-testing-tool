@@ -9,9 +9,10 @@ services:
   - docker
 
 before_script:
-  - pip install docker-compose
+  - docker run --name mongodb -d mongo
   - entrypoint="$(echo "$(cat deploy/entrypoint)")"
   - echo "${entrypoint/runserver 0.0.0.0:80/test main}" > deploy/entrypoint
 
 script:
-  - docker-compose run web sh -c "echo Passed all tests!"
+  - docker build -t quizer .
+  - docker run -e MONGO_HOST=mongodb quizer

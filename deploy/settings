@@ -65,9 +65,9 @@ DATABASES = {
         'ENGINE': 'djongo', 
         'NAME': os.environ.get('MONGO_DBNAME', 'quizer'),
         'HOST': os.environ.get('MONGO_HOST', 'mongodb'),
-        'PORT': os.environ.get('MONGO_PORT', 27017),
+        'PORT': int(os.environ.get('MONGO_PORT', 27017)),
         'TEST': {
-            'NAME': os.environ.get('MONGO_DBNAME', 'quizer') + '_test'
+            'NAME': 'test_' + os.environ.get('MONGO_DBNAME', 'quizer')
         }
     }
 }

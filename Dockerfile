@@ -1,24 +1,19 @@
-FROM       ubuntu:latest
+FROM snakepacker/python:all as builder
 MAINTAINER LeadNess
 
-RUN apt-get update && apt-get install -y build-essential python3 \
- && apt-get install -y python3-setuptools \
- && apt-get install -y python3-pip
+RUN python3.7 -m venv /usr/share/python3/venv
+RUN /usr/share/python3/venv/bin/pip install -U pip
 
-RUN apt-get update && apt-get install -y mongodb \
- && mkdir -p /data/db \
- && mkdir -p /data/code
+COPY requirements.txt /mnt/
+RUN /usr/share/python3/venv/bin/pip install -Ur /mnt/requirements.txt # \
+# && file="$(echo "$(cat /usr/share/python3/venv/lib/python3.7/site-packages/pymongo/mongo_client.py)")" \
+# && echo "${file}" | sed 's/HOST = "localhost"/HOST = "mongo"/' > /usr/share/python3/venv/lib/python3.7/site-packages/pymongo/mongo_client.py
 
-COPY requirements.txt /app/requirements.txt
-RUN pip3 install --no-cache-dir -r /app/requirements.txt
+FROM snakepacker/python:3.7 as api
 
-COPY quizer /app/quizer
-
-# MongoDB port
-EXPOSE 27017
-
-# App port
-EXPOSE 80
+COPY --from=builder /usr/share/python3/venv /usr/share/python3/venv
+COPY quizer /usr/share/python3/quizer
+COPY deploy/settings /usr/share/python3/VKInfoSite/quizer/settings.py
 
 COPY deploy/entrypoint /entrypoint
 ENTRYPOINT ["/entrypoint"]

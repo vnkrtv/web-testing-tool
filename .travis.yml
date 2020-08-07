@@ -1,12 +1,15 @@
 language: python
 
 python:
-  - "3.6.8"
+  - 3.6.8
+  - 3.7
+  - 3.8
 
 services:
   - docker
 
 before_script:
+  - docker run -d mongo
   - entrypoint="$(echo "$(cat deploy/entrypoint)")"
   - echo "${entrypoint/runserver 0.0.0.0:80/test main}" > deploy/entrypoint
 

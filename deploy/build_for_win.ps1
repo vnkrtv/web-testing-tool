@@ -17,6 +17,7 @@ Copy-Item -Path .\tmp\quizer -Destination .\quizer -Recurse
 Remove-Item -Recurse tmp
 
 $SETTINGS = Get-Content .\deploy\settings
+$ENTRYPOINT = Get-Content .\deploy\entrypoint
 $SETTINGS = $SETTINGS.Replace('GENERATED_SECRET_KEY', $SECRET_KEY)
 
 Write-Host "===========================================Initialized django app==============================================="
@@ -26,23 +27,23 @@ If ($MONGO_HOST -eq "")
 {
   $MONGO_HOST="localhost"
 }
-$SETTINGS = $SETTINGS.Replace('MONGO_HOST', $MONGO_HOST)
+$ENTRYPOINT = $ENTRYPOINT.Replace('<MONGO_HOST>', $MONGO_HOST)
 
 $MONGO_PORT = Read-Host "MongoDB port (default: 27017): "
 If ($MONGO_PORT -eq "")
 {
   $MONGO_PORT="27017"
 }
-$SETTINGS = $SETTINGS.Replace('MONGO_PORT', $MONGO_PORT)
+$ENTRYPOINT = $ENTRYPOINT.Replace('<MONGO_PORT>', $MONGO_PORT)
 
 $MONGO_DBNAME = Read-Host "MongoDB database name (default: 'quizer'): "
 If ($MONGO_DBNAME -eq "")
 {
   $MONGO_DBNAME="quizer"
 }
-$SETTINGS = $SETTINGS.Replace('MONGO_DBNAME', $MONGO_DBNAME)
-$SETTINGS = $SETTINGS.Replace('MONGO_TESTDBNAME', 'test_' + $MONGO_DBNAME)
+$ENTRYPOINT = $ENTRYPOINT.Replace('<MONGO_DBNAME>', $MONGO_DBNAME)
 Write-Output $SETTINGS > .\quizer\quizer\settings.py
+Write-Output $ENTRYPOINT > .\deploy\entrypoint
 
 python .\quizer\manage.py makemigrations
 python .\quizer\manage.py migrate

@@ -10,4 +10,4 @@
       ports:
         - "0.0.0.0:8800:80"
       depends_on:
-        - mongo
+        - mongodb

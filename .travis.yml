@@ -15,5 +15,5 @@ before_script:
 
 script:
   - MONGO_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' mongodb)
-  - docker build -t quizer .
-  - docker run --build-arg MONGO_HOST=$MONGO_IP quizer
+  - docker build --build-arg MONGO_HOST=$MONGO_IP  -t quizer .
+  - docker run quizer

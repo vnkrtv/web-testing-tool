@@ -7,6 +7,8 @@
     web:
       build: .
       container_name: quizer-web
+      environment:
+        - MONGO_HOST=mongodb
       ports:
         - "0.0.0.0:8800:80"
       depends_on:

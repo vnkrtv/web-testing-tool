@@ -20,8 +20,8 @@ Implemented system features:
 As docker container:
 - ```git clone https://github.com/LeadNess/web-testing-tool.git```
 - ```cd web-testing-tool```
-- ```docker build -t quizer .``` - create 'quizer' docker image with application and MongoDB
-- ```docker run -p 80:80 -e MONGO_DNNAME=<MONGO_DNNAME> -e MONGO_HOST=<MONGO_HOST> -e MONGO_PORT=<MONGO_PORT>--name testing-app quizer ```
+- ```docker build --build-arg MONGO_HOST=<MONGO_HOST> -t quizer .``` - create 'quizer' docker image with application. **MONGO_HOST arg must be set!** 
+- ```docker run -p 80:80 -e MONGO_HOST=<MONGO_HOST> -e MONGO_PORT=<MONGO_PORT> -e MONGO_DNNAME=<MONGO_DNNAME> -e DEMONSTRATION_VARIANT=<y> --name testing-app quizer ```
 
 Next it's possible to set up automatic application resume after server reboot. Ubuntu solves this problem with the systemd initialization system:  
 - ```sudo cp ./deploy/web-testing-tool.service /etc/systemd/system/web-testing-tool.service```
@@ -36,15 +36,24 @@ It's also possible to build a working application on the host system to be able 
 - ```python ./quizer/manage.py runserver``` or ```python .\quizer\manage.py runserver```
 ### Usage 
 Run app by command:   
-- ```docker run -p 80:80 --name testing-app quizer```  
+```
+docker run -p <HOST_PORT>:80 \
+  -e MONGO_HOST=<MONGO_HOST> \
+  -e MONGO_PORT=<MONGO_PORT> \
+  -e MONGO_DNNAME=<MONGO_DNNAME> \
+  -e DEMONSTRATION_VARIANT=<y> \
+  --name testing-app quizer
+```
+Container envs:  
+- MONGO_HOST - MongoDB host, default - "localhost"
+- MONGO_PORT - MongoDB port, default - 27017
+- MONGO_DNNAME - MongoDB database name for app, default - "quizer"
+- DEMONSTRATION_VARIANT - if set, adds some data for demonstration purposes:
+  - user 'user' with password 'password', who belongs to group 'student'
+  - 2 added subjects 'Python' and 'OSS', 3 tests and 2 questions for one of them
   
-When you can connect to app in browser by following link: http://localhost:80.
-This is a test version of the program, created for demonstration purposes.   
-There are 2 users in this option:
-- user 'admin' with password 'admin', who belongs to group 'lecturer' and who is also a superuser (so you can enter django admin panel and add new lecturers,students or superusers)
-- user 'user' with password 'password', who belongs to group 'student'    
-
-There are also 2 added subjects 'Python' and 'OSS', 3 tests and 2 questions for one of them.
+For any building option, the application initially contains one user:
+- user 'admin' with password 'admin', who belongs to group 'lecturer' and who is also a superuser, which is able to enter django admin panel and add new lecturers,students or superusers
 
 To run test, you need:
 - auth as user belong to group 'lecturer'

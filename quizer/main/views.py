@@ -4,6 +4,7 @@ Quizer backend
 """
 import random
 import json
+from datetime import datetime
 from django.contrib.auth.models import User
 from django.contrib.auth import login, logout, authenticate
 from django.shortcuts import render, redirect
@@ -141,6 +142,57 @@ def add_test_result(request):
     }
     return render(request, 'main/lecturer/info.html', context)
 
+test_results = {
+        "_id": "5f2efd8ef52a0e2d2f82e524",
+        "test_id": 1,
+        "launched_lecturer_id": 1,
+        "is_running": True,
+        "results": [
+            {
+                "user_id": 7,
+                "username": "user",
+                "time": "0",
+                "tasks_num": 4,
+                "date": datetime.fromtimestamp(1596999999),
+                "right_answers_count": 0,
+                "questions": [
+                    {
+                        "id": "5e8a64a2b5633670bb89db2b",
+                        "selected_answers": [],
+                        "right_answers": ["1", "3"]
+                    },
+                    {
+                        "id": "5e973f96fc2ea87ee7841da8",
+                        "selected_answers": [],
+                        "right_answers": [
+                            "правильный вопрос выделить звездочкой"
+                        ]
+                    },
+                    {
+                        "id": "5f297b9d1dbecb31487b3878",
+                        "selected_answers": [],
+                        "right_answers": ["Python/ПЗ1/5f297b9d1dbecb31487b3878/1.jpg"]},
+                    {"id": "5e8a64adb5633670bb89db2d", "selected_answers": [], "right_answers": ["1"]}]},
+            {"user_id": 7, "date": datetime.fromtimestamp(2596915000), "username": "user", "time": "45", "tasks_num": 4,
+             "right_answers_count": 0, "questions": [
+                {"id": "5e8b439e6a6bcfa266a4d7ff", "selected_answers": [],
+                 "right_answers": ["Python/ПЗ1/5e8b439e6a6bcfa266a4d7ff/1.jpg",
+                                   "Python/ПЗ1/5e8b439e6a6bcfa266a4d7ff/0.jpg"]},
+                {"id": "5e8a64a2b5633670bb89db2b", "selected_answers": [], "right_answers": ["1", "3"]},
+                {"id": "5e973fb1fc2ea87ee7841dab", "selected_answers": [], "right_answers": ["Первый", "Правильный"]},
+                {"id": "5e973f96fc2ea87ee7841da8", "selected_answers": [],
+                 "right_answers": ["правильный вопрос выделить звездочкой"]}]},
+            {"user_id": 7, "date": datetime.fromtimestamp(1596915890), "username": "user", "time": "50", "tasks_num": 4,
+             "right_answers_count": 0,
+             "questions": [{"id": "5e8a64a2b5633670bb89db2b", "selected_answers": [], "right_answers": ["3", "1"]},
+                           {"id": "5e8b439e6a6bcfa266a4d7ff", "selected_answers": [],
+                            "right_answers": ["Python/ПЗ1/5e8b439e6a6bcfa266a4d7ff/0.jpg",
+                                              "Python/ПЗ1/5e8b439e6a6bcfa266a4d7ff/1.jpg"]},
+                           {"id": "5e973fb1fc2ea87ee7841dab", "selected_answers": [],
+                            "right_answers": ["Правильный", "Первый"]},
+                           {"id": "5e8a64adb5633670bb89db2d", "selected_answers": [], "right_answers": ["1"]}]}],
+        "date": datetime.now(), "time": {"year": 2020, "month": 8, "day": 8, "hour": 19, "minutes": 31}}
+
 
 @unauthenticated_user
 @allowed_users(allowed_roles=['lecturer'])
@@ -154,10 +206,12 @@ def get_running_tests(request):
     for running_test in running_tests:
         if running_test['launched_lecturer_id'] == request.user.id:
             test = Test.objects.get(id=running_test['test_id']).to_dict()
-            results = storage.get_running_test_results(
-                test_id=test['id'],
-                lecturer_id=request.user.id)
-            test['finished_students_num'] = len(results)
+            # results = storage.get_running_test_results(
+            #    test_id=test['id'],
+            #    lecturer_id=request.user.id)
+            results = test_results['results']
+            results.sort(key=lambda result: result['date'])
+            test['finished_students_results'] = results
             tests.append(test)
     context = {
         'title': 'Запущенные тесты | Quizer',
@@ -166,21 +220,24 @@ def get_running_tests(request):
     return render(request, 'main/lecturer/runningTests.html', context)
 
 
-@post_method
+# @post_method
 @unauthenticated_user
 @allowed_users(allowed_roles=['lecturer'])
 def stop_running_test(request):
     """
     Displays page with results of passing stopped test
     """
-    test = Test.objects.get(id=int(request.POST['test_id']))
-    storage = mongo.TestsResultsStorage.connect(db=mongo.get_conn())
-    results = storage.get_running_test_results(
-        test_id=test.id,
-        lecturer_id=request.user.id)
-    storage.stop_running_test(
-        test_id=test.id,
-        lecturer_id=request.user.id)
+    # test = Test.objects.get(id=int(request.POST['test_id']))
+    # storage = mongo.TestsResultsStorage.connect(db=mongo.get_conn())
+    # results = storage.get_running_test_results(
+    #     test_id=test.id,
+    #     lecturer_id=request.user.id)
+    # storage.stop_running_test(
+    #     test_id=test.id,
+    #     lecturer_id=request.user.id)
+    test = Test.objects.get(id=1)
+    results = test_results['results']
+    results.sort(key=lambda result: result['date'])
     context = {
         'title': 'Результаты тестирования | Quizer',
         'test': test,

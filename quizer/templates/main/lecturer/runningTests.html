@@ -1,24 +1,53 @@
 {% extends "main/lecturerWrapper.html" %}
 
 {% block content %}
- 	<div class='jumbotron'>
- 		<h2>Запущенные тесты</h2><br>
- 		<p>Здесь отображаются уже запущенные вами тесты, доступные слушателям.<br>
- 		Чтобы остановить тест и перейти к результатам его прохождения, нажмите 'Остановить'.</p>	
- 		{% for test in tests %}
- 			<hr class="my-4">
-			<label for='test_name'>
-				<h3>{{ test.name }}</h3>
-				<p>{{ test.description }}</p>
-				<p>Количество заданий в тесте: {{ test.tasks_num }}<br>
-				Время на выполнение: {{ test.duration }} с<br>
-				Выполнило слушателей: {{ test.finished_students_num }}</p>
-				<form action="{% url 'main:stop_running_test' %}" method="post">
-    			{% csrf_token %}
-    				<input type="hidden" name="test_id" id="test_name" value="{{ test.id }}">
-					<button class="btn btn-danger">Оcтановить</button>
-				</form>
-			</label>
- 		{% endfor %}
- 	</div>
+
+{% load static %}
+{% load main_extras %}
+
+<div class='jumbotron'>
+	<h2>Запущенные тесты</h2><br>
+	<p>Здесь отображаются уже запущенные вами тесты, доступные слушателям.<br>
+	Чтобы остановить тест и перейти к результатам его прохождения, нажмите 'Остановить'.</p>	
+	{% for test in tests %}
+	<hr class="my-4">
+	<label for='test_name'>
+		<h3>{{ test.name }}</h3>
+		<p>{{ test.description }}</p>
+		<p><img src='{% task_icon %}'> Количество заданий в тесте: {{ test.tasks_num }}<br>
+		<img src='{% clock_icon %}'> Время на выполнение: {{ test.duration }} с<br>
+		<span class="pointer" onclick='hideTable("search", "table")'><img src='{% team_icon %}'> Выполнило слушателей: {{ test.finished_students_results | length }}</span></p>
+		<input class="form-control" type="text" placeholder="Искать..." id="search" onkeyup='tableSearch("search", "table")'>
+		<table id="table" class="table table-hover">
+		    <thead>
+		      <tr>
+		      	<th>#</th>
+			      <th>Слушатель</th>
+			      <th>Результат</th>
+			      <th>Время прохождения</th>
+			      <th>Время завершения</th>
+		      </tr>
+		  </thead>
+		  <tbody>
+		  	{% for result in test.finished_students_results %}
+			  <tr>
+			      <td scope="row"><strong>{{ forloop.counter }}</strong></td>
+			      <td>{{ result.username }}</td>
+			      <td>{{ result.right_answers_count }}/{{ result.tasks_num }}</td>
+			      <td>{{ result.time }} c</td>
+			      <td>{{ result.date | date:"H:i:s" }}</td>
+		      </tr>
+			{% endfor %}
+		    </tbody>
+		</table>
+		<form action="{% url 'main:stop_running_test' %}" method="post">
+		{% csrf_token %}
+			<input type="hidden" name="test_id" id="test_name" value="{{ test.id }}">
+			<button class="btn btn-danger">Оcтановить</button>
+		</form>
+	</label>
+	{% endfor %}
+</div>
+<script src="{% static 'main/js/table.js' %}"></script>
+
 {% endblock %}

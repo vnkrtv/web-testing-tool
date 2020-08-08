@@ -211,7 +211,7 @@ class RunningTestsAnswersStorage(MongoDB):
         self._col.insert_one({
             'right_answers': right_answers,
             'test_duration': test_duration,
-            'start_timestamp': datetime.now().timestamp(),
+            'start_date': datetime.now(),
             'test_id': test_id,
             'user_id': user_id
         })
@@ -240,7 +240,7 @@ class RunningTestsAnswersStorage(MongoDB):
         })
         if not right_answers:
             return None
-        delta = datetime.now() - datetime.fromtimestamp(right_answers['start_timestamp'])
+        delta = datetime.now() - right_answers['start_date']
         return right_answers['test_duration'] - delta.total_seconds()
 
     def delete(self, user_id: int) -> None:
@@ -302,7 +302,7 @@ class TestsResultsStorage(MongoDB):
             'launched_lecturer_id': lecturer_id,
             'is_running': True,
             'results': [],
-            'timestamp': time.time(),
+            'date': datetime.now(),
             'time': {
                 'year': date[0],
                 'month': date[1],
@@ -335,6 +335,7 @@ class TestsResultsStorage(MongoDB):
         :param test_id: <int>
         :return: None
         """
+        test_result['date'] = datetime.now()
         self._col.find_one_and_update(
             {'test_id': test_id, 'is_running': True},
             {'$push': {'results': test_result}}

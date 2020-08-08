@@ -64,3 +64,15 @@ def add_test_icon():
 def edit_icon():
     """Edit test icon source"""
     return '/static/main/images/edit.svg'
+
+
+@register.simple_tag
+def user_icon():
+    """User icon source"""
+    return '/static/main/images/user.svg'
+
+
+@register.simple_tag
+def subject_icon():
+    """Subject icon source"""
+    return '/static/main/images/subject.svg'

@@ -14,13 +14,19 @@ function getDivElement(i, tests) {
     description_p.innerHTML = `${tests[i].description}`;
 
     const info_p = document.createElement('p');
-    info_p.innerHTML = `Предмет: ${tests[i].subject.name }<br>
-    Количество заданий в тесте: ${tests[i].tasks_num}<br>
-    Время на выполнение: ${tests[i].duration} с<br>
-    Вопросов к тесту: ${tests[i].questions_num}`;
+    info_p.innerHTML = `<img src='/static/main/images/subject.svg'> Предмет: ${tests[i].subject.name }<br>
+    <img src='/static/main/images/research.svg'> Количество заданий в тесте: ${tests[i].tasks_num}<br>
+    <img src='/static/main/images/clock.svg'> Время на выполнение: ${tests[i].duration} с<br>
+    <img src='/static/main/images/database.svg'> Вопросов к тесту: ${tests[i].questions_num}`;
 
-    const btn_cont = document.createElement('div');
-    btn_cont.className = "btn-group";
+    const btn_cont_1 = document.createElement('div');
+    btn_cont_1.className = "btn-group mr-2";
+
+    const btn_cont_2 = document.createElement('div');
+    btn_cont_2.className = "btn-group mr-2";
+
+    const btn_cont_3 = document.createElement('div');
+    btn_cont_3.className = "btn-group mr-2";
 
     const edit_btn = document.createElement('button');
     edit_btn.className = "btn btn-primary";
@@ -57,16 +63,20 @@ function getDivElement(i, tests) {
     del_test_btn.name = `test_name_${tests[i].id}`;
     del_test_btn.value = "del_test_btn";
 
-    btn_cont.appendChild(edit_btn);
-    btn_cont.appendChild(add_qstn_btn);
-    btn_cont.appendChild(load_qstn_btn);
-    btn_cont.appendChild(del_qstn_btn);
-    btn_cont.appendChild(del_test_btn);
+    btn_cont_1.appendChild(edit_btn);
+
+    btn_cont_2.appendChild(add_qstn_btn);
+    btn_cont_2.appendChild(load_qstn_btn);
+
+    btn_cont_3.appendChild(del_qstn_btn);
+    btn_cont_3.appendChild(del_test_btn);
 
     label.appendChild(test_name_h3);
     label.appendChild(description_p);
     label.appendChild(info_p);
-    label.appendChild(btn_cont);
+    label.appendChild(btn_cont_1);
+    label.appendChild(btn_cont_2);
+    label.appendChild(btn_cont_3);
 
     container.appendChild(hr);
     container.appendChild(label);

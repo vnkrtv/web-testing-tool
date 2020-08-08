@@ -254,15 +254,19 @@ class RunningTestsAnswersStorage(MongoDB):
             'user_id': user_id,
         })
 
-    def cleanup(self, user_id: int) -> None:
+    def cleanup(self, user_id: int) -> list:
         """
         Delete all temporary tests answers for user
 
         :param user_id: <int>
         """
+        docs = list(self._col.find({
+            'user_id': user_id,
+        }))
         self._col.delete_many({
             'user_id': user_id,
         })
+        return list(docs)
 
 
 class TestsResultsStorage(MongoDB):

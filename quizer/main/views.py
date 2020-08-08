@@ -1,18 +1,16 @@
-# pylint: disable=import-error, line-too-long, no-else-return, pointless-string-statement, relative-beyond-top-level
+# pylint: disable=import-error, line-too-long, relative-beyond-top-level
 """
 Quizer backend
 """
 import random
 import json
-from django.core.files.storage import default_storage
 from django.contrib.auth.models import User
-from django.core.files.base import ContentFile
 from django.contrib.auth import login, logout, authenticate
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.conf import settings
-from bson import ObjectId
 from . import mongo
+from . import utils
 from .decorators import unauthenticated_user, allowed_users, post_method
 from .models import Test, Subject
 
@@ -74,10 +72,8 @@ def login_page(request):
                 port=settings.DATABASES['default']['PORT'],
                 db_name=settings.DATABASES['default']['NAME'])
             return redirect('/tests/')
-        else:
-            return render(request, 'main/login.html', {'error': 'Ошибка: аккаунт пользователя отключен!'})
-    else:
-        return render(request, 'main/login.html', {'error': 'Ошибка: неправильное имя пользователя или пароль!'})
+        return render(request, 'main/login.html', {'error': 'Ошибка: аккаунт пользователя отключен!'})
+    return render(request, 'main/login.html', {'error': 'Ошибка: неправильное имя пользователя или пароль!'})
 
 
 @post_method
@@ -323,50 +319,10 @@ def add_question_result(request):
     Displays page with result of adding new question
     """
     test = Test.objects.get(id=int(request.POST['test_id']))
-    question = {
-        '_id': ObjectId(),
-        'formulation': request.POST['question'],
-        'tasks_num': request.POST['tasks_num'],
-        'multiselect': 'multiselect' in request.POST,
-        'with_images': 'with_images' in request.POST,
-        'options': []
-    }
     try:
-        """
-            request.POST:
-            - if not 'with_images':
-                - option_{i} = {option} - possible answer
-            - if 'multiselect':
-                - is_true_{i} = 'on' - if exists in request.POST then option_{i} is true
-            - if single answer:
-                - is_true = {i} -  option_{i} is true
-            request.FILES:
-            - if 'with_images':
-                - option_{i} - <InMemoryUploadedFile>(image option)
-        """
-        if question['multiselect']:
-            right_options_nums = [key.split('_')[2] for key in request.POST if 'is_true_' in key]
-        else:
-            right_options_nums = [request.POST['is_true']]
-        if question['with_images']:
-            options = {
-                key.split('_')[1]: request.FILES[key]
-                for key in request.FILES if 'option_' in key
-            }
-            for option_num in options:
-                path = f'{test.subject.name}/{test.name}/{question["_id"]}/{option_num}.jpg'
-                default_storage.save(path, ContentFile(options[option_num].read()))
-                options[option_num] = path
-        else:
-            options = {
-                key.split('_')[1]: request.POST[key]
-                for key in request.POST if 'option_' in key
-            }
-        for option_num in options:
-            question['options'].append({
-                'option': options[option_num],
-                'is_true': option_num in right_options_nums
-            })
+        question = utils.parse_question_form(
+            request=request,
+            test=test)
         mdb = mongo.QuestionsStorage.connect(db=mongo.get_conn())
         mdb.add_one(
             question=question,
@@ -394,48 +350,12 @@ def load_questions_result(request):
     Displays result of loading questions from file
     """
     test = Test.objects.get(id=int(request.POST['test_id']))
-    storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())
     try:
-        content = request.FILES['file'].read().decode('utf-8')
-        questions_list = content.split('\n\n')
-        if '' in questions_list:
-            questions_list.remove('')
-        questions_count = 0
+        questions_list = utils.get_questions_list(request)
+        storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())
         for question in questions_list:
-            buf = question.split('\n')
-            if '' in buf:
-                buf.remove('')
-            formulation = buf[0]
-            multiselect = False
-            options = []
-            for line in buf[1:]:
-                if '-' in line:
-                    options.append({
-                        'option': line.split('-')[1][1:],
-                        'is_true': False
-                    })
-                elif '*' in line:
-                    options.append({
-                        'option': line.split('*')[1][1:],
-                        'is_true': True
-                    })
-                elif '+' in line:
-                    multiselect = True
-                    options.append({
-                        'option': line.split('+')[1][1:],
-                        'is_true': True
-                    })
-                else:
-                    raise UnicodeDecodeError
-            questions_count += 1
             storage.add_one(
-                question={
-                    'formulation': formulation,
-                    'tasks_num': len(options),
-                    'multiselect': multiselect,
-                    'with_images': False,
-                    'options': options
-                },
+                question=question,
                 test_id=test.id)
     except UnicodeDecodeError:
         context = {
@@ -448,7 +368,7 @@ def load_questions_result(request):
     context = {
         'title': 'Вопросы загружены | Quizer',
         'message_title': 'Новые вопросы',
-        'message': "Вопросы к тесту '%s' в количестве %d успешно добавлены." % (test.name, questions_count),
+        'message': "Вопросы к тесту '%s' в количестве %d успешно добавлены." % (test.name, len(questions_list)),
     }
     return render(request, 'main/lecturer/info.html', context)
 
@@ -487,12 +407,22 @@ def run_test(request):
             'id': str(question['_id'])
         }
     storage = mongo.RunningTestsAnswersStorage.connect(db=mongo.get_conn())
-    storage.cleanup(user_id=request.user.id)
+    docs = storage.cleanup(user_id=request.user.id)
     storage.add(
         right_answers=right_answers,
         test_id=test.id,
         user_id=request.user.id,
         test_duration=test.duration)
+
+    for test_answers in docs:
+        result = utils.get_test_result(
+            request=request,
+            right_answers=test_answers['right_answers'])
+        storage = mongo.TestsResultsStorage.connect(db=mongo.get_conn())
+        storage.add_results_to_running_test(
+            test_result=result,
+            test_id=test.id)
+
     context = {
         'title': 'Тест | Quizer',
         'questions': questions,
@@ -512,6 +442,7 @@ def get_left_time(request):
         left_time = storage.get_left_time(user_id=request.user.id)
         if left_time is not None:
             return JsonResponse(left_time, safe=False)
+    return JsonResponse({}, safe=False)
 
 
 @post_method
@@ -523,58 +454,19 @@ def test_result(request):
     """
     storage = mongo.RunningTestsAnswersStorage.connect(db=mongo.get_conn())
     passed_test_answers = storage.get(user_id=request.user.id)
-    right_answers = passed_test_answers['right_answers']
     test_id = passed_test_answers['test_id']
     storage.delete(user_id=request.user.id)
 
-    response = dict(request.POST)
-    response.pop('csrfmiddlewaretoken')
-    time = response.pop('time')[0]
-
-    answers = {}
-    for key in response:
-        """
-            'key' for multiselect: {question_num}_{selected_option}: ['on']
-            'key' for single: {question_num}: ['{selected_option}']
-        """
-        buf = key.split('_')
-        if len(buf) == 1:
-            answers[buf[0]] = [response[key][0]]
-        else:
-            if buf[0] in answers:
-                answers[buf[0]].append(buf[1])
-            else:
-                answers[buf[0]] = [buf[1]]
-
-    right_answers_count = 0
-    questions = []
-    for question_num in right_answers:
-        questions.append({
-            'id': right_answers[question_num]['id'],
-            'selected_answers': answers[question_num] if question_num in answers else [],
-            'right_answers': [item['option'] for item in right_answers[question_num]['right_answers']]
-        })
-        if question_num in answers:
-            if [item['option'] for item in right_answers[question_num]['right_answers']] == answers[question_num]:
-                right_answers_count += 1
-                questions[-1]['is_true'] = True
-            else:
-                questions[-1]['is_true'] = False
-    result = {
-        'user_id': request.user.id,
-        'username': request.user.username,
-        'time': time,
-        'tasks_num': len(right_answers),
-        'right_answers_num': right_answers_count,
-        'questions': questions
-    }
+    result = utils.get_test_result(
+        request=request,
+        right_answers=passed_test_answers['right_answers'])
     storage = mongo.TestsResultsStorage.connect(db=mongo.get_conn())
     storage.add_results_to_running_test(
         test_result=result,
         test_id=test_id)
     context = {
         'title': 'Результат тестирования | Quizer',
-        'tasks_num': len(right_answers),
-        'right_answers_count': right_answers_count
+        'tasks_num': result['tasks_num'],
+        'right_answers_count': result['right_answers_count']
     }
     return render(request, 'main/student/testResult.html', context)

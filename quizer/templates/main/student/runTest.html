@@ -1,78 +1,50 @@
 {% extends "main/studentWrapper.html" %}
 
 {% block content %}
-	<form action="{% url 'main:test_result' %}" method="post">
-		<div class="jumbotron">
-		<div id="time-div" style="font-size: 175%;"></div>
-		<label for='time'>
-			<input id="time" type="hidden" name='time' value="{{ test_duration }}">
-		</label>
-		<br>
-		<ul class="list-group">
-			{% csrf_token %}
-	    	{% for question in questions %}
-		 	<li class="list-group-item">{{ forloop.counter }}. {{ question.formulation }}
-		 		<ul class="list-group list-group-flush">
-	            	{% for option in question.options %}
-            		<li class="list-group-item">
-            			<label for='{{ forloop.parentloop.counter }}_{{ forloop.counter }}'>
-	            			{% if question.multiselect %}
-	                    		<input type="checkbox" id='{{ forloop.parentloop.counter }}_{{ option.option }}' name='{{ forloop.parentloop.counter }}_{{ option.option }}'>
-	            			{% else %}
-	                    		<input type="radio" id='{{ forloop.parentloop.counter }}_{{ option.option }}' name='{{ forloop.parentloop.counter }}' value="{{ option.option }}">
-	            			{% endif %}
-	            		</label>
-	            		{% if question.with_images %}
-			        		<img src="/media/{{ option.option }}" alt="Server pribolel" height="341" style="width: auto;">
-	            		{% else %}
-	                    	{{ option.option }}          		    
-	            		{% endif %}           	    
-	                </li>
-	            	{% endfor %}
-				</ul>
-		    </li>
-		    <br>
-	 		{% endfor %}
-        </ul>
-        <br>
-        <button class="btn btn-primary" id="stop-button">Закончить тест</button>
-        </div>
-    </form>
-    <script type="text/javascript">
-    	function getTimeLeft() {
-	    	let xhr = new XMLHttpRequest();
 
-			xhr.open('POST', "{% url 'main:get_left_time' %}");
-			xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-			xhr.onload = function() {
-			    if (xhr.status === 200) {
-			    	alert(xhr.responseText);
-			        if (xhr.responseText < 0) {
-			        	document.getElementById("stop-button").click();
-			        }
-			    }
-			    else if (xhr.status !== 200) {
-			        console.log("Error on sending post request.");
-			    }
-			};
-			xhr.send(encodeURI('csrfmiddlewaretoken={{ csrf_token }}'));
-		}
+{% load static %}
 
+<form action="{% url 'main:test_result' %}" method="post">
+	<div class="jumbotron">
+	<div id="time-div" style="font-size: 175%;"></div>
+	<label for='time'>
+		<input id="time" type="hidden" name='time' value="{{ test_duration }}">
+	</label>
+	<br>
+	<ul class="list-group">
+		{% csrf_token %}
+    	{% for question in questions %}
+	 	<li class="list-group-item">{{ forloop.counter }}. {{ question.formulation }}
+	 		<ul class="list-group list-group-flush">
+            	{% for option in question.options %}
+        		<li class="list-group-item">
+        			<label for='{{ forloop.parentloop.counter }}_{{ forloop.counter }}'>
+            			{% if question.multiselect %}
+                    		<input type="checkbox" id='{{ forloop.parentloop.counter }}_{{ option.option }}' name='{{ forloop.parentloop.counter }}_{{ option.option }}'>
+            			{% else %}
+                    		<input type="radio" id='{{ forloop.parentloop.counter }}_{{ option.option }}' name='{{ forloop.parentloop.counter }}' value="{{ option.option }}">
+            			{% endif %}
+            		</label>
+            		{% if question.with_images %}
+		        		<img src="/media/{{ option.option }}" alt="Server pribolel" height="341" style="width: auto;">
+            		{% else %}
+                    	{{ option.option }}          		    
+            		{% endif %}           	    
+                </li>
+            	{% endfor %}
+			</ul>
+	    </li>
+	    <br>
+ 		{% endfor %}
+    </ul>
+    <br>
+    <button class="btn btn-primary" id="stop-button">Закончить тест</button>
+    </div>
+</form>
+<script src="{% static 'main/js/runTest.js' %}"></script>
+<script type="text/javascript">
+	const timeLeft = {{ test_duration }};
+	runTest(timeLeft, "{% url 'main:get_left_time' %}", "{{ csrf_token }}");
+</script>
 
-    	function runTest(timeLeft) {
-		    if (timeLeft < 0) {
-		       document.getElementById("stop-button").click();      
-		    }
-		    if (timeLeft % 5 == 0) {
-		    	getTimeLeft();
-		    }
-		    document.getElementById("time").value = timeLeft;
-		    document.getElementById("time-div").innerHTML = `Времени осталось: ${timeLeft} с`;
-		    timeLeft--;
-		    setTimeout(runTest, 1000, timeLeft);
-		}
-
-		const timeLeft = {{ test_duration }};
-		runTest(timeLeft);
-	</script>
 {% endblock %}

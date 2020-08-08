@@ -30,35 +30,35 @@ function getDivElement(i, tests) {
 
     const edit_btn = document.createElement('button');
     edit_btn.className = "btn btn-primary";
-    edit_btn.innerHTML = "Редактировать";
+    edit_btn.innerHTML = "<img src='/static/main/images/edit.svg'> Редактировать";
     edit_btn.id = `test_name_${tests[i].name}`;
     edit_btn.name = `test_name_${tests[i].id}`;
     edit_btn.value = "edit_test_btn";
 
     const add_qstn_btn = document.createElement('button');
     add_qstn_btn.className = "btn btn-success";
-    add_qstn_btn.innerHTML = "Добавить вопрос";
+    add_qstn_btn.innerHTML = "<img src='/static/main/images/add.svg'> Добавить вопрос";
     add_qstn_btn.id = `test_name_${tests[i].name}`;
     add_qstn_btn.name = `test_name_${tests[i].id}`;
     add_qstn_btn.value = "add_qstn_btn";
 
     const load_qstn_btn = document.createElement('button');
     load_qstn_btn.className = "btn btn-success";
-    load_qstn_btn.innerHTML = "Загрузить вопросы";
+    load_qstn_btn.innerHTML = "<img src='/static/main/images/add.svg'> Загрузить вопросы";
     load_qstn_btn.id = `test_name_${tests[i].name}`;
     load_qstn_btn.name = `test_name_${tests[i].id}`;
     load_qstn_btn.value = "load_qstn_btn";
 
     const del_qstn_btn = document.createElement('button');
     del_qstn_btn.className = "btn btn-danger";
-    del_qstn_btn.innerHTML = "Удалить вопросы";
+    del_qstn_btn.innerHTML = "<img src='/static/main/images/delete.svg'> Удалить вопросы";
     del_qstn_btn.id = `test_name_${tests[i].name}`;
     del_qstn_btn.name = `test_name_${tests[i].id}`;
     del_qstn_btn.value = "del_qstn_btn";
 
     const del_test_btn = document.createElement('button');
     del_test_btn.className = "btn btn-danger";
-    del_test_btn.innerHTML = "Удалить тест";
+    del_test_btn.innerHTML = "<img src='/static/main/images/delete.svg'> Удалить тест";
     del_test_btn.id = `test_name_${tests[i].name}`;
     del_test_btn.name = `test_name_${tests[i].id}`;
     del_test_btn.value = "del_test_btn";

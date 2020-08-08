@@ -4,6 +4,8 @@
 
 {% load static %}
 
+{% load main_extras %}
+
  	<div class='jumbotron'>
  		<h2>Новый вопрос</h2>
  		<form action="{% url 'main:add_question_result' %}" enctype="multipart/form-data" method="post">
@@ -33,7 +35,7 @@
 		    	</div>
 		    </div>
 		    <div id="questions" class="col-md-4 mb-3"></div><br>
-		    <button class="btn btn-primary" type="submit">Добавить</button>
+		    <button class="btn btn-success" type="submit"><img src='{% add_icon %}'> Добавить</button>
 		</form>
 	</div>
 

@@ -1,6 +1,9 @@
 {% extends "main/lecturerWrapper.html" %}
 
 {% block content %}
+
+{% load main_extras %}
+
  	<div class='jumbotron'>
  		<h2>Окно редактирования теста</h2><br>
  		<form action="{% url 'main:edit_test_result' %}" method="post">
@@ -30,7 +33,7 @@
 		            <input type="number" class="form-control" id="duration" name="duration" min="1" value="{{ test.duration }}" required>
 		        </div>
 		    </div>
-		    <button class="btn btn-primary" type="submit">Изменить</button>
+		    <button class="btn btn-primary" type="submit"><img src='{% edit_icon %}'> Изменить</button>
 		    <input type="hidden" name="test_id" id="test_id" value="{{ test.id }}">
 		</form>
  	</div>

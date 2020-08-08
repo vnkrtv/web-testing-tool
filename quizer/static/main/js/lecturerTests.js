@@ -14,13 +14,13 @@ function getDivElement(i, tests) {
     description_p.innerHTML = `${tests[i].description}`;
 
     const info_p = document.createElement('p');
-    info_p.innerHTML = `Предмет: ${tests[i].subject.name }<br>
-    Количество заданий в тесте: ${tests[i].tasks_num}<br>
-    Время на выполнение: ${tests[i].duration} с`;
+    info_p.innerHTML = `<img src='/static/main/images/subject.svg'> Предмет: ${tests[i].subject.name }<br>
+    <img src='/static/main/images/research.svg'> Количество заданий в тесте: ${tests[i].tasks_num}<br>
+    <img src='/static/main/images/clock.svg'> Время на выполнение: ${tests[i].duration} с`;
 
     const btn = document.createElement('button');
     btn.className = "btn btn-primary";
-    btn.innerHTML = "Запустить";
+    btn.innerHTML = `<img src='/static/main/images/play.svg'> Запустить`;
     btn.id =  "test_name";
     btn.name =  "test_id";
     btn.value = `${tests[i].id}`;

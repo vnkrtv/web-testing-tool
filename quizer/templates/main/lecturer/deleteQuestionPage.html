@@ -1,6 +1,9 @@
 {% extends "main/lecturerWrapper.html" %}
 
 {% block content %}
+
+{% load main_extras %}
+
  	<div class='jumbotron'>
  		<h2>Вопросы к тесту {{ test.name }}</h2><br>
  		<p>Чтобы удалить вопросы, выделите их в списке вопросов и нажмите 'Удалить'.</p>
@@ -60,7 +63,7 @@
 		    	};
 		    </script>
         	<br>
-		    <button class="btn btn-danger" type="submit">Удалить</button>
+		    <button class="btn btn-danger" type="submit"><img src='{% delete_icon %}'> Удалить</button>
 		    <input type="hidden" name="test_id" id="test_id" value="{{ test.id }}">
 		</form>
  	</div>

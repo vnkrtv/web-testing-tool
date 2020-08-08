@@ -76,3 +76,39 @@ def user_icon():
 def subject_icon():
     """Subject icon source"""
     return '/static/main/images/subject.svg'
+
+
+@register.simple_tag
+def delete_icon():
+    """Delete icon source"""
+    return '/static/main/images/delete.svg'
+
+
+@register.simple_tag
+def add_icon():
+    """Add icon source"""
+    return '/static/main/images/add.svg'
+
+
+@register.simple_tag
+def cancel_icon():
+    """Cancel icon source"""
+    return '/static/main/images/cancel.svg'
+
+
+@register.simple_tag
+def download_icon():
+    """Download icon source"""
+    return '/static/main/images/download.svg'
+
+
+@register.simple_tag
+def play_icon():
+    """Play icon source"""
+    return '/static/main/images/play.svg'
+
+
+@register.simple_tag
+def finish_icon():
+    """Finish icon source"""
+    return '/static/main/images/finish.svg'

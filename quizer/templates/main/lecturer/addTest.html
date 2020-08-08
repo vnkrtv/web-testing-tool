@@ -1,6 +1,9 @@
 {% extends "main/lecturerWrapper.html" %}
 
 {% block content %}
+
+{% load main_extras %}
+
  	<div class='jumbotron'>
  		<h2>Новый тест</h2><br>
  		<form action="{% url 'main:add_test_result' %}" method="post">
@@ -41,7 +44,8 @@
 		      <input type="number" class="form-control" id="duration" name="duration" min="1" required>
 		    </div>
 		  </div>
-		  <button class="btn btn-primary" type="submit">Добавить</button>
+		  <button class="btn btn-success" type="submit"><img src='{% add_icon %}'> Добавить</button>
 		</form>
  	</div>
+
 {% endblock %}

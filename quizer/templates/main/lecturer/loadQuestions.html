@@ -1,6 +1,9 @@
 {% extends "main/lecturerWrapper.html" %}
 
 {% block content %}
+
+{% load main_extras %}
+
  	<div class='jumbotron'>
  		<h2>Загрузить вопросы</h2>
  		<form action="{% url 'main:load_questions_result' %}" enctype="multipart/form-data" method="post">
@@ -16,7 +19,7 @@
 				    </div>
 		  	    </div>
 		    </div>
-		    <button class="btn btn-primary" type="submit">Загрузить</button>
+		    <button class="btn btn-success" type="submit"><img src='{% download_icon %}'> Загрузить</button>
 		</form>
 	</div>
 {% endblock %}

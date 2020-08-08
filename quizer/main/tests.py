@@ -195,7 +195,7 @@ class AuthorizationTest(MainTest):
             'password': 'top_secret'
         }, follow=True)
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Пользователь')
+        self.assertContains(response, 'Слушатель')
 
     def test_lecturer_auth(self) -> None:
         """

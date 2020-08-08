@@ -399,6 +399,6 @@ class TestsResultsStorage(MongoDB):
         })
         if test_results:
             test_results = list(test_results)
-            latest_test_results = max(test_results, key=lambda res: res['timestamp'])
+            latest_test_results = max(test_results, key=lambda res: res['date'])
             return latest_test_results['results']
         return []

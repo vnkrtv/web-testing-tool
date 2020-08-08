@@ -5,9 +5,11 @@ Quizer backend
 import random
 import json
 from django.core.files.storage import default_storage
+from django.contrib.auth.models import User
 from django.core.files.base import ContentFile
 from django.contrib.auth import login, logout, authenticate
 from django.shortcuts import render, redirect
+from django.http import JsonResponse
 from django.conf import settings
 from bson import ObjectId
 from . import mongo
@@ -23,7 +25,8 @@ def get_tests(request):
     For student - displays list of running tests
     """
     storage = mongo.TestsResultsStorage.connect(db=mongo.get_conn())
-    running_tests_ids = storage.get_running_tests_ids()
+    running_tests = storage.get_running_tests()
+    running_tests_ids = [test['test_id'] for test in running_tests]
     if request.user.groups.filter(name='lecturer'):
         tests = Test.objects.all()
         not_running_tests = [t for t in tests if t.id not in running_tests_ids]
@@ -42,7 +45,13 @@ def get_tests(request):
         return render(request, 'main/student/info.html', context)
     context = {
         'title': 'Тесты | Quizer',
-        'tests': [Test.objects.get(id=_id) for _id in running_tests_ids],
+        'tests': [
+            {
+                'launched_lecturer': User.objects.get(id=test['launched_lecturer_id']),
+                **Test.objects.get(id=test['test_id']).to_dict()
+            }
+            for test in running_tests
+        ],
     }
     return render(request, 'main/student/tests.html', context)
 
@@ -464,6 +473,7 @@ def run_test(request):
     Displays page with test for student
     """
     test = Test.objects.get(id=int(request.POST['test_id']))
+
     storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())
     questions = storage.get_many(test_id=test.id)
     questions = random.sample(questions, k=test.tasks_num)
@@ -477,10 +487,12 @@ def run_test(request):
             'id': str(question['_id'])
         }
     storage = mongo.RunningTestsAnswersStorage.connect(db=mongo.get_conn())
+    storage.cleanup(user_id=request.user.id)
     storage.add(
         right_answers=right_answers,
         test_id=test.id,
-        user_id=request.user.id)
+        user_id=request.user.id,
+        test_duration=test.duration)
     context = {
         'title': 'Тест | Quizer',
         'questions': questions,
@@ -489,6 +501,17 @@ def run_test(request):
         'right_answers': right_answers,
     }
     return render(request, 'main/student/runTest.html', context)
+
+
+def get_left_time(request):
+    """
+    Updates time that left for passing test
+    """
+    if request.user.is_authenticated and request.method == 'POST':
+        storage = mongo.RunningTestsAnswersStorage.connect(db=mongo.get_conn())
+        left_time = storage.get_left_time(user_id=request.user.id)
+        if left_time is not None:
+            return JsonResponse(left_time, safe=False)
 
 
 @post_method
@@ -551,6 +574,7 @@ def test_result(request):
         test_id=test_id)
     context = {
         'title': 'Результат тестирования | Quizer',
+        'tasks_num': len(right_answers),
         'right_answers_count': right_answers_count
     }
     return render(request, 'main/student/testResult.html', context)

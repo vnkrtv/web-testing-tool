@@ -190,7 +190,7 @@ class RunningTestsAnswersStorage(MongoDB):
             collection_name='running_tests_answers')
         return storage
 
-    def add(self, right_answers, test_id: str, user_id: str) -> None:
+    def add(self, right_answers, test_id: str, user_id: str, test_duration: int) -> None:
         """
         Add right answers for running tests and current user
 
@@ -206,10 +206,12 @@ class RunningTestsAnswersStorage(MongoDB):
             }
         :param test_id: <int>
         :param user_id: <int>, user who passes test
-        :return:
+        :param test_duration: <int>, test duration in seconds
         """
         self._col.insert_one({
             'right_answers': right_answers,
+            'test_duration': test_duration,
+            'start_timestamp': datetime.now().timestamp(),
             'test_id': test_id,
             'user_id': user_id
         })
@@ -226,6 +228,21 @@ class RunningTestsAnswersStorage(MongoDB):
         })
         return right_answers
 
+    def get_left_time(self, user_id: int):
+        """
+        Get left time for passing running test by current user
+
+        :param user_id: <int>, user who passes test
+        :return: <dict>
+        """
+        right_answers = self._col.find_one({
+            'user_id': user_id,
+        })
+        if not right_answers:
+            return None
+        delta = datetime.now() - datetime.fromtimestamp(right_answers['start_timestamp'])
+        return right_answers['test_duration'] - delta.total_seconds()
+
     def delete(self, user_id: int) -> None:
         """
         Delete user answers for running test
@@ -234,6 +251,16 @@ class RunningTestsAnswersStorage(MongoDB):
         :return: None
         """
         self._col.delete_one({
+            'user_id': user_id,
+        })
+
+    def cleanup(self, user_id: int) -> None:
+        """
+        Delete all temporary tests answers for user
+
+        :param user_id: <int>
+        """
+        self._col.delete_many({
             'user_id': user_id,
         })
 

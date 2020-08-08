@@ -23,5 +23,6 @@ urlpatterns = [
 
     url(r'^marks/$', views.get_marks, name='marks'),
     url(r'^run_test/$', views.run_test, name='run_test'),
+    url(r'^get_left_time/$', views.get_left_time, name='get_left_time'),
     url(r'^test_result/$', views.test_result, name='test_result')
 ]

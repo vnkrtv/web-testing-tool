@@ -12,7 +12,7 @@
 				<p>{{ test.description }}</p>
 				<p>Количество заданий в тесте: {{ test.tasks_num }}<br>
 				Время на выполнение: {{ test.duration }} с<br>
-				Уже выполнило: {{ test.finished_students_num }} слушателей</p>
+				Выполнило слушателей: {{ test.finished_students_num }}</p>
 				<form action="{% url 'main:stop_running_test' %}" method="post">
     			{% csrf_token %}
     				<input type="hidden" name="test_id" id="test_name" value="{{ test.id }}">

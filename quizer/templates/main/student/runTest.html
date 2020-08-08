@@ -1,28 +1,14 @@
 {% extends "main/studentWrapper.html" %}
 
 {% block content %}
-	<script type="text/javascript">
-		var ticks = {{ test_duration }};
-		function runTest() {
-		    if (ticks < 0) {
-		       document.getElementById("stop_button").click();      
-		       return;
-		    }
-		    document.getElementById("time").value = ticks;
-		    document.getElementById("time-div").innerHTML = `Времени осталось: ${ticks} с`;
-		    ticks--;
-		    setTimeout(runTest,1000);
-		}
-	</script>
 	<form action="{% url 'main:test_result' %}" method="post">
 		<div class="jumbotron">
 		<div id="time-div" style="font-size: 175%;"></div>
 		<label for='time'>
-			<input id="time" type="hidden" name='time'>
+			<input id="time" type="hidden" name='time' value="{{ test_duration }}">
 		</label>
 		<br>
 		<ul class="list-group">
-	    	<script type="text/javascript">runTest();</script>
 			{% csrf_token %}
 	    	{% for question in questions %}
 		 	<li class="list-group-item">{{ forloop.counter }}. {{ question.formulation }}
@@ -49,7 +35,44 @@
 	 		{% endfor %}
         </ul>
         <br>
-        <button class="btn btn-primary" id="stop_button">Закончить тест</button>
+        <button class="btn btn-primary" id="stop-button">Закончить тест</button>
         </div>
     </form>
+    <script type="text/javascript">
+    	function getTimeLeft() {
+	    	let xhr = new XMLHttpRequest();
+
+			xhr.open('POST', "{% url 'main:get_left_time' %}");
+			xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+			xhr.onload = function() {
+			    if (xhr.status === 200) {
+			    	alert(xhr.responseText);
+			        if (xhr.responseText < 0) {
+			        	document.getElementById("stop-button").click();
+			        }
+			    }
+			    else if (xhr.status !== 200) {
+			        console.log("Error on sending post request.");
+			    }
+			};
+			xhr.send(encodeURI('csrfmiddlewaretoken={{ csrf_token }}'));
+		}
+
+
+    	function runTest(timeLeft) {
+		    if (timeLeft < 0) {
+		       document.getElementById("stop-button").click();      
+		    }
+		    if (timeLeft % 5 == 0) {
+		    	getTimeLeft();
+		    }
+		    document.getElementById("time").value = timeLeft;
+		    document.getElementById("time-div").innerHTML = `Времени осталось: ${timeLeft} с`;
+		    timeLeft--;
+		    setTimeout(runTest, 1000, timeLeft);
+		}
+
+		const timeLeft = {{ test_duration }};
+		runTest(timeLeft);
+	</script>
 {% endblock %}

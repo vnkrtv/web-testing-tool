@@ -1,0 +1,17 @@
+  version: '3'
+    
+  services:
+    db:
+      image: postgres
+      container_name: weblib-postgres
+      environment:
+        - POSTGRES_DB=weblib
+        - POSTGRES_USER=postgres
+        - POSTGRES_PASSWORD=postgres
+    web:
+      build: .
+      container_name: weblib
+      ports:
+        - "0.0.0.0:8800:8080"
+      depends_on:
+        - db

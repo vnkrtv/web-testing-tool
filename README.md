@@ -40,14 +40,14 @@ Run app by command:
 docker run -p <HOST_PORT>:80 \
   -e MONGO_HOST=<MONGO_HOST> \
   -e MONGO_PORT=<MONGO_PORT> \
-  -e MONGO_DNNAME=<MONGO_DNNAME> \
+  -e MONGO_DBNAME=<MONGO_DBNAME> \
   -e DEMONSTRATION_VARIANT=<y> \
   --name testing-app quizer
 ```
 Container envs:  
 - MONGO_HOST - MongoDB host, default - "localhost"
 - MONGO_PORT - MongoDB port, default - 27017
-- MONGO_DNNAME - MongoDB database name for app, default - "quizer"
+- MONGO_DBNAME - MongoDB database name for app, default - "quizer"
 - DEMONSTRATION_VARIANT - if set, adds some data for demonstration purposes:
   - user 'user' with password 'password', who belongs to group 'student'
   - 2 added subjects 'Python' and 'OSS', 3 tests and 2 questions for one of them

@@ -13,6 +13,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 	{% load static %}
+	{% load main_extras %}
 	<link rel="stylesheet" href="{% static 'main/css/sidebar.css' %}">
 	<link rel="stylesheet" href="{% static 'main/css/bootstrap.min.css' %}">
 
@@ -27,26 +28,21 @@
 	    Quizer <img src="/media/favicon/favicon-32x32.png" width="25" length="25">
 	  </div>
 	  <ul class="sidebar-navigation">
-	  	<li class="header">Пользователь</li>
+	  	<li class="header">Слушатель</li>
 	  	<li>
 	      <a href="{% url 'main:tests' %}">
-	        <i class="fa fa-tachometer" aria-hidden="true"></i> {{ user.username }}
+	        <i aria-hidden="true"></i><img src='{% person_icon %}'> {{ user.username }}
 	      </a>
 	    </li>
 	    <li>
 	      <a href="{% url 'main:login_page' %}">
-	        <i class="fa fa-tachometer" aria-hidden="true"></i> Выйти
+	        <i aria-hidden="true"></i><img src='{% logout_icon %}'> Выйти
 	      </a>
 	    </li>
 	    <li class="header">Навигация</li>
 	    <li>
 	      <a href="{% url 'main:tests' %}">
-	        <i class="fa fa-home" aria-hidden="true"></i> Тесты
-	      </a>
-	    </li>
-	    <li>
-	      <a href="{% url 'main:marks' %}">
-	        <i class="fa fa-tachometer" aria-hidden="true"></i> Оценки
+	        <i aria-hidden="true"></i><img src='{% task_icon %}'> Тесты
 	      </a>
 	    </li>
 	  </ul>

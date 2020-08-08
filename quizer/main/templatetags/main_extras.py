@@ -28,3 +28,39 @@ def clock_icon():
 def task_icon():
     """Task icon source"""
     return '/static/main/images/task.svg'
+
+
+@register.simple_tag
+def person_icon():
+    """Person icon source"""
+    return '/static/main/images/person.svg'
+
+
+@register.simple_tag
+def logout_icon():
+    """Logout icon source"""
+    return '/static/main/images/logout.svg'
+
+
+@register.simple_tag
+def wait_icon():
+    """Wait icon source"""
+    return '/static/main/images/wait.svg'
+
+
+@register.simple_tag
+def research_icon():
+    """Research icon source"""
+    return '/static/main/images/research.svg'
+
+
+@register.simple_tag
+def add_test_icon():
+    """Add test icon source"""
+    return '/static/main/images/add-test.svg'
+
+
+@register.simple_tag
+def edit_icon():
+    """Edit test icon source"""
+    return '/static/main/images/edit.svg'

@@ -12,6 +12,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 	{% load static %}
+	{% load main_extras %}
 	<link rel="stylesheet" href="{% static 'main/css/sidebar.css' %}">
 	<link rel="stylesheet" href="{% static 'main/css/bootstrap.min.css' %}">
 
@@ -29,33 +30,33 @@
 	  	<li class="header">Преподаватель</li>
 	  	<li>
 	      <a href="{% url 'main:tests' %}">
-	        <i class="fa fa-tachometer" aria-hidden="true"></i> {{ user.username }}
+	        <i aria-hidden="true"></i><img src='{% person_icon %}'> {{ user.username }}
 	      </a>
 	    </li>
 	    <li>
 	      <a href="{% url 'main:login_page' %}">
-	        <i class="fa fa-tachometer" aria-hidden="true"></i> Выйти
+	        <i aria-hidden="true"></i><img src='{% logout_icon %}'> Выйти
 	      </a>
 	    </li>
 	    <li class="header">Управление</li>
 	    <li>
 	      <a href="{% url 'main:tests' %}">
-	        <i class="fa fa-home" aria-hidden="true"></i> Доступные тесты
+	        <i aria-hidden="true"></i><img src='{% task_icon %}'> Доступные тесты
 	      </a>
 	    </li>
 	    <li>
 	      <a href="{% url 'main:running_tests' %}">
-	        <i class="fa fa-home" aria-hidden="true"></i> Запущенные тесты
+	        <i aria-hidden="true"></i><img src='{% wait_icon %}'> Запущенные тесты
 	      </a>
 	    </li>
 	    <li>
 	      <a href="{% url 'main:add_test' %}">
-	        <i class="fa fa-tachometer" aria-hidden="true"></i> Добавить тест
+	        <i aria-hidden="true"></i><img src='{% add_test_icon %}'> Добавить тест
 	      </a>
 	    </li>
 	    <li>
 	      <a href="{% url 'main:edit_test' %}">
-	        <i class="fa fa-tachometer" aria-hidden="true"></i> Редактировать тест
+	        <i aria-hidden="true"></i><img src='{% edit_icon %}'> Редактировать тест
 	      </a>
 	    </li>
 	  </ul>

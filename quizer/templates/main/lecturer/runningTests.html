@@ -14,7 +14,7 @@
 	<label for='test_name'>
 		<h3>{{ test.name }}</h3>
 		<p>{{ test.description }}</p>
-		<p><img src='{% task_icon %}'> Количество заданий в тесте: {{ test.tasks_num }}<br>
+		<p><img src='{% research_icon %}'> Количество заданий в тесте: {{ test.tasks_num }}<br>
 		<img src='{% clock_icon %}'> Время на выполнение: {{ test.duration }} с<br>
 		<span class="pointer" onclick='hideTable("search", "table")'><img src='{% team_icon %}'> Выполнило слушателей: {{ test.finished_students_results | length }}</span></p>
 		<input class="form-control" type="text" placeholder="Искать..." id="search" onkeyup='tableSearch("search", "table")'>
@@ -49,5 +49,6 @@
 	{% endfor %}
 </div>
 <script src="{% static 'main/js/table.js' %}"></script>
+<script type="text/javascript">hideTable("search", "table")</script>
 
 {% endblock %}

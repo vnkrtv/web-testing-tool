@@ -27,21 +27,21 @@ if [ "${MONGO_HOST}" == "" ]
 then
   MONGO_HOST="localhost"
 fi
-SETTINGS="${SETTINGS/os.environ.get('MONGO_HOST', 'mongodb')/\'${MONGO_HOST}\'}"
+SETTINGS="${SETTINGS/os.environ.get(\'MONGO_HOST\', \'localhost\')/\'${MONGO_HOST}\'}"
 
 read -r -p "MongoDB port (default: 27017): " MONGO_PORT
 if [ "${MONGO_PORT}" == "" ]
 then
   MONGO_PORT="27017"
 fi
-SETTINGS="${SETTINGS/int(os.environ.get('MONGO_PORT', 27017))/\'${MONGO_PORT}\'}"
+SETTINGS="${SETTINGS/int(os.environ.get(\'MONGO_PORT\', 27017))/\'${MONGO_PORT}\'}"
 
 read -r -p "MongoDB database name (default: 'quizer'): " MONGO_DBNAME
 if [ "${MONGO_DBNAME}" == "" ]
 then
   MONGO_DBNAME="quizer"
 fi
-SETTINGS="${SETTINGS/os.environ.get('MONGO_DBNAME', 'quizer')/\'${MONGO_DBNAME}\'}"
+SETTINGS="${SETTINGS/os.environ.get(\'MONGO_DBNAME\', \'quizer\')/\'${MONGO_DBNAME}\'}"
 
 echo "${SETTINGS}" > ./quizer/quizer/settings.py
 

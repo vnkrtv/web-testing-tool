@@ -34,7 +34,7 @@ if [ "${MONGO_PORT}" == "" ]
 then
   MONGO_PORT="27017"
 fi
-SETTINGS="${SETTINGS/int(os.environ.get(\'MONGO_PORT\', 27017))/\'${MONGO_PORT}\'}"
+SETTINGS="${SETTINGS/int(os.environ.get(\'MONGO_PORT\', 27017))/${MONGO_PORT}}"
 
 read -r -p "MongoDB database name (default: 'quizer'): " MONGO_DBNAME
 if [ "${MONGO_DBNAME}" == "" ]

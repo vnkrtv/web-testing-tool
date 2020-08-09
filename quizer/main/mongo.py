@@ -312,7 +312,7 @@ class TestsResultsStorage(MongoDB):
             }
         })
 
-    def add_results_to_running_test(self, test_result, test_id: int) -> None:
+    def add_results_to_running_test(self, test_result: dict, test_id: int) -> None:
         """
         Add passed test result to other results for running test
 
@@ -341,18 +341,18 @@ class TestsResultsStorage(MongoDB):
             {'$push': {'results': test_result}}
         )
 
-    def get_running_test_results(self, test_id: int, lecturer_id: int) -> list:
+    def get_running_test_results(self, test_id: int, lecturer_id: int) -> dict:
         """
         Get results of running test
 
         :param test_id: <int>
         :param lecturer_id: <int>, lecturer who ran test
-        :return: <list>, list of results
+        :return: <dict>, dict with test results and launching info
         """
         test_results = self._col.find_one(
             {'test_id': test_id, 'launched_lecturer_id': lecturer_id, 'is_running': True},
         )
-        return test_results['results'] if test_results else []
+        return test_results if test_results else {}
 
     def get_running_tests_ids(self) -> list:
         """

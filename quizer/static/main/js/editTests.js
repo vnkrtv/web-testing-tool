@@ -44,7 +44,7 @@ function getDivElement(i, tests) {
 
     const load_qstn_btn = document.createElement('button');
     load_qstn_btn.className = "btn btn-success";
-    load_qstn_btn.innerHTML = "<img src='/static/main/images/add.svg'> Загрузить вопросы";
+    load_qstn_btn.innerHTML = "<img src='/static/main/images/download.svg'> Загрузить вопросы";
     load_qstn_btn.id = `test_name_${tests[i].name}`;
     load_qstn_btn.name = `test_name_${tests[i].id}`;
     load_qstn_btn.value = "load_qstn_btn";

@@ -112,3 +112,15 @@ def play_icon():
 def finish_icon():
     """Finish icon source"""
     return '/static/main/images/finish.svg'
+
+
+@register.simple_tag
+def search_icon():
+    """Search icon source"""
+    return '/static/main/images/loupe.svg'
+
+
+@register.simple_tag
+def close_icon():
+    """Close icon source"""
+    return '/static/main/images/close.svg'

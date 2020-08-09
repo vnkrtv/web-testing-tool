@@ -155,9 +155,10 @@ def get_running_tests(request):
     for running_test in running_tests:
         if running_test['launched_lecturer_id'] == request.user.id:
             test = Test.objects.get(id=running_test['test_id']).to_dict()
-            results = storage.get_running_test_results(
-                test_id=test['id'],
-                lecturer_id=request.user.id)
+            test_results = storage.get_running_test_results(
+               test_id=test['id'],
+               lecturer_id=request.user.id)
+            results = test_results['results']
             results.sort(key=lambda result: result['date'])
             test['finished_students_results'] = results
             tests.append(test)
@@ -177,16 +178,20 @@ def stop_running_test(request):
     """
     test = Test.objects.get(id=int(request.POST['test_id']))
     storage = mongo.TestsResultsStorage.connect(db=mongo.get_conn())
-    results = storage.get_running_test_results(
+    test_results = storage.get_running_test_results(
         test_id=test.id,
         lecturer_id=request.user.id)
     storage.stop_running_test(
         test_id=test.id,
         lecturer_id=request.user.id)
+    results = test_results['results']
     results.sort(key=lambda result: result['date'])
     context = {
         'title': 'Результаты тестирования | Quizer',
         'test': test,
+        'start_date': test_results['date'],
+        'questions': json.dumps([result['questions'] for result in results]),
+        'end_date': datetime.now(),
         'results': results,
     }
     return render(request, 'main/lecturer/testingResults.html', context)
@@ -420,7 +425,8 @@ def run_test(request):
     for test_answers in docs:
         result = utils.get_test_result(
             request=request,
-            right_answers=test_answers['right_answers'])
+            right_answers=test_answers['right_answers'],
+            test_duration=test_answers['test_duration'])
         storage = mongo.TestsResultsStorage.connect(db=mongo.get_conn())
         storage.add_results_to_running_test(
             test_result=result,
@@ -462,7 +468,8 @@ def test_result(request):
 
     result = utils.get_test_result(
         request=request,
-        right_answers=passed_test_answers['right_answers'])
+        right_answers=passed_test_answers['right_answers'],
+        test_duration=passed_test_answers['test_duration'])
     storage = mongo.TestsResultsStorage.connect(db=mongo.get_conn())
     storage.add_results_to_running_test(
         test_result=result,

@@ -687,7 +687,7 @@ class RunningTestsAnswersStorageTest(TestsResultsStorageTest):
         }, follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Результаты тестирования')
-        self.assertContains(response, 'Тест: %s' % self.test.name)
+        self.assertContains(response, self.test.name)
         self.assertContains(response, self.student.username)
         self.assertEqual(0, len(self.tests_results_storage.get_running_tests_ids()))
 

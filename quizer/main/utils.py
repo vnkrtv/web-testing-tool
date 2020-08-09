@@ -111,7 +111,7 @@ def get_questions_list(request: HttpRequest) -> list:
     return parsed_questions_list
 
 
-def get_test_result(request: HttpRequest, right_answers: dict) -> dict:
+def get_test_result(request: HttpRequest, right_answers: dict, test_duration: int) -> dict:
     """
     Get testing result from HttpRequest object
 
@@ -155,7 +155,7 @@ def get_test_result(request: HttpRequest, right_answers: dict) -> dict:
     return {
         'user_id': request.user.id,
         'username': request.user.username,
-        'time': time,
+        'time': test_duration - int(time),
         'tasks_num': len(right_answers),
         'right_answers_count': right_answers_count,
         'questions': questions

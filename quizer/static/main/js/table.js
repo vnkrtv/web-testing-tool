@@ -106,14 +106,35 @@ function sortTable(table_id, column_num) {
 }
 
 function hideTable(input_id, table_id) {
-    if (document.getElementById(input_id).style.display == "") {
+    if (document.getElementById(input_id).style.display === "") {
         document.getElementById(input_id).style.display = "none";
     } else {
         document.getElementById(input_id).style.display = "";
     }
-    if (document.getElementById(table_id).style.display == "") {
+    if (document.getElementById(table_id).style.display === "") {
         document.getElementById(table_id).style.display = "none";
     } else {
         document.getElementById(table_id).style.display = "";
+    }
+}
+
+function fillErrorsModal(row_id, questions_list) {
+    const container = document.getElementById('errors-container');
+    container.innerHTML = "";
+    const result_id = parseInt(row_id.split("_")[1]);
+    const questions = JSON.parse(questions_list.replace(/&quot;/g, '"'))[result_id]
+
+    for (let i = 0; i < questions.length; i++) {
+        const li = document.createElement("li");
+        if (questions[i]["is_true"]) {
+            li.className = "list-group-item list-group-item-success";
+            li.innerHTML = `${i}. Верно`;
+        } else {
+            li.className = "list-group-item list-group-item-danger";
+            li.innerHTML = `${i}. Ошибка<br>
+            Выбрано: ${questions[i]["selected_answers"]}<br>
+            Верно: ${questions[i]["right_answers"]}`;
+        }
+        container.appendChild(li);
     }
 }

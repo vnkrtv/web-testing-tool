@@ -16,9 +16,9 @@
 		<p>{{ test.description }}</p>
 		<p><img src='{% research_icon %}'> Количество заданий в тесте: {{ test.tasks_num }}<br>
 		<img src='{% clock_icon %}'> Время на выполнение: {{ test.duration }} с<br>
-		<span class="pointer" onclick='hideTable("search", "table")'><img src='{% team_icon %}'> Выполнило слушателей: {{ test.finished_students_results | length }}</span></p>
-		<input class="form-control" type="text" placeholder="Искать..." id="search" onkeyup='tableSearch("search", "table")'>
-		<table id="table" class="table table-hover">
+		<span class="pointer" onclick='hideTable("search_{{ forloop.counter }}", "table_{{ forloop.counter }}")' title="Нажмите, чтобы скрыть результаты"><img src='{% team_icon %}'> Выполнило слушателей: {{ test.finished_students_results | length }}</span></p>
+		<input class="form-control" type="text" placeholder="Искать..." id="search_{{ forloop.counter }}" onkeyup='tableSearch("search_{{ forloop.counter }}", "table_{{ forloop.counter }}")'>
+		<table id="table_{{ forloop.counter }}" class="table table-hover">
 		    <thead>
 		      <tr>
 		      	<th>#</th>

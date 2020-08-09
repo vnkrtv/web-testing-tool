@@ -117,6 +117,7 @@ def get_test_result(request: HttpRequest, right_answers: dict, test_duration: in
 
     :param request: <HttpRequest>
     :param right_answers: dict with right_answers
+    :param test_duration: <int>< duration of passed test
     :return: dict with testing result
     """
     response = dict(request.POST)

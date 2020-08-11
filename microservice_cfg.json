@@ -1,0 +1,9 @@
+{
+	"service_name": "quizer",
+	"service_fullname": "Система тестирования",
+	"default_urn": "/quizer/",
+    "static": "/usr/share/python3/quizer/static",
+	"scope": "student",
+	"test_command": "/usr/share/python3/venv/bin/python /usr/share/python3/quizer/manage.py test main",
+	"app_port": 8000
+}

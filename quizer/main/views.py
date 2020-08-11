@@ -7,7 +7,7 @@ import json
 from datetime import datetime
 from django.contrib.auth.models import User
 from django.contrib.auth import login, logout, authenticate
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, reverse
 from django.http import JsonResponse
 from django.conf import settings
 from . import mongo
@@ -72,7 +72,7 @@ def login_page(request):
                 host=settings.DATABASES['default']['HOST'],
                 port=settings.DATABASES['default']['PORT'],
                 db_name=settings.DATABASES['default']['NAME'])
-            return redirect('/tests/')
+            return redirect(reverse('main:tests'))
         return render(request, 'main/login.html', {'error': 'Ошибка: аккаунт пользователя отключен!'})
     return render(request, 'main/login.html', {'error': 'Ошибка: неправильное имя пользователя или пароль!'})
 
@@ -316,7 +316,7 @@ def delete_test_result(request):
         }
         Test.delete(test)
         return render(request, 'main/lecturer/info.html', context)
-    return redirect('/edit_test')
+    return redirect(reverse('main:edit_test'))
 
 
 @post_method
@@ -463,6 +463,8 @@ def test_result(request):
     """
     storage = mongo.RunningTestsAnswersStorage.connect(db=mongo.get_conn())
     passed_test_answers = storage.get(user_id=request.user.id)
+    if not passed_test_answers:
+        return redirect(reverse('main:tests'))
     test_id = passed_test_answers['test_id']
     storage.delete(user_id=request.user.id)
 

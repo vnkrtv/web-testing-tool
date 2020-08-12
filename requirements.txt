@@ -16,3 +16,4 @@ six==1.14.0
 sqlparse==0.2.4
 uvloop==0.14.0
 websockets==8.1
+whitenoise==5.2.0

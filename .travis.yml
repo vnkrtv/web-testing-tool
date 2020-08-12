@@ -1,5 +1,8 @@
 language: python
 
+branches:
+  - master
+
 python:
   - 3.6.8
   - 3.7

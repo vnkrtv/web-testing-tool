@@ -8,4 +8,4 @@ quizer/main/migrations/
 prac*
 
 !quizer/media/logo.png
-!quizer/media/favicon
+!quizer/static/favicon

@@ -3,8 +3,14 @@
 cd /usr/share/python3/quizer
 . /usr/share/python3/venv/bin/activate
 
+if [[ ! -z "${MONGO_HOST}" ]]; then
+  file="$(echo "$(cat /usr/share/python3/venv/lib/python3.7/site-packages/pymongo/mongo_client.py)")"
+  echo "${file}" | sed "s/HOST = \"localhost\"/HOST = \"${MONGO_HOST}\"/" > /usr/share/python3/venv/lib/python3.7/site-packages/pymongo/mongo_client.py
+fi
+
 python manage.py makemigrations
 python manage.py migrate
+echo yes | python manage.py collectstatic
 
 echo 'from django.contrib.auth.models import Group; l = Group(id=1, name="lecturer"); l.save()' | python manage.py shell
 echo 'from django.contrib.auth.models import Group; s = Group(id=2, name="student"); s.save()' | python manage.py shell
@@ -23,14 +29,9 @@ fi
 
 if [[ ! -z "${URL_PREFIX}" ]]; then
   URLS="$(echo "$(cat ./quizer/urls.py)")"
-  URLS="${URLS/\'admin/\'/\'${URL_PREFIX}/admin/\'}"
-  URLS="${URLS/\'/\'/\'${URL_PREFIX}/\'}"
+  URLS="${URLS/\'admin\/\'/\'${URL_PREFIX}\/admin/\'}"
+  URLS="${URLS//\'\'/\'${URL_PREFIX}\/\'}"
   echo "${URLS}" > ./quizer/urls.py
-
-  SETTINGS="$(echo "$(cat ./quizer/settings.py)")"
-  SETTINGS="${SETTINGS/\/static\//\/${URL_PREFIX}\/static\/}"
-  SETTINGS="${SETTINGS/\/media\//\/${URL_PREFIX}\/media\/}"
-  echo "${SETTINGS}" > ./quizer/settings.py
 fi
 
-python manage.py runserver 0.0.0.0:80
+gunicorn quizer.wsgi:application --bind 0.0.0.0:80

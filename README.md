@@ -20,8 +20,8 @@ Implemented system features:
 As docker container:
 - ```git clone https://github.com/LeadNess/web-testing-tool.git```
 - ```cd web-testing-tool```
-- ```docker build --build-arg MONGO_HOST=<MONGO_HOST> -t quizer .``` - create 'quizer' docker image with application. **MONGO_HOST arg must be set!** 
-- ```docker run -p 80:80 -e MONGO_HOST=<MONGO_HOST> -e MONGO_PORT=<MONGO_PORT> -e MONGO_DNNAME=<MONGO_DNNAME> -e DEMONSTRATION_VARIANT=<y> URL_PREFIX=<URL_PREFIX> --name testing-app quizer ```
+- ```docker build -t quizer .``` - create 'quizer' docker image with application 
+- ```docker run -p <HOST_PORT>:80 -e MONGO_HOST=<MONGO_HOST> -e MONGO_PORT=<MONGO_PORT> -e MONGO_DNNAME=<MONGO_DNNAME> -e DEMONSTRATION_VARIANT=<y> URL_PREFIX=<URL_PREFIX> --name testing-app quizer ```
 
 Next it's possible to set up automatic application resume after server reboot. Ubuntu solves this problem with the systemd initialization system:  
 - ```sudo cp ./deploy/web-testing-tool.service /etc/systemd/system/web-testing-tool.service```

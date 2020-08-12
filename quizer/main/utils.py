@@ -2,11 +2,29 @@
 """
 Some utils for views
 """
+import jwt
+import requests
 from bson import ObjectId
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.http import HttpRequest
 from .models import Test
+
+
+def get_auth_data(request: HttpRequest) -> tuple:
+    """
+    Get user's username and group using 'user_jqt' cookies
+
+    :param request: <HttpRequest>
+    :return: tuple(username: str, group: str)
+    """
+    user_jwt = request.COOKIES.get('user_jwt')
+    key_id = jwt.get_unverified_header(user_jwt).get('kid')
+    public_key = requests.get(f'http://auth/public_key/{key_id}').text
+    decoded_jwt = jwt.decode(str(user_jwt), public_key, algorithms='RS256')
+    username = decoded_jwt.get('group', '')
+    group = decoded_jwt.get('username', '')
+    return username, group
 
 
 def parse_question_form(request: HttpRequest, test: Test) -> dict:

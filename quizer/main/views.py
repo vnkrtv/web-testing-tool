@@ -57,24 +57,25 @@ def get_tests(request):
 
 def login_page(request):
     """
-    In case of successful authorization redirect to get_tests page, else displays login page with error
+    Authorize user and redirect him to get_tests page
     """
     logout(request)
-    if 'username' not in request.POST or 'password' not in request.POST:
-        return render(request, 'main/login.html')
-    user = authenticate(
-        username=request.POST['username'],
-        password=request.POST['password'])
-    if user is not None:
-        if user.is_active:
-            login(request, user)
-            mongo.set_conn(
-                host=settings.DATABASES['default']['HOST'],
-                port=settings.DATABASES['default']['PORT'],
-                db_name=settings.DATABASES['default']['NAME'])
-            return redirect(reverse('main:tests'))
-        return render(request, 'main/login.html', {'error': 'Ошибка: аккаунт пользователя отключен!'})
-    return render(request, 'main/login.html', {'error': 'Ошибка: неправильное имя пользователя или пароль!'})
+    username, group = utils.get_auth_data(request)
+    user = authenticate(username)
+    if user is None:
+        group2id = {
+            'teacher': 1,
+            'student': 2
+        }
+        user = User(username=username)
+        user.groups.add(group2id[group])
+        user.save()
+    login(request, user)
+    mongo.set_conn(
+        host=settings.DATABASES['default']['HOST'],
+        port=settings.DATABASES['default']['PORT'],
+        db_name=settings.DATABASES['default']['NAME'])
+    return redirect(reverse('main:tests'))
 
 
 @post_method

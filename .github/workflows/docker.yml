@@ -28,7 +28,7 @@ jobs:
       - name: Configure app
         run: |
           entrypoint="$(echo "$(cat deploy/entrypoint)")"
-          echo "${entrypoint/runserver 0.0.0.0:80/test main}" > deploy/entrypoint
+          echo "${entrypoint/gunicorn quizer.wsgi:application --bind 0.0.0.0:80/python manage.py test main}" > deploy/entrypoint
       - name: Build docker container & running tests
         run: |
           MONGO_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' mongodb)

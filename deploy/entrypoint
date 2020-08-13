@@ -15,9 +15,9 @@ echo yes | python manage.py collectstatic
 echo 'from django.contrib.auth.models import Group; l = Group(id=1, name="lecturer"); l.save()' | python manage.py shell
 echo 'from django.contrib.auth.models import Group; s = Group(id=2, name="student"); s.save()' | python manage.py shell
 echo "from django.contrib.auth.models import User; User.objects.create_superuser('admin', '', 'admin')" | python manage.py shell
+echo 'from django.contrib.auth.models import User; a = User.objects.get(id=1); a.groups.add(1); a.save(); print("Added user %s to group %s" % (a.username, "lecturer"))'  | python manage.py shell
 
 if [[ ! -z "${DEMONSTRATION_VARIANT}" ]]; then
-  echo 'from django.contrib.auth.models import User; a = User.objects.get(id=1); a.groups.add(1); a.save(); print("Added user %s to group %s" % (a.username, "lecturer"))'  | python manage.py shell
   echo 'from django.contrib.auth.models import User; s = User(id=4, username="user"); s.set_password("password"); s.groups.add(2); s.save()' | python manage.py shell
   echo 'from main.models import Subject; s = Subject(id=1, name="Python", description="PL Python"); s.save()' | python manage.py shell
   echo 'from main.models import Subject; s = Subject(id=2, name="OSS", description="Operating systems security"); s.save()' | python manage.py shell

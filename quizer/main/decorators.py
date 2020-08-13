@@ -18,6 +18,18 @@ def unauthenticated_user(view_func):
     return wrapper_func
 
 
+def superuser_only(view_func):
+    """
+    Checked if user is superuser
+    """
+    def wrapper_func(request, *args, **kwargs):
+        if request.user.is_superuser:
+            return view_func(request, *args, **kwargs)
+        else:
+            return redirect('/tests/')
+    return wrapper_func
+
+
 def allowed_users(allowed_roles: list):
     """
     Checked if user belong to allowed group

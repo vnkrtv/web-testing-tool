@@ -27,7 +27,11 @@
 	    Quizer <img src="{% static 'favicon/favicon-32x32.png' %}" width="25" length="25">
 	  </div>
 	  <ul class="sidebar-navigation">
-	  	<li class="header">Преподаватель</li>
+	  	{% if user.is_superuser %}
+	  	<li class="header">Администратор</li>
+	  	{% else %}
+	  	<li class="header">Преподаватель</li>	  	
+	  	{% endif %}
 	  	<li>
 	      <a href="{% url 'main:tests' %}">
 	        <i aria-hidden="true"></i><img src='{% person_icon %}'> {{ user.username }}
@@ -38,7 +42,7 @@
 	        <i aria-hidden="true"></i><img src='{% logout_icon %}'> Выйти
 	      </a>
 	    </li>
-	    <li class="header">Управление</li>
+	    <li class="header">Тесты</li>
 	    <li>
 	      <a href="{% url 'main:tests' %}">
 	        <i aria-hidden="true"></i><img src='{% task_icon %}'> Доступные тесты
@@ -56,9 +60,22 @@
 	    </li>
 	    <li>
 	      <a href="{% url 'main:edit_test' %}">
-	        <i aria-hidden="true"></i><img src='{% edit_icon %}'> Редактировать тест
+	        <i aria-hidden="true"></i><img src='{% edit_icon %}'> Редактировать
 	      </a>
 	    </li>
+	    {% if user.is_superuser %}
+	    <li class="header">Предметы</li>
+	    <li>
+	      <a href="{% url 'main:add_subject' %}">
+	        <i aria-hidden="true"></i><img src='{% subject_icon %}'> Добавить предмет
+	      </a>
+	    </li>
+	    <li>
+	      <a href="{% url 'main:edit_subject' %}">
+	        <i aria-hidden="true"></i><img src='{% edit_icon %}'> Редактировать
+	      </a>
+	    </li>
+	    {% endif %}
 	  </ul>
 	</div>
 	<div class="content-container">

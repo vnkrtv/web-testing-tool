@@ -8,11 +8,11 @@ from datetime import datetime
 from django.contrib.auth.models import User
 from django.contrib.auth import login, logout, authenticate
 from django.shortcuts import render, redirect, reverse
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.conf import settings
 from . import mongo
 from . import utils
-from .decorators import unauthenticated_user, allowed_users, post_method
+from .decorators import unauthenticated_user, allowed_users, post_method, superuser_only
 from .models import Test, Subject
 
 
@@ -67,8 +67,14 @@ def login_page(request):
             'teacher': 1,
             'student': 2
         }
-        user = User(username=username)
-        user.groups.add(group2id[group])
+        if group in ['student', 'teacher']:
+            user = User(username=username)
+            user.groups.add(group2id[group])
+        elif group in ['dev', 'admin']:
+            user = User.objects.create_superuser(username)
+            user.groups.add(group2id['teacher'])
+        else:
+            return HttpResponse('Incorrect group.')
         user.save()
     login(request, user)
     mongo.set_conn(
@@ -76,6 +82,54 @@ def login_page(request):
         port=settings.DATABASES['default']['PORT'],
         db_name=settings.DATABASES['default']['NAME'])
     return redirect(reverse('main:tests'))
+
+
+@unauthenticated_user
+@superuser_only
+def add_subject(request):
+    """
+    Displays page with an empty form for filling out information about new subject
+    """
+    user = User.objects.get(id=1)
+    login(request, user)
+    if request.user.is_superuser:
+        context = {
+            'title': 'Новый предмет | Quizer',
+        }
+        return render(request, 'main/lecturer/addSubject.html', context)
+    return redirect(reverse('main:tests'))
+
+
+@post_method
+@unauthenticated_user
+@superuser_only
+def add_subject_result(request):
+    """
+    Displays page with result of adding new subject
+    """
+    subject = Subject(
+        name=request.POST['test_name'],
+        description=request.POST['description'])
+    subject.save()
+    context = {
+        'title': 'Новый предмет | Quizer',
+        'message_title': 'Новый предмет',
+        'message': "Предмет '%s' успешно добавлен." % subject.name,
+    }
+    return render(request, 'main/lecturer/info.html', context)
+
+
+@unauthenticated_user
+@superuser_only
+def edit_subject(request):
+    """
+    Displays page with all subjects
+    """
+    context = {
+        'title': 'Редактировать предмет | Quizer',
+        'subjects': list(Subject.objects.all())
+    }
+    return render(request, 'main/lecturer/info.html', context)
 
 
 @post_method

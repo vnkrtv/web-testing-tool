@@ -1,0 +1,28 @@
+{% extends "main/lecturerWrapper.html" %}
+
+{% block content %}
+
+{% load main_extras %}
+
+ 	<div class='jumbotron'>
+ 		<h2>Новый предмет</h2><br>
+ 		<form action="{% url 'main:add_subject_result' %}" method="post">
+ 		{% csrf_token %}
+		  <div class="form-row">
+		  	<div class="col-md-4 mb-3">
+		  		<label for="test_name">Название предмета
+		      		<input type="text" class="form-control" name="name" required>
+		      	</label>
+		  	</div>
+		  </div>
+		  <div class="form-row">
+		     <div class="col-md-4 mb-3">
+		      <label for="description">Описание</label>
+		      <textarea class="form-control" rows="3" cols="30" name="description"></textarea>
+		    </div>
+		  </div>
+		  <button class="btn btn-success" type="submit"><img src='{% add_icon %}'> Добавить</button>
+		</form>
+ 	</div>
+
+{% endblock %}

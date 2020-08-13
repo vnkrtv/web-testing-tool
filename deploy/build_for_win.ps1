@@ -53,7 +53,7 @@ Write-Host 'from django.contrib.auth.models import Group; l = Group(id=1, name="
 Write-Host "Created 'lecturer' group"
 Write-Host 'from django.contrib.auth.models import Group; s = Group(id=2, name="student"); s.save()' | python .\quizer\manage.py shell
 Write-Host "Created 'student' group"
-Write-Host "===========================================Enter superuser info==============================================="
+Write-Host "===========================================Enter superuser_only info==============================================="
 python .\quizer\manage.py createsuperuser
 Write-Host 'from django.contrib.auth.models import User; a = User.objects.get(id=1); a.groups.add(1); a.save(); print("Added user %s to group %s" % (a.username, "lecturer"))'  | python .\quizer\manage.py shell
 Write-Host 'from django.contrib.auth.models import User; s = User(id=4, username="user"); s.set_password("password"); s.groups.add(2); s.save()' | python .\quizer\manage.py shell

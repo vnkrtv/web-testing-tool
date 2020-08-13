@@ -18,12 +18,12 @@ def get_auth_data(request: HttpRequest) -> tuple:
     :param request: <HttpRequest>
     :return: tuple(username: str, group: str)
     """
-    user_jwt = request.COOKIES.get('user_jwt')
+    user_jwt = request.COOKIES.get('user_jwt', '')
     key_id = jwt.get_unverified_header(user_jwt).get('kid')
     public_key = requests.get(f'http://auth/public_key/{key_id}').text
-    decoded_jwt = jwt.decode(str(user_jwt), public_key, algorithms='RS256')
-    username = decoded_jwt.get('group', '')
-    group = decoded_jwt.get('username', '')
+    decoded_jwt = jwt.decode(user_jwt, public_key, algorithms='RS256')
+    username = decoded_jwt.get('username', '')
+    group = decoded_jwt.get('group', '')
     return username, group
 
 

@@ -7,7 +7,7 @@
 ### Description
 Testing tool implemented on Django. Data storage is implemented in the DBMS MongoDB.  
 Implemented system features:
-- adding users and new study subjects using Django admin panel as superuser
+- adding users and new study subjects using Django admin panel as superuser_only
 - separation of access rights for 2 groups - 'student' and 'lecturer'
 - adding tests and questions with images to them using the web interface as a user belonging to 'lecturer' group
 - adding questions from existing files   
@@ -55,7 +55,7 @@ Container envs:
   - 2 added subjects 'Python' and 'OSS', 3 tests and 2 questions for one of them
   
 For any building option, the application initially contains one user:
-- user 'admin' with password 'admin', who belongs to group 'lecturer' and who is also a superuser, which is able to enter django admin panel and add new lecturers,students or superusers
+- user 'admin' with password 'admin', who belongs to group 'lecturer' and who is also a superuser_only, which is able to enter django admin panel and add new lecturers,students or superusers
 
 To run test, you need:
 - auth as user belong to group 'lecturer'

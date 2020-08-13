@@ -8,6 +8,11 @@ urlpatterns = [
     url(r'^$', views.login_page, name='login_page'),
     url(r'^tests/$', views.get_tests, name='tests'),
 
+    url(r'^add_subject/$', views.add_subject, name='add_subject'),
+    url(r'^add_subject_result/$', views.add_subject_result, name='add_subject_result'),
+    url(r'^edit_subject/$', views.edit_subject, name='edit_subject'),
+    # url(r'^add_subject_result/$', views.add_subject_result, name='add_subject_result'),
+
     url(r'^run_new_test/$', views.run_test_result, name='run_test_result'),
     url(r'^running_tests/$', views.get_running_tests, name='running_tests'),
     url(r'^stop_running_test/$', views.stop_running_test, name='stop_running_test'),

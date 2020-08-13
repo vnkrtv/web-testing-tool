@@ -75,7 +75,7 @@ def user_icon():
 @register.simple_tag
 def subject_icon():
     """Subject icon source"""
-    return '/static/main/images/subject.svg'
+    return '/static/main/images/white_subject.svg'
 
 
 @register.simple_tag

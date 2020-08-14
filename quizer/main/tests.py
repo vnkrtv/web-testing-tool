@@ -3,6 +3,8 @@
 Main app tests, covered views.py, models.py and mongo.py
 """
 import os
+from unittest import mock
+from http.cookies import SimpleCookie
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.auth.models import User, Group
@@ -39,7 +41,7 @@ class MainTest(TestCase):
         """
         self.lecturer = User.objects.create_user(
             username='lecturer',
-            password='top_secret')
+            password='')
         Group.objects.create(
             id=1,
             name="lecturer")
@@ -47,7 +49,7 @@ class MainTest(TestCase):
 
         self.student = User.objects.create_user(
             username='user',
-            password='top_secret')
+            password='')
         Group.objects.create(
             id=2,
             name="student")
@@ -184,57 +186,69 @@ class AuthorizationTest(MainTest):
     Tests for authorization system in the application
     """
 
-    def test_student_auth(self) -> None:
+    @mock.patch('main.utils.get_auth_data')
+    def test_student_auth(self, get_auth_data) -> None:
         """
         Test for authorization of user belonging to 'student' group
         """
+        get_auth_data.return_value = self.student.username, 'student'
         client = Client()
         client.logout()
-        response = client.post(reverse('main:login_page'), {
-            'username': self.student.username,
-            'password': 'top_secret'
-        }, follow=True)
+        response = client.get(reverse('main:login_page'), follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Слушатель')
 
-    def test_lecturer_auth(self) -> None:
+    @mock.patch('main.utils.get_auth_data')
+    def test_lecturer_auth(self, get_auth_data) -> None:
         """
         Test for authorization of user belonging to 'lecturer' group
         """
+        get_auth_data.return_value = self.lecturer.username, 'teacher'
         client = Client()
         client.logout()
-        response = client.post(reverse('main:login_page'), {
-            'username': self.lecturer.username,
-            'password': 'top_secret'
-        }, follow=True)
+        response = client.get(reverse('main:login_page'), follow=True)
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Преподаватель')
 
-    def test_anonymous_auth(self) -> None:
+    @mock.patch('main.utils.get_auth_data')
+    def test_new_user_auth(self, get_auth_data) -> None:
+        """
+        Test for authorization of new user belonging to 'student' group
+        """
+        get_auth_data.return_value = 'New user', 'student'
+        client = Client()
+        client.logout()
+        response = client.get(reverse('main:login_page'), follow=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Слушатель')
+
+    @mock.patch('main.utils.get_auth_data')
+    def test_anonymous_auth(self, get_auth_data) -> None:
         """
         Test for authorization of a user not registered in the system
         """
+        get_auth_data.return_value = '', ''
         client = Client()
         client.logout()
-        response = client.post(reverse('main:login_page'), {
-            'username': 'anonymous',
-            'password': 'anonymous'
-        }, follow=True)
+        response = client.get(reverse('main:login_page'), follow=True)
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Ошибка: неправильное имя пользователя или пароль!')
+        self.assertContains(response, 'Incorrect group.')
 
-    def test_anonymous_redirect(self) -> None:
+    @mock.patch('main.utils.get_auth_data')
+    def test_anonymous_redirect(self, get_auth_data) -> None:
         """
         Test redirecting a logged-out user to the login page when trying to get to the home page
         """
+        get_auth_data.return_value = '', ''
         client = Client()
         client.logout()
         response = client.get(reverse('main:tests'), follow=True)
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Войти в систему')
+        self.assertContains(response, 'Incorrect group.')
 
 
 class AccessRightsTest(MainTest):
@@ -250,11 +264,11 @@ class AccessRightsTest(MainTest):
         client = Client()
         client.login(
             username=self.student.username,
-            password='top_secret'
+            password=''
         )
         response = client.post(reverse('main:edit_test'), {
             'username': self.student.username,
-            'password': 'top_secret'
+            'password': ''
         }, follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'You are not permitted to see this page.')
@@ -267,11 +281,11 @@ class AccessRightsTest(MainTest):
         client = Client()
         client.login(
             username=self.lecturer.username,
-            password='top_secret'
+            password=''
         )
         response = client.post(reverse('main:marks'), {
             'username': self.lecturer.username,
-            'password': 'top_secret'
+            'password': ''
         }, follow=True)
 
         self.assertEqual(response.status_code, 200)
@@ -291,7 +305,7 @@ class TestAddingTest(MainTest):
         client = Client()
         client.login(
             username=self.student.username,
-            password='top_secret'
+            password=''
         )
         response = client.post(reverse('main:add_test'), {}, follow=True)
         self.assertEqual(response.status_code, 200)
@@ -304,7 +318,7 @@ class TestAddingTest(MainTest):
         client = Client()
         client.login(
             username=self.lecturer.username,
-            password='top_secret'
+            password=''
         )
         response = client.post(reverse('main:add_test'), {}, follow=True)
         self.assertEqual(response.status_code, 200)
@@ -336,7 +350,7 @@ class TestEditingTest(MainTest):
         client = Client()
         client.login(
             username=self.student.username,
-            password='top_secret'
+            password=''
         )
         response = client.post(reverse('main:edit_test'), {}, follow=True)
         self.assertEqual(response.status_code, 200)
@@ -349,7 +363,7 @@ class TestEditingTest(MainTest):
         client = Client()
         client.login(
             username=self.lecturer.username,
-            password='top_secret'
+            password=''
         )
         response = client.post(reverse('main:edit_test'), {}, follow=True)
         self.assertEqual(response.status_code, 200)
@@ -390,7 +404,7 @@ class TestEditingTest(MainTest):
         client = Client()
         client.login(
             username=self.lecturer.username,
-            password='top_secret'
+            password=''
         )
         response = client.post(reverse('main:edit_test'), {}, follow=True)
         self.assertEqual(response.status_code, 200)
@@ -421,7 +435,7 @@ class TestEditingTest(MainTest):
         client = Client()
         client.login(
             username=self.lecturer.username,
-            password='top_secret'
+            password=''
         )
         response = client.post(reverse('main:edit_test'), {}, follow=True)
         self.assertEqual(response.status_code, 200)
@@ -464,7 +478,7 @@ class LoadingQuestionsTest(MainTest):
         client = Client()
         client.login(
             username=self.lecturer.username,
-            password='top_secret'
+            password=''
         )
         response = client.post(reverse('main:edit_test'), {}, follow=True)
         self.assertEqual(response.status_code, 200)
@@ -511,7 +525,7 @@ class AddQuestionTest(MainTest):
         client = Client()
         client.login(
             username=self.lecturer.username,
-            password='top_secret'
+            password=''
         )
         response = client.post(reverse('main:edit_test'), {}, follow=True)
         self.assertEqual(response.status_code, 200)
@@ -557,7 +571,7 @@ class TestsResultsStorageTest(MainTest):
         self.client = Client()
         self.client.login(
             username=self.lecturer.username,
-            password='top_secret'
+            password=''
         )
         self.response = self.client.post(reverse('main:run_test_result'), {
             'test_id': self.test.id,
@@ -594,7 +608,7 @@ class TestsResultsStorageTest(MainTest):
         self.client.logout()
         self.client.login(
             username=self.student.username,
-            password='top_secret'
+            password=''
         )
         response = self.client.post(reverse('main:tests'), {}, follow=True)
         self.assertEqual(response.status_code, 200)
@@ -603,7 +617,7 @@ class TestsResultsStorageTest(MainTest):
         self.client.logout()
         self.client.login(
             username=self.lecturer.username,
-            password='top_secret'
+            password=''
         )
         response = self.client.post(reverse('main:stop_running_test'), {
             'test_id': self.test.id,
@@ -646,7 +660,7 @@ class RunningTestsAnswersStorageTest(TestsResultsStorageTest):
         client = Client()
         client.login(
             username=self.student.username,
-            password='top_secret'
+            password=''
         )
         response = client.post(reverse('main:run_test'), {
             'test_id': self.test.id
@@ -680,7 +694,7 @@ class RunningTestsAnswersStorageTest(TestsResultsStorageTest):
         self.client.logout()
         self.client.login(
             username=self.lecturer.username,
-            password='top_secret'
+            password=''
         )
         response = self.client.post(reverse('main:stop_running_test'), {
             'test_id': self.test.id,

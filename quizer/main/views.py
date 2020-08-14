@@ -63,21 +63,24 @@ def login_page(request):
     """
     logout(request)
     username, group = utils.get_auth_data(request)
-    user = authenticate(username)
+    user = authenticate(
+        username=username,
+        password='')
     if user is None:
         group2id = {
+            'dev': 1,
+            'admin': 1,
             'teacher': 1,
             'student': 2
         }
         if group in ['student', 'teacher']:
             user = User(username=username)
-            user.groups.add(group2id[group])
         elif group in ['dev', 'admin']:
             user = User.objects.create_superuser(username)
-            user.groups.add(group2id['teacher'])
         else:
             return HttpResponse('Incorrect group.')
         user.save()
+        user.groups.add(group2id[group])
     login(request, user)
     mongo.set_conn(
         host=settings.DATABASES['default']['HOST'],

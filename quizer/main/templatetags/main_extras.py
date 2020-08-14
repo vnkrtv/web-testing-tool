@@ -124,3 +124,9 @@ def search_icon():
 def close_icon():
     """Close icon source"""
     return '/static/main/images/close.svg'
+
+
+@register.simple_tag
+def database_icon():
+    """Database icon source"""
+    return '/static/main/images/database.svg'

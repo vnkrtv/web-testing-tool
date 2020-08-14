@@ -8,11 +8,13 @@ from datetime import datetime
 from django.contrib.auth.models import User
 from django.contrib.auth import login, logout, authenticate
 from django.shortcuts import render, redirect, reverse
+from django.utils.decorators import method_decorator
 from django.http import JsonResponse, HttpResponse
 from django.conf import settings
+from django.views import View
 from . import mongo
 from . import utils
-from .decorators import unauthenticated_user, allowed_users, post_method, superuser_only
+from .decorators import unauthenticated_user, allowed_users, post_method
 from .models import Test, Subject
 
 
@@ -85,7 +87,7 @@ def login_page(request):
 
 
 @unauthenticated_user
-@superuser_only
+@allowed_users(allowed_roles=['admin'])
 def add_subject(request):
     """
     Displays page with an empty form for filling out information about new subject
@@ -102,7 +104,7 @@ def add_subject(request):
 
 @post_method
 @unauthenticated_user
-@superuser_only
+@allowed_users(allowed_roles=['admin'])
 def add_subject_result(request):
     """
     Displays page with result of adding new subject
@@ -120,16 +122,85 @@ def add_subject_result(request):
 
 
 @unauthenticated_user
-@superuser_only
-def edit_subject(request):
+@allowed_users(allowed_roles=['admin'])
+def configure_subject(request):
     """
     Displays page with all subjects
     """
     context = {
         'title': 'Редактировать предмет | Quizer',
-        'subjects': list(Subject.objects.all())
+        'subjects': [
+            (subject, Test.objects.filter(subject__id=subject.id).count())
+            for subject in Subject.objects.all()
+        ]
     }
-    return render(request, 'main/lecturer/info.html', context)
+    return render(request, 'main/admin/configureSubject.html', context)
+
+
+@unauthenticated_user
+@allowed_users(allowed_roles=['admin'])
+def edit_subject(request, subject_id: int):
+    """
+    Displays editing study subject page
+    """
+    query = Subject.objects.filter(id=subject_id)
+    if query:
+        context = {
+            'title': 'Редактировать тест | Quizer',
+            'subject': query[0]
+        }
+        return render(request, 'main/admin/editSubject.html', context)
+    return redirect(reverse('main:configure_subject'))
+
+
+@unauthenticated_user
+@allowed_users(allowed_roles=['admin'])
+def delete_subject(request, subject_id: int):
+    """
+    Displays deleting study subject page
+    """
+    query = Subject.objects.filter(id=subject_id)
+    if query:
+        context = {
+            'title': 'Удалить тест | Quizer',
+            'subject': query[0]
+        }
+        return render(request, 'main/admin/deleteSubject.html', context)
+    return redirect(reverse('main:configure_subject'))
+
+
+class DeleteSubjectResultView(View):
+    """Displays result of deleting study subject"""
+    template = 'main/lecturer/info.html'
+    title = 'Удалить тест | Quizer'
+    context = {}
+
+    @method_decorator(unauthenticated_user)
+    def get(self, _):
+        return redirect(reverse('main:tests'))
+
+    @method_decorator(unauthenticated_user)
+    @method_decorator(allowed_users(allowed_roles=['admin']))
+    def post(self, request):
+        if 'del' in request.POST:
+            subject_id = int(request.POST['subject_id'])
+            subject = Subject.objects.get(id=subject_id)
+            tests = Test.objects.filter(subject__id=subject.id)
+            tests_count = tests.count()
+            deleted_questions_count = 0
+            for test in tests:
+                storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())
+                deleted_questions_count += storage.delete_many(test_id=test.id)
+            subject.delete()
+            message = "Учебный предмет '%s', %d тестов к нему, а также все " + \
+                      "вопросы к тестам в количестве %d были успешно удалены."
+            self.context = {
+                'title': 'Предмет удален | Quizer',
+                'message_title': 'Результат удаления',
+                'message': message % (subject.name, tests_count, deleted_questions_count)
+            }
+            return render(request, self.template, self.context)
+        return redirect(reverse('main:configure_subject'))
 
 
 @post_method
@@ -211,8 +282,8 @@ def get_running_tests(request):
         if running_test['launched_lecturer_id'] == request.user.id:
             test = Test.objects.get(id=running_test['test_id']).to_dict()
             test_results = storage.get_running_test_results(
-               test_id=test['id'],
-               lecturer_id=request.user.id)
+                test_id=test['id'],
+                lecturer_id=request.user.id)
             results = test_results['results']
             results.sort(key=lambda result: result['date'])
             test['finished_students_results'] = results

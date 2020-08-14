@@ -1,0 +1,20 @@
+{% extends "main/lecturerWrapper.html" %}
+
+{% block content %}
+
+{% load main_extras %}
+
+ 	<div class='jumbotron'>
+ 		<h2>Подтверждение удаления</h2>
+ 		<p>Вы действительно хотите удалить предмет '{{ test.name }}'?<br>
+ 		Тогда все связанные с ним тесты будут удалены</p>
+ 		<form action="{% url 'main:delete_subject_result' %}" method="post">
+		{% csrf_token %}
+			<input type="hidden" name="subject_id" id="subject_id" value="{{ subject.id }}">
+			<div class="btn-group">
+				<button class="btn btn-danger" name="del"><img src='{% delete_icon %}'> Да, удалить</button>
+				<button class="btn btn-primary"><img src='{% cancel_icon %}'> Нет, оставить</button>
+			</div>
+		</form>
+ 	</div>
+{% endblock %}

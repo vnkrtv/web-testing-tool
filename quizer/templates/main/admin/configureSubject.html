@@ -1,0 +1,25 @@
+{% extends "main/lecturerWrapper.html" %}
+
+{% block content %}
+
+{% load static %}
+{% load main_extras %}
+
+<div class='jumbotron'>
+    <h2>Учебные предметы</h2><br>
+    <p>Здесь отображаются учебные предметы, добавленные в систему.</p>
+    {% for subject, tests_count in subjects %}
+    <hr class="my-4">
+    <h3>{{ subject.name }}</h3>
+    <p>{{ subject.description }}</p>
+    <p><img src='{% database_icon %}'> Тестов к предмету: {{ tests_count }}<br>
+    <div class="btn-group mr-2">
+        <a class="btn btn-primary" href="{% url 'main:edit_subject' subject.id %}"><img src="{% edit_icon %}"> Редактировать</a>
+    </div>
+    <div class="btn-group mr-2">
+        <a class="btn btn-danger" href="{% url 'main:delete_subject' subject.id %}"><img src="{% delete_icon %}"> Удалить</a>
+    </div>
+    {% endfor %}
+</div>
+
+{% endblock %}

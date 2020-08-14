@@ -1,5 +1,6 @@
 # pylint: skip-file
 from django.conf.urls import url
+from django.urls import path
 from . import views
 
 app_name = 'main'
@@ -10,8 +11,10 @@ urlpatterns = [
 
     url(r'^add_subject/$', views.add_subject, name='add_subject'),
     url(r'^add_subject_result/$', views.add_subject_result, name='add_subject_result'),
-    url(r'^edit_subject/$', views.edit_subject, name='edit_subject'),
-    # url(r'^add_subject_result/$', views.add_subject_result, name='add_subject_result'),
+    url(r'^configure_subject/$', views.configure_subject, name='configure_subject'),
+    path('edit_subject/<subject_id>', views.edit_subject, name='edit_subject'),
+    path('delete_subject/<subject_id>', views.delete_subject, name='delete_subject'),
+    url(r'^delete_subject_result/$', views.DeleteSubjectResultView.as_view(), name='delete_subject_result'),
 
     url(r'^run_new_test/$', views.run_test_result, name='run_test_result'),
     url(r'^running_tests/$', views.get_running_tests, name='running_tests'),

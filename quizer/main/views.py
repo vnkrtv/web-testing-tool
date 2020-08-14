@@ -4,6 +4,7 @@ Quizer backend
 """
 import random
 import traceback
+import logging
 import json
 from datetime import datetime
 from jwt import DecodeError
@@ -18,6 +19,8 @@ from . import mongo
 from . import utils
 from .decorators import unauthenticated_user, allowed_users, post_method
 from .models import Test, Subject
+
+logger = logging.getLogger('quizer.main.views')
 
 
 @unauthenticated_user
@@ -64,10 +67,12 @@ def login_page(request):
     Authorize user and redirect him to get_tests page
     """
     logout(request)
+    logger.error("login view - call utils.get_auth_data")
     try:
         username, group = utils.get_auth_data(request)
     except DecodeError:
         return HttpResponse('JWT decode error: %s' % traceback.format_exc().replace('File', '<br><br>File'))
+    logger.error("login view - get username(%s) and group(%s)" % (username, group))
     user = authenticate(
         username=username,
         password='')

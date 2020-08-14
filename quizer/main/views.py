@@ -153,6 +153,38 @@ def edit_subject(request, subject_id: int):
     return redirect(reverse('main:configure_subject'))
 
 
+class EditSubjectResultView(View):
+    """Displays result of editing study subject"""
+    template = 'main/lecturer/info.html'
+    title = 'Предмет отредактирован | Quizer'
+
+    @method_decorator(unauthenticated_user)
+    def get(self, _):
+        return redirect(reverse('main:tests'))
+
+    @method_decorator(unauthenticated_user)
+    @method_decorator(allowed_users(allowed_roles=['admin']))
+    def post(self, request):
+        name = request.POST.get('name')
+        description = request.POST.get('description')
+        if name and description:
+            subject_id = int(request.POST['subject_id'])
+            subject = Subject.objects.get(id=subject_id)
+            new_subject = Subject(
+                id=subject.id,
+                name=name,
+                description=description)
+            subject.delete()
+            new_subject.save()
+            context = {
+                'title': self.title,
+                'message_title': 'Редактирование предмета',
+                'message': "Предмет '%s' успешно изменен." % new_subject.name,
+            }
+            return render(request, self.template, context)
+        return redirect(reverse('main:configure_subject'))
+
+
 @unauthenticated_user
 @allowed_users(allowed_roles=['admin'])
 def delete_subject(request, subject_id: int):
@@ -173,7 +205,6 @@ class DeleteSubjectResultView(View):
     """Displays result of deleting study subject"""
     template = 'main/lecturer/info.html'
     title = 'Удалить тест | Quizer'
-    context = {}
 
     @method_decorator(unauthenticated_user)
     def get(self, _):
@@ -194,12 +225,12 @@ class DeleteSubjectResultView(View):
             subject.delete()
             message = "Учебный предмет '%s', %d тестов к нему, а также все " + \
                       "вопросы к тестам в количестве %d были успешно удалены."
-            self.context = {
-                'title': 'Предмет удален | Quizer',
+            context = {
+                'title': self.title,
                 'message_title': 'Результат удаления',
                 'message': message % (subject.name, tests_count, deleted_questions_count)
             }
-            return render(request, self.template, self.context)
+            return render(request, self.template, context)
         return redirect(reverse('main:configure_subject'))
 
 

@@ -6,8 +6,8 @@
 
  	<div class='jumbotron'>
  		<h2>Подтверждение удаления</h2>
- 		<p>Вы действительно хотите удалить предмет '{{ test.name }}'?<br>
- 		Тогда все связанные с ним тесты будут удалены</p>
+ 		<p>Вы действительно хотите удалить предмет '{{ subject.name }}'?<br>
+ 		Тогда все связанные с ним тесты и вопросы будут удалены</p>
  		<form action="{% url 'main:delete_subject_result' %}" method="post">
 		{% csrf_token %}
 			<input type="hidden" name="subject_id" id="subject_id" value="{{ subject.id }}">

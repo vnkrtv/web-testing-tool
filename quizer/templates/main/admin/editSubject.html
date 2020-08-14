@@ -6,8 +6,9 @@
 
     <div class='jumbotron'>
         <h2>Редактировать предмет</h2><br>
-        <form action="" method="post">
+        <form action="{% url 'main:edit_subject_result' %}" method="post">
         {% csrf_token %}
+        <input type="hidden" name="subject_id" id="subject_id" value="{{ subject.id }}">
           <div class="form-row">
             <div class="col-md-4 mb-3">
                 <label for="name">Название предмета

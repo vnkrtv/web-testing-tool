@@ -13,6 +13,7 @@ urlpatterns = [
     url(r'^add_subject_result/$', views.add_subject_result, name='add_subject_result'),
     url(r'^configure_subject/$', views.configure_subject, name='configure_subject'),
     path('edit_subject/<subject_id>', views.edit_subject, name='edit_subject'),
+    url(r'^edit_subject_result/$', views.EditSubjectResultView.as_view(), name='edit_subject_result'),
     path('delete_subject/<subject_id>', views.delete_subject, name='delete_subject'),
     url(r'^delete_subject_result/$', views.DeleteSubjectResultView.as_view(), name='delete_subject_result'),
 

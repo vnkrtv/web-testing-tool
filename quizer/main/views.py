@@ -3,8 +3,10 @@
 Quizer backend
 """
 import random
+import traceback
 import json
 from datetime import datetime
+from jwt import DecodeError
 from django.contrib.auth.models import User
 from django.contrib.auth import login, logout, authenticate
 from django.shortcuts import render, redirect, reverse
@@ -62,7 +64,10 @@ def login_page(request):
     Authorize user and redirect him to get_tests page
     """
     logout(request)
-    username, group = utils.get_auth_data(request)
+    try:
+        username, group = utils.get_auth_data(request)
+    except DecodeError:
+        return HttpResponse('JWT decode error: %s' % traceback.format_exc().replace('File', '<br><br>File'))
     user = authenticate(
         username=username,
         password='')

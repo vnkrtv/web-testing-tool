@@ -26,7 +26,7 @@ def get_auth_data(request: HttpRequest) -> tuple:
     logger.error('get_auth_data - get user_jwt cookie: %s' % user_jwt)
     key_id = jwt.get_unverified_header(user_jwt).get('kid')
     logger.error('get_auth_data - get key_id: %s' % key_id)
-    public_key = requests.get(f'http://auth/public_key/{key_id}').text
+    public_key = requests.get(f'http://sms.gitwork.ru/auth/public_key/{key_id}').text
     logger.error('get_auth_data - get public key: %s' % public_key)
     decoded_jwt = jwt.decode(user_jwt, public_key, algorithms='RS256')
     logger.error('get_auth_data - decode JWT: %s' % decoded_jwt)

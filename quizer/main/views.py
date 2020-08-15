@@ -84,9 +84,13 @@ def login_page(request):
             'student': 2
         }
         if group in ['student', 'teacher']:
-            user = User(username=username)
+            user = User(
+                username=username,
+                password='')
         elif group in ['dev', 'admin']:
-            user = User.objects.create_superuser(username)
+            user = User.objects.create_superuser(username=username,
+                                                 email='',
+                                                 password='')
         else:
             return HttpResponse('Incorrect group.')
         user.save()
@@ -123,7 +127,7 @@ def add_subject_result(request):
     Displays page with result of adding new subject
     """
     subject = Subject(
-        name=request.POST['test_name'],
+        name=request.POST['name'],
         description=request.POST['description'])
     subject.save()
     context = {

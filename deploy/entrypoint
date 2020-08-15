@@ -32,6 +32,11 @@ if [[ ! -z "${URL_PREFIX}" ]]; then
   URLS="${URLS/\'admin\/\'/\'${URL_PREFIX}\/admin/\'}"
   URLS="${URLS//\'\'/\'${URL_PREFIX}\/\'}"
   echo "${URLS}" > ./quizer/urls.py
+
+  SETTINGS="$(echo "$(cat ./quizer/settings.py)")"
+  SETTINGS="${SETTINGS//\'\/static\/\'/\'\/static\/${URL_PREFIX}\/\'}"
+  SETTINGS="${SETTINGS//\'\/media\/\'/\'\/media\/${URL_PREFIX}\/\'}"
+  echo "${SETTINGS}" > ./quizer/settings.py
 fi
 
 gunicorn quizer.wsgi:application --bind 0.0.0.0:80

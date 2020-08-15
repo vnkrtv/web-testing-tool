@@ -1,4 +1,4 @@
-function getDivElement(i, tests) {
+function getDivElement(i, tests, staticPath) {
     const container = document.createElement('div');
 
     const hr = document.createElement('hr');
@@ -14,10 +14,10 @@ function getDivElement(i, tests) {
     description_p.innerHTML = `${tests[i].description}`;
 
     const info_p = document.createElement('p');
-    info_p.innerHTML = `<img src='/static/main/images/subject.svg'> Предмет: ${tests[i].subject.name }<br>
-    <img src='/static/main/images/research.svg'> Количество заданий в тесте: ${tests[i].tasks_num}<br>
-    <img src='/static/main/images/clock.svg'> Время на выполнение: ${tests[i].duration} с<br>
-    <img src='/static/main/images/database.svg'> Вопросов к тесту: ${tests[i].questions_num}`;
+    info_p.innerHTML = `<img src='${staticPath}main/images/subject.svg'> Предмет: ${tests[i].subject.name }<br>
+    <img src='${staticPath}main/images/research.svg'> Количество заданий в тесте: ${tests[i].tasks_num}<br>
+    <img src='${staticPath}main/images/clock.svg'> Время на выполнение: ${tests[i].duration} с<br>
+    <img src='${staticPath}main/images/database.svg'> Вопросов к тесту: ${tests[i].questions_num}`;
 
     const btn_cont_1 = document.createElement('div');
     btn_cont_1.className = "btn-group mr-2";
@@ -30,35 +30,35 @@ function getDivElement(i, tests) {
 
     const edit_btn = document.createElement('button');
     edit_btn.className = "btn btn-primary";
-    edit_btn.innerHTML = "<img src='/static/main/images/edit.svg'> Редактировать";
+    edit_btn.innerHTML = `<img src='${staticPath}main/images/edit.svg'> Редактировать`;
     edit_btn.id = `test_name_${tests[i].name}`;
     edit_btn.name = `test_name_${tests[i].id}`;
     edit_btn.value = "edit_test_btn";
 
     const add_qstn_btn = document.createElement('button');
     add_qstn_btn.className = "btn btn-success";
-    add_qstn_btn.innerHTML = "<img src='/static/main/images/add.svg'> Добавить вопрос";
+    add_qstn_btn.innerHTML = `<img src='${staticPath}main/images/add.svg'> Добавить вопрос`;
     add_qstn_btn.id = `test_name_${tests[i].name}`;
     add_qstn_btn.name = `test_name_${tests[i].id}`;
     add_qstn_btn.value = "add_qstn_btn";
 
     const load_qstn_btn = document.createElement('button');
     load_qstn_btn.className = "btn btn-success";
-    load_qstn_btn.innerHTML = "<img src='/static/main/images/download.svg'> Загрузить вопросы";
+    load_qstn_btn.innerHTML = `<img src='${staticPath}main/images/download.svg'> Загрузить вопросы`;
     load_qstn_btn.id = `test_name_${tests[i].name}`;
     load_qstn_btn.name = `test_name_${tests[i].id}`;
     load_qstn_btn.value = "load_qstn_btn";
 
     const del_qstn_btn = document.createElement('button');
     del_qstn_btn.className = "btn btn-danger";
-    del_qstn_btn.innerHTML = "<img src='/static/main/images/delete.svg'> Удалить вопросы";
+    del_qstn_btn.innerHTML = `<img src='${staticPath}main/images/delete.svg'> Удалить вопросы`;
     del_qstn_btn.id = `test_name_${tests[i].name}`;
     del_qstn_btn.name = `test_name_${tests[i].id}`;
     del_qstn_btn.value = "del_qstn_btn";
 
     const del_test_btn = document.createElement('button');
     del_test_btn.className = "btn btn-danger";
-    del_test_btn.innerHTML = "<img src='/static/main/images/delete.svg'> Удалить тест";
+    del_test_btn.innerHTML = `<img src='${staticPath}main/images/delete.svg'> Удалить тест`;
     del_test_btn.id = `test_name_${tests[i].name}`;
     del_test_btn.name = `test_name_${tests[i].id}`;
     del_test_btn.value = "del_test_btn";
@@ -84,7 +84,7 @@ function getDivElement(i, tests) {
     return container;
 }
 
-function main(testsJson) {
+function main(testsJson, staticPath) {
     const tests = JSON.parse(testsJson.replace(/&quot;/gi, '"'));
     const tests_count = parseInt(tests.length);
     const tests_container = document.getElementById("tests_container");
@@ -94,7 +94,7 @@ function main(testsJson) {
 
     for (let i = 0; i < tests_count; ++i) {
         if (tests[i].subject.name == subject.options[0].text) {
-            tests_container.appendChild(getDivElement(i, tests));
+            tests_container.appendChild(getDivElement(i, tests, staticPath));
         }
     }
 
@@ -103,7 +103,7 @@ function main(testsJson) {
         for (let i = 0; i < tests_count; ++i) {
             if (tests[i].name.includes(name_filter.value)) {
                 if (tests[i].subject.name == subject.options[subject.selectedIndex].text) {
-                    tests_container.appendChild(getDivElement(i, tests));
+                    tests_container.appendChild(getDivElement(i, tests, staticPath));
                 }
             }
         }

@@ -1,4 +1,4 @@
-function getDivElement(i, tests) {
+function getDivElement(i, tests, staticPath) {
     const container = document.createElement('div');
 
     const hr = document.createElement('hr');
@@ -14,13 +14,13 @@ function getDivElement(i, tests) {
     description_p.innerHTML = `${tests[i].description}`;
 
     const info_p = document.createElement('p');
-    info_p.innerHTML = `<img src='/static/main/images/subject.svg'> Предмет: ${tests[i].subject.name }<br>
-    <img src='/static/main/images/research.svg'> Количество заданий в тесте: ${tests[i].tasks_num}<br>
-    <img src='/static/main/images/clock.svg'> Время на выполнение: ${tests[i].duration} с`;
+    info_p.innerHTML = `<img src='${staticPath}main/images/subject.svg'> Предмет: ${tests[i].subject.name }<br>
+    <img src='${staticPath}main/images/research.svg'> Количество заданий в тесте: ${tests[i].tasks_num}<br>
+    <img src='${staticPath}main/images/clock.svg'> Время на выполнение: ${tests[i].duration} с`;
 
     const btn = document.createElement('button');
     btn.className = "btn btn-primary";
-    btn.innerHTML = `<img src='/static/main/images/play.svg'> Запустить`;
+    btn.innerHTML = `<img src='${staticPath}main/images/play.svg'> Запустить`;
     btn.id =  "test_name";
     btn.name =  "test_id";
     btn.value = `${tests[i].id}`;
@@ -36,7 +36,7 @@ function getDivElement(i, tests) {
     return container;
 }
 
-function main(testsJson) {
+function main(testsJson, staticPath) {
     const tests = JSON.parse(testsJson.replace(/&quot;/gi, '"'));
     const tests_count = parseInt(tests.length);
     const tests_container = document.getElementById("tests_container");
@@ -45,7 +45,7 @@ function main(testsJson) {
     const name_filter = document.getElementById("name_filter");
 
     for (let i = 0; i < tests_count; ++i) {
-        if (tests[i].subject.name == subject.options[0].text) {
+        if (tests[i].subject.name === subject.options[0].text) {
             tests_container.appendChild(getDivElement(i, tests));
         }
     }
@@ -55,7 +55,7 @@ function main(testsJson) {
         for (let i = 0; i < tests_count; ++i) {
             if (tests[i].name.includes(name_filter.value)) {
                 if (tests[i].subject.name == subject.options[subject.selectedIndex].text) {
-                    tests_container.appendChild(getDivElement(i, tests));
+                    tests_container.appendChild(getDivElement(i, tests, staticPath));
                 }
             }
         }
@@ -66,7 +66,7 @@ function main(testsJson) {
         for (let i = 0; i < tests_count; ++i) {
             if (tests[i].name.includes(name_filter.value)) {
                 if (tests[i].subject.name == subject.options[subject.selectedIndex].text) {
-                    tests_container.appendChild(getDivElement(i, tests));
+                    tests_container.appendChild(getDivElement(i, tests, staticPath));
                 }
             }
         }

@@ -7,6 +7,12 @@ register = template.Library()
 
 
 @register.simple_tag
+def static_url():
+    """Return static path"""
+    return settings.STATIC_URL
+
+
+@register.simple_tag
 def sort_icon():
     """Sort icon source"""
     return settings.STATIC_URL + 'main/images/sort.svg'

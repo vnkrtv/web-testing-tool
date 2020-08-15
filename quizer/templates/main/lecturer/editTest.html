@@ -4,6 +4,8 @@
 
 {% load static %}
 
+{% load main_extras %}
+
  	<div class='jumbotron'>
 		<h2>Доступные тесты</h2><br>
  		<div>
@@ -39,7 +41,7 @@
 
 <script src="{% static 'main/js/editTests.js' %}"></script>
 <script type="text/javascript">
-	main('{{ tests }}');
+	main('{{ tests }}', '{% static_url %}');
 </script>
 
 {% endblock %}

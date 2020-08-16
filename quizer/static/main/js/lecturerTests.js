@@ -46,7 +46,7 @@ function main(testsJson, staticPath) {
 
     for (let i = 0; i < tests_count; ++i) {
         if (tests[i].subject.name === subject.options[0].text) {
-            tests_container.appendChild(getDivElement(i, tests));
+            tests_container.appendChild(getDivElement(i, tests, staticPath));
         }
     }
 

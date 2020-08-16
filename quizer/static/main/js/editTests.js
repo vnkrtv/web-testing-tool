@@ -21,10 +21,8 @@ function getDivElement(i, tests, staticPath) {
 
     const btn_cont_1 = document.createElement('div');
     btn_cont_1.className = "btn-group mr-2";
-
     const btn_cont_2 = document.createElement('div');
     btn_cont_2.className = "btn-group mr-2";
-
     const btn_cont_3 = document.createElement('div');
     btn_cont_3.className = "btn-group mr-2";
 

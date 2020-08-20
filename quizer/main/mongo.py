@@ -2,15 +2,14 @@
 """
 Classes for working with MongoDB and objects stored in it
 """
-import time
 import shutil
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timedelta
 import pymongo
 from django.conf import settings
 from .models import Test
 
-_db_conn: pymongo.database.Database = None
+__db_conn: pymongo.database.Database = None
 
 
 def set_conn(host: str, port: int, db_name: str) -> None:
@@ -21,8 +20,8 @@ def set_conn(host: str, port: int, db_name: str) -> None:
     :param port: MongoDB port
     :param db_name: MongoDB database name
     """
-    global _db_conn
-    _db_conn = pymongo.MongoClient(host, port)[db_name]
+    global __db_conn
+    __db_conn = pymongo.MongoClient(host, port)[db_name]
 
 
 def get_conn() -> pymongo.database.Database:
@@ -31,13 +30,13 @@ def get_conn() -> pymongo.database.Database:
 
     :return: Database - connection to database
     """
-    global _db_conn
-    if not _db_conn:
+    global __db_conn
+    if not __db_conn:
         set_conn(
             host=settings.DATABASES['default']['HOST'],
             port=settings.DATABASES['default']['PORT'],
             db_name=settings.DATABASES['default']['NAME'])
-    return _db_conn
+    return __db_conn
 
 
 class MongoDB:
@@ -211,7 +210,7 @@ class RunningTestsAnswersStorage(MongoDB):
         self._col.insert_one({
             'right_answers': right_answers,
             'test_duration': test_duration,
-            'start_date': datetime.now(),
+            'start_date': datetime.now() + timedelta(hours=3),
             'test_id': test_id,
             'user_id': user_id
         })
@@ -302,7 +301,7 @@ class TestsResultsStorage(MongoDB):
             'launched_lecturer_id': lecturer_id,
             'is_running': True,
             'results': [],
-            'date': datetime.now(),
+            'date': datetime.now() + timedelta(hours=3),
             'time': {
                 'year': date[0],
                 'month': date[1],

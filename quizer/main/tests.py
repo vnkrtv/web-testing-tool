@@ -4,7 +4,6 @@ Main app tests, covered views.py, models.py and mongo.py
 """
 import os
 from unittest import mock
-from http.cookies import SimpleCookie
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.auth.models import User, Group

@@ -2,6 +2,7 @@
 """
 Some utils for views
 """
+import os
 import logging
 import jwt
 import requests
@@ -9,8 +10,8 @@ from bson import ObjectId
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.http import HttpRequest
-from .models import Test
-
+from .models import Test, Subject
+from .mongo import get_conn, QuestionsStorage
 
 logger = logging.getLogger('quizer.main.utils')
 
@@ -89,14 +90,13 @@ def parse_question_form(request: HttpRequest, test: Test) -> dict:
     return question
 
 
-def get_questions_list(request: HttpRequest) -> list:
+def parse_questions(content: str) -> list:
     """
-    Parse request with loaded file with questions to questions list
+    Parsing string with questions to questions list
 
-    :param request: <HttpRequest>
-    :return: list of questions
+    :param content: string with questions
+    :return: questions list
     """
-    content = request.FILES['file'].read().decode('utf-8')
     questions_list = content.split('\n\n')
     parsed_questions_list = []
     if '' in questions_list:
@@ -126,7 +126,7 @@ def get_questions_list(request: HttpRequest) -> list:
                     'is_true': True
                 })
             else:
-                raise UnicodeDecodeError
+                raise UnicodeDecodeError('invalid file format')
         parsed_questions_list.append({
             'formulation': formulation,
             'tasks_num': len(options),
@@ -134,7 +134,18 @@ def get_questions_list(request: HttpRequest) -> list:
             'with_images': False,
             'options': options
         })
-    return parsed_questions_list
+        return parsed_questions_list
+
+
+def get_questions_list(request: HttpRequest) -> list:
+    """
+    Parse request with loaded file with questions to questions list
+
+    :param request: <HttpRequest>
+    :return: list of questions
+    """
+    content = request.FILES['file'].read().decode('utf-8')
+    return parse_questions(content)
 
 
 def get_test_result(request: HttpRequest, right_answers: dict, test_duration: int) -> dict:
@@ -187,3 +198,46 @@ def get_test_result(request: HttpRequest, right_answers: dict, test_duration: in
         'right_answers_count': right_answers_count,
         'questions': questions
     }
+
+
+def parse_questions_file(file_name: str) -> list:
+    """
+    Parse file with questions to questions list
+
+    :param file_name: name of file with questions
+    :return: list of questions
+    """
+    with open(file_name, 'r') as f:
+        content = f.read()
+    return parse_questions(content)
+
+
+def parse_tests_folder(folder: str):
+    storage = QuestionsStorage.connect(db=get_conn())
+    for folder in [f for f in os.listdir(folder) if os.path.isdir(os.path.join(folder, f))]:
+
+        logger.info('Найдена папка с тестами к предмету %s...' % folder)
+        subject = Subject(name=folder)
+        subject.save()
+        logger.info('Предмет %s добавлен в базу' % folder)
+
+        for test_file in [f for f in os.listdir(folder) if os.path.isfile(os.path.join(folder, f))]:
+
+            logger.info('Найден файл с тестом %s' % test_file)
+            duration = int(input("Длительность теста (в секундах): "))
+            tasks_num = int(input("Количество заданий: "))
+            test = Test(
+                name=test_file,
+                duration=duration,
+                tasks_num=tasks_num)
+            test.save()
+            logger.info('Тест %s по предмету %s добавлен в базу' % (test_file, folder))
+
+            try:
+                questions_list = parse_questions_file(test_file)
+                for question in questions_list:
+                    storage.add_one(question=question, test_id=test.id)
+                logger.info('%s вопросов к тесту %s по предмету %s добавлены в базу' %
+                            (len(questions_list), test_file, folder))
+            except UnicodeDecodeError:
+                logger.info('Ошибка при обработке файла с вопросами к тесту %s' % test_file)

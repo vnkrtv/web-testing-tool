@@ -366,7 +366,7 @@ class TestEditingTest(MainTest):
         )
         response = client.post(reverse('main:edit_test'), {}, follow=True)
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Доступные тесты')
+        self.assertContains(response, 'Тесты')
 
         old_test = Test.objects.get(id=self.test.id)
 
@@ -407,7 +407,7 @@ class TestEditingTest(MainTest):
         )
         response = client.post(reverse('main:edit_test'), {}, follow=True)
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Доступные тесты')
+        self.assertContains(response, 'Тесты')
 
         response = client.post(reverse('main:edit_test_redirect'), {
             f'test_name_{self.test.id}': 'del_test_btn'
@@ -438,7 +438,7 @@ class TestEditingTest(MainTest):
         )
         response = client.post(reverse('main:edit_test'), {}, follow=True)
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Доступные тесты')
+        self.assertContains(response, 'Тесты')
 
         response = client.post(reverse('main:edit_test_redirect'), {
             f'test_name_{self.test.id}': 'del_qstn_btn'
@@ -481,7 +481,7 @@ class LoadingQuestionsTest(MainTest):
         )
         response = client.post(reverse('main:edit_test'), {}, follow=True)
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Доступные тесты')
+        self.assertContains(response, 'Тесты')
 
         response = client.post(reverse('main:edit_test_redirect'), {
             f'test_name_{self.test.id}': 'load_qstn_btn',
@@ -528,7 +528,7 @@ class AddQuestionTest(MainTest):
         )
         response = client.post(reverse('main:edit_test'), {}, follow=True)
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Доступные тесты')
+        self.assertContains(response, 'Тесты')
 
         response = client.post(reverse('main:edit_test_redirect'), {
             f'test_name_{self.test.id}': 'add_qstn_btn',

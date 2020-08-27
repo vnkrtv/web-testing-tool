@@ -134,7 +134,7 @@ def parse_questions(content: str) -> list:
             'with_images': False,
             'options': options
         })
-        return parsed_questions_list
+    return parsed_questions_list
 
 
 def get_questions_list(request: HttpRequest) -> list:

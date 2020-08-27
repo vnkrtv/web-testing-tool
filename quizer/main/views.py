@@ -6,7 +6,7 @@ import random
 import traceback
 import logging
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 from jwt import DecodeError
 from django.contrib.auth.models import User
 from django.contrib.auth import login, logout, authenticate
@@ -115,7 +115,7 @@ def add_subject(request):
         context = {
             'title': 'Новый предмет | Quizer',
         }
-        return render(request, 'main/lecturer/addSubject.html', context)
+        return render(request, 'main/admin/addSubject.html', context)
     return redirect(reverse('main:tests'))
 
 
@@ -188,17 +188,13 @@ class EditSubjectResultView(View):
         description = request.POST.get('description')
         if name and description:
             subject_id = int(request.POST['subject_id'])
-            subject = Subject.objects.get(id=subject_id)
-            new_subject = Subject(
-                id=subject.id,
+            Subject.objects.filter(id=subject_id).update(**dict(
                 name=name,
-                description=description)
-            subject.delete()
-            new_subject.save()
+                description=description))
             context = {
                 'title': self.title,
                 'message_title': 'Редактирование предмета',
-                'message': f"Предмет '{new_subject.name}' успешно изменен.",
+                'message': f"Предмет '{name}' успешно изменен.",
                 'ref': reverse('main:configure_subject'),
                 'ref_message': 'Перейти к предметам',
             }
@@ -272,6 +268,8 @@ def run_test_result(request):
             'title': 'Запуск теста | Quizer',
             'message_title': 'Ошибка',
             'message': 'Тест не запущен, так как вопросов в базе меньше %d.' % test.tasks_num,
+            'ref': reverse('main:tests'),
+            'ref_message': 'Перейти к тестам',
         }
         return render(request, 'main/lecturer/info.html', context)
     storage = mongo.TestsResultsStorage.connect(db=mongo.get_conn())
@@ -282,6 +280,8 @@ def run_test_result(request):
         'title': 'Запуск теста | Quizer',
         'message_title': 'Тест запущен',
         'message': "Состояние его прохождения можно отследить во вкладке 'Запущенные тесты'",
+        'ref': reverse('main:running_tests'),
+        'ref_message': 'Перейти к запущенным тестам',
     }
     return render(request, 'main/lecturer/info.html', context)
 
@@ -319,6 +319,8 @@ def add_test_result(request):
         'title': 'Новый тест | Quizer',
         'message_title': 'Новый тест',
         'message': "Тест '%s' по предмету '%s' успешно добавлен." % (test.name, subject),
+        'ref': reverse('main:edit_test'),
+        'ref_message': 'Перейти к тестам',
     }
     return render(request, 'main/lecturer/info.html', context)
 
@@ -371,7 +373,7 @@ def stop_running_test(request):
         'test': test,
         'start_date': test_results['date'],
         'questions': json.dumps([result['questions'] for result in results]),
-        'end_date': datetime.now(),
+        'end_date': datetime.now() + timedelta(hours=3),
         'results': results,
     }
     return render(request, 'main/lecturer/testingResults.html', context)
@@ -451,6 +453,8 @@ def edit_test_result(request):
         'title': 'Тест отредактирован | Quizer',
         'message_title': 'Редактиктирование теста',
         'message': "Тест '%s' по предмету '%s' успешно изменен." % (new_test.name, new_test.subject),
+        'ref': reverse('main:edit_test'),
+        'ref_message': 'Перейти к тестам',
     }
     return render(request, 'main/lecturer/info.html', context)
 
@@ -473,7 +477,9 @@ def delete_questions_result(request):
     context = {
         'title': 'Вопросы удалены | Quizer',
         'message_title': 'Результат удаления',
-        'message': "Вопросы к тесту '%s' в количестве %d были успешно удалены." % (test.name, len(request_dict))
+        'message': "Вопросы к тесту '%s' в количестве %d были успешно удалены." % (test.name, len(request_dict)),
+        'ref': reverse('main:edit_test'),
+        'ref_message': 'Перейти к тестам',
     }
     return render(request, 'main/lecturer/info.html', context)
 
@@ -492,7 +498,9 @@ def delete_test_result(request):
         context = {
             'title': 'Тест удален | Quizer',
             'message_title': 'Результат удаления',
-            'message': "Тест '%s' и %d вопросов к нему были успешно удалены." % (test.name, deleted_questions_count)
+            'message': "Тест '%s' и %d вопросов к нему были успешно удалены." % (test.name, deleted_questions_count),
+            'ref': reverse('main:edit_test'),
+            'ref_message': 'Перейти к тестам',
         }
         Test.delete(test)
         return render(request, 'main/lecturer/info.html', context)
@@ -526,6 +534,8 @@ def add_question_result(request):
         'title': 'Вопрос добавлен | Quizer',
         'message_title': 'Новый вопрос',
         'message': "Вопрос '%s' к тесту '%s' успешно добавлен." % (question['formulation'], test.name),
+        'ref': reverse('main:edit_test'),
+        'ref_message': 'Перейти к тестам',
     }
     return render(request, 'main/lecturer/info.html', context)
 
@@ -550,6 +560,8 @@ def load_questions_result(request):
             'title': 'Ошибка | Quizer',
             'message_title': 'Ошибка',
             'message': 'Файл некорректного формата.',
+            'ref': reverse('main:edit_test'),
+            'ref_message': 'Перейти к тестам',
         }
         return render(request, 'main/lecturer/info.html', context)
 
@@ -557,6 +569,8 @@ def load_questions_result(request):
         'title': 'Вопросы загружены | Quizer',
         'message_title': 'Новые вопросы',
         'message': "Вопросы к тесту '%s' в количестве %d успешно добавлены." % (test.name, len(questions_list)),
+        'ref': reverse('main:edit_test'),
+        'ref_message': 'Перейти к тестам',
     }
     return render(request, 'main/lecturer/info.html', context)
 

@@ -7,13 +7,15 @@
 {% load main_extras %}
 
  	<div class='jumbotron'>
-		<h2>Доступные тесты</h2><br>
+		<h2>Тесты</h2><br>
  		<div>
  			<div class="row">
 				<div class="col-sm">
 					<p>Здесь отображаются все добавленные тесты.</p>
 				</div>
 			</div>
+			<a class="btn btn-success" type="submit" href="{% url 'main:add_test' %}"><img src='{% add_icon %}'> Добавить тест</a>
+			<hr>
 			<div class="row">
 				<div class="col-sm">
 					<label class="my-1 mr-2">Предмет
@@ -27,7 +29,7 @@
 			</div>
 			<div class="row">
 				<div class="col-sm">
-			      	<label class="my-1 mr-2">Фильтр по названию
+			      	<label class="my-1 mr-2">Фильтр по названию теста
 			      		<input type="text" class="form-control" id="name_filter" name="name_filter">
 			      	</label>
 		      	</div>

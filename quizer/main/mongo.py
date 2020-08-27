@@ -6,6 +6,7 @@ import shutil
 from pathlib import Path
 from datetime import datetime, timedelta
 import pymongo
+from bson import ObjectId
 from django.conf import settings
 from .models import Test
 
@@ -287,17 +288,19 @@ class TestsResultsStorage(MongoDB):
             collection_name='tests_results')
         return storage
 
-    def add_running_test(self, test_id: int, lecturer_id: int) -> None:
+    def add_running_test(self, test_id: int, lecturer_id: int, subject_id: int) -> None:
         """
         Create object in collection corresponding to running test
 
-        :param test_id: <int>
+        :param test_id: <int>,
+        :param subject_id: <int>,
         :param lecturer_id: <int>, lecturer who ran test
         :return:
         """
         date = datetime.now().timetuple()
         self._col.insert_one({
             'test_id': test_id,
+            'subject_id': subject_id,
             'launched_lecturer_id': lecturer_id,
             'is_running': True,
             'results': [],
@@ -402,7 +405,7 @@ class TestsResultsStorage(MongoDB):
             return latest_test_results['results']
         return []
 
-    def get_test_results(self, test_id: int, lecturer_id: int) -> list:
+    def get_tests_results(self, test_id: int, lecturer_id: int) -> list:
         """
         Get results of all tests with test_id ran by lecturer with lecturer_id
 
@@ -412,6 +415,28 @@ class TestsResultsStorage(MongoDB):
         """
         test_results = self._col.find({
             'test_id': test_id,
-            'launched_lecturer_id': lecturer_id
+            'launched_lecturer_id': lecturer_id,
+            'is_running': False
         })
-        return list(test_results) if test_results else []
+        return [{**result, 'id': result['_id']} for result in test_results] if test_results else []
+
+    def get_test_result(self, _id: str) -> dict:
+        """
+        Get results of all tests with test_id ran by lecturer with lecturer_id
+
+        :param _id: <str>, result id
+        :return: <dict>, test results
+        """
+        test_results = self._col.find_one({
+            '_id': ObjectId(_id)
+        })
+        return test_results if test_results else {}
+
+    def get_all_tests_results(self) -> list:
+        """
+        Get results of all passed tests
+
+        :return: <list>, list of tests results
+        """
+        test_results = self._col.find({'is_running': False})
+        return [{**result, 'id': result['_id']} for result in test_results] if test_results else []

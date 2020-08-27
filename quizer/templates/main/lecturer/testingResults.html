@@ -10,7 +10,12 @@
 
 <div class='jumbotron'>
 	<h2>{{ test.name }} - результаты тестирования</h2>
-	<p><img src='{% clock_icon %}'> Время тестирования: {{ start_date | date:"H:i:s" }} - {{ end_date | date:"H:i:s" }} {{ start_date | date:"d.m.Y" }}<br>
+	<p><img src='{% clock_icon %}'>
+	{% if end_date %}
+	    Время тестирования: {{ start_date | date:"H:i:s" }} - {{ end_date | date:"H:i:s" }} {{ start_date | date:"d.m." }}<br>
+	{% else %}     
+		Дата тестирования: {{ start_date | date:"H:i:s d.m.y" }}<br>
+	{% endif %}
 	   <img src='{% team_icon %}'> Выполнило слушателей: {{ results | length }}
 	</p>
 	<input class="form-control" type="text" placeholder="Искать..." id="search" onkeyup='tableSearch("search", "table")'>

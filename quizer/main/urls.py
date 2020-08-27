@@ -17,6 +17,8 @@ urlpatterns = [
     path('delete_subject/<subject_id>', views.delete_subject, name='delete_subject'),
     url(r'^delete_subject_result/$', views.DeleteSubjectResultView.as_view(), name='delete_subject_result'),
 
+    url(r'^tests_results/$', views.tests_results, name='tests_results'),
+    path('test_results/<test_result_id>', views.show_test_results, name='show_test_results'),
     url(r'^run_new_test/$', views.run_test_result, name='run_test_result'),
     url(r'^running_tests/$', views.get_running_tests, name='running_tests'),
     url(r'^stop_running_test/$', views.stop_running_test, name='stop_running_test'),

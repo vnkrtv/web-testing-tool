@@ -275,7 +275,8 @@ def run_test_result(request):
     storage = mongo.TestsResultsStorage.connect(db=mongo.get_conn())
     storage.add_running_test(
         test_id=test.id,
-        lecturer_id=request.user.id)
+        lecturer_id=request.user.id,
+        subject_id=test.subject.id)
     context = {
         'title': 'Запуск теста | Quizer',
         'message_title': 'Тест запущен',
@@ -381,6 +382,46 @@ def stop_running_test(request):
 
 @unauthenticated_user
 @allowed_users(allowed_roles=['lecturer'])
+def tests_results(request):
+    """
+    Displays page with all tests results
+    """
+    storage = mongo.TestsResultsStorage.connect(db=mongo.get_conn())
+    results = storage.get_all_tests_results()
+
+    context = {
+        'title': 'Результаты тестирований | Quizer',
+        'subjects': Subject.objects.all(),
+        'lecturers': User.objects.filter(groups__name='lecturer'),
+        'tests': Test.objects.all(),
+        'results': results
+    }
+    return render(request, 'main/lecturer/testsResults.html', context)
+
+
+@unauthenticated_user
+@allowed_users(allowed_roles=['lecturer'])
+def show_test_results(request, test_result_id):
+    """
+    Displays page with testing results
+    """
+    storage = mongo.TestsResultsStorage.connect(db=mongo.get_conn())
+    test_results = storage.get_test_result(_id=test_result_id)
+    test = Test.objects.get(id=test_results['test_id'])
+    results = test_results['results']
+    results.sort(key=lambda result: result['date'])
+    context = {
+        'title': 'Результаты тестирования | Quizer',
+        'test': test,
+        'start_date': test_results['date'],
+        'questions': json.dumps([result['questions'] for result in results]),
+        'results': json.dumps(results),
+    }
+    return render(request, 'main/lecturer/testingResults.html', context)
+
+
+@unauthenticated_user
+@allowed_users(allowed_roles=['lecturer'])
 def edit_test(request):
     """
     Displays page with all tests
@@ -438,21 +479,16 @@ def edit_test_result(request):
     """
     Displays page with result of editing test
     """
-    test = Test.objects.get(id=request.POST['test_id'])
-    new_test = Test(
-        id=test.id,
+    Test.objects.filter(id=request.POST['test_id']).update(**dict(
         name=request.POST['test_name'],
         author=request.user,
-        subject=test.subject,
         description=request.POST['description'],
         tasks_num=request.POST['tasks_num'],
-        duration=request.POST['duration'])
-    Test.delete(test)
-    new_test.save()
+        duration=request.POST['duration']))
     context = {
         'title': 'Тест отредактирован | Quizer',
         'message_title': 'Редактиктирование теста',
-        'message': "Тест '%s' по предмету '%s' успешно изменен." % (new_test.name, new_test.subject),
+        'message': "Тест '%s' успешно изменен." % request.POST['test_name'],
         'ref': reverse('main:edit_test'),
         'ref_message': 'Перейти к тестам',
     }

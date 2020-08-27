@@ -401,3 +401,17 @@ class TestsResultsStorage(MongoDB):
             latest_test_results = max(test_results, key=lambda res: res['date'])
             return latest_test_results['results']
         return []
+
+    def get_test_results(self, test_id: int, lecturer_id: int) -> list:
+        """
+        Get results of all tests with test_id ran by lecturer with lecturer_id
+
+        :param test_id: <int>
+        :param lecturer_id: <int>, lecturer who ran test
+        :return: <list>, list of tests results
+        """
+        test_results = self._col.find({
+            'test_id': test_id,
+            'launched_lecturer_id': lecturer_id
+        })
+        return list(test_results) if test_results else []

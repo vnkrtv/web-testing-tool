@@ -66,11 +66,6 @@
 	    {% if user.is_superuser %}
 	    <li class="header">Предметы</li>
 	    <li>
-	      <a href="{% url 'main:add_subject' %}">
-	        <i aria-hidden="true"></i><img src='{% subject_icon %}'> Добавить предмет
-	      </a>
-	    </li>
-	    <li>
 	      <a href="{% url 'main:configure_subject' %}">
 	        <i aria-hidden="true"></i><img src='{% edit_icon %}'> Редактировать
 	      </a>

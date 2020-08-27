@@ -8,6 +8,7 @@
 <div class='jumbotron'>
     <h2>Учебные предметы</h2><br>
     <p>Здесь отображаются учебные предметы, добавленные в систему.</p>
+    <a class="btn btn-success" type="submit" href="{% url 'main:add_subject' %}"><img src='{% add_icon %}'> Добавить предмет</a>
     {% for subject, tests_count in subjects %}
     <hr class="my-4">
     <h3>{{ subject.name }}</h3>

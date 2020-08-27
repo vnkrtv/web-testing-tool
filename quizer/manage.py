@@ -2,18 +2,13 @@
 """Django's command-line utility for administrative tasks."""
 import os
 import sys
-import fire
-import main.utils as utils
 
 
 def main():
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'quizer.settings')
     try:
         from django.core.management import execute_from_command_line
-        if 'parse_tests' in sys.argv:
-            fire.Fire(utils.parse_tests_folder)
-        else:
-            execute_from_command_line(sys.argv)
+        execute_from_command_line(sys.argv)
     except ImportError as exc:
         raise ImportError(
             "Couldn't import Django. Are you sure it's installed and "

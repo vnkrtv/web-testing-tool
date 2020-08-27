@@ -134,6 +134,8 @@ def add_subject_result(request):
         'title': 'Новый предмет | Quizer',
         'message_title': 'Новый предмет',
         'message': "Предмет '%s' успешно добавлен." % subject.name,
+        'ref': reverse('main:configure_subject'),
+        'ref_message': 'Перейти к предметам',
     }
     return render(request, 'main/lecturer/info.html', context)
 
@@ -196,7 +198,9 @@ class EditSubjectResultView(View):
             context = {
                 'title': self.title,
                 'message_title': 'Редактирование предмета',
-                'message': "Предмет '%s' успешно изменен." % new_subject.name,
+                'message': f"Предмет '{new_subject.name}' успешно изменен.",
+                'ref': reverse('main:configure_subject'),
+                'ref_message': 'Перейти к предметам',
             }
             return render(request, self.template, context)
         return redirect(reverse('main:configure_subject'))
@@ -245,7 +249,9 @@ class DeleteSubjectResultView(View):
             context = {
                 'title': self.title,
                 'message_title': 'Результат удаления',
-                'message': message % (subject.name, tests_count, deleted_questions_count)
+                'message': message % (subject.name, tests_count, deleted_questions_count),
+                'ref': reverse('main:configure_subject'),
+                'ref_message': 'Перейти к предметам',
             }
             return render(request, self.template, context)
         return redirect(reverse('main:configure_subject'))

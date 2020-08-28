@@ -1,3 +1,10 @@
+function getTestOption(test) {
+    const option = document.createElement('option');
+    option.value = test.name;
+    option.innerHTML = test.name;
+    return option
+}
+
 function getTrElement(counter, result) {
     const tr = document.createElement('tr');
 
@@ -60,6 +67,11 @@ function main(resultsJson, subjectsJson, testsJson, lecturersJson) {
     const testSelect = document.getElementById("test");
 
     let counter = 1;
+    for (const test of testsArray) {
+        if (test.subject_id == subjectsMap[subjectSelect.options[0].text]) {
+            testSelect.appendChild(getTestOption(test));
+        }
+    }
     for (const result of results) {
         if (result.subject_id == subjectsMap[subjectSelect.options[0].text]) {
             if (result.launched_lecturer_id == lecturersMap[lecturerSelect.options[0].text]) {
@@ -73,7 +85,13 @@ function main(resultsJson, subjectsJson, testsJson, lecturersJson) {
 
     subjectSelect.onkeyup = subjectSelect.onchange = () =>  {
         tableBody.innerHTML = '';
+        testSelect.innerHTML = '';
         counter = 1;
+        for (const test of testsArray) {
+            if (test.subject_id == subjectsMap[subjectSelect.options[subjectSelect.selectedIndex].text]) {
+                testSelect.appendChild(getTestOption(test));
+            }
+        }
         for (const result of results) {
             if (result.subject_id == subjectsMap[subjectSelect.options[subjectSelect.selectedIndex].text]) {
                 if (result.launched_lecturer_id == lecturersMap[lecturerSelect.options[lecturerSelect.selectedIndex].text]) {

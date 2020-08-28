@@ -19,7 +19,7 @@ def deserialize_lecturers(lecturers):
 
 @register.simple_tag
 def deserialize_tests(tests):
-    return json.dumps([{'name': test.name, 'id': test.id} for test in tests])
+    return json.dumps([{'name': test.name, 'id': test.id, 'subject_id': test.subject.id} for test in tests])
 
 
 @register.simple_tag

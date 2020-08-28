@@ -16,6 +16,10 @@ from .mongo import get_conn, QuestionsStorage
 logger = logging.getLogger('quizer.main.utils')
 
 
+class InvalidFileFormatError(Exception):
+    pass
+
+
 def get_auth_data(request: HttpRequest) -> tuple:
     """
     Get user's username and group using 'user_jqt' cookies
@@ -126,7 +130,7 @@ def parse_questions(content: str) -> list:
                     'is_true': True
                 })
             else:
-                raise UnicodeDecodeError('invalid file format')
+                raise InvalidFileFormatError('invalid file format')
         parsed_questions_list.append({
             'formulation': formulation,
             'tasks_num': len(options),

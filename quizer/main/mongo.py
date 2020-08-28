@@ -297,7 +297,7 @@ class TestsResultsStorage(MongoDB):
         :param lecturer_id: <int>, lecturer who ran test
         :return:
         """
-        date = datetime.now().timetuple()
+        date = (datetime.now() + timedelta(hours=3)).timetuple()
         self._col.insert_one({
             'test_id': test_id,
             'subject_id': subject_id,
@@ -337,7 +337,7 @@ class TestsResultsStorage(MongoDB):
         :param test_id: <int>
         :return: None
         """
-        test_result['date'] = datetime.now()
+        test_result['date'] = datetime.now() + timedelta(hours=3)
         self._col.find_one_and_update(
             {'test_id': test_id, 'is_running': True},
             {'$push': {'results': test_result}}
@@ -418,7 +418,20 @@ class TestsResultsStorage(MongoDB):
             'launched_lecturer_id': lecturer_id,
             'is_running': False
         })
-        return [{**result, 'id': result['_id']} for result in test_results] if test_results else []
+        parsed_test_results = []
+        if test_results:
+            for result in test_results:
+                for student_result in result['results']:
+                    student_result['date'] = student_result['date'].strftime("%H:%M:%S  %d.%m.%y")
+                parsed_test_results.append({
+                    'id': str(result['_id']),
+                    'results': result['results'],
+                    'test_id': result['test_id'],
+                    'subject_id': result['subject_id'],
+                    'launched_lecturer_id': result['launched_lecturer_id'],
+                    'date': result['date'].strftime("%H:%M:%S  %d-%b-%y")
+                })
+        return parsed_test_results
 
     def get_test_result(self, _id: str) -> dict:
         """
@@ -430,7 +443,19 @@ class TestsResultsStorage(MongoDB):
         test_results = self._col.find_one({
             '_id': ObjectId(_id)
         })
-        return test_results if test_results else {}
+        if test_results:
+            for student_result in test_results['results']:
+                student_result['date'] = student_result['date'].strftime("%H:%M:%S  %d.%m.%y")
+            return {
+                'id': str(test_results['_id']),
+                'results': test_results['results'],
+                'test_id': test_results['test_id'],
+                'subject_id': test_results['subject_id'],
+                'launched_lecturer_id': test_results['launched_lecturer_id'],
+                'date': test_results['date'].strftime("%H:%M:%S  %d-%b-%y")
+
+            }
+        return {}
 
     def get_all_tests_results(self) -> list:
         """
@@ -439,4 +464,18 @@ class TestsResultsStorage(MongoDB):
         :return: <list>, list of tests results
         """
         test_results = self._col.find({'is_running': False})
-        return [{**result, 'id': result['_id']} for result in test_results] if test_results else []
+        parsed_test_results = []
+        if test_results:
+            for result in test_results:
+                for student_result in result['results']:
+                    student_result['date'] = student_result['date'].strftime("%H:%M:%S  %d.%m.%y")
+                parsed_test_results.append({
+                    'id': str(result['_id']),
+                    'test_id': result['test_id'],
+                    'subject_id': result['subject_id'],
+                    'launched_lecturer_id': result['launched_lecturer_id'],
+                    'date': result['date'].strftime("%H:%M:%S  %d.%m.%y"),
+                    'results': result['results'],
+
+                })
+        return parsed_test_results

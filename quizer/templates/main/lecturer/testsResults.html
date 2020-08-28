@@ -56,23 +56,13 @@
 			      <th>Детальный результат</th>
 		      </tr>
 		  </thead>
-		  <tbody id='table_body'>
-		  	{% for result in results %}
-			  <tr id="row_{{ forloop.counter0 }}">
-			      <td scope="row"><strong>{{ forloop.counter }}</strong></td>
-			      <td>{{ result.date | date:"H:i:s  d.m.y" }}</td>
-			      <td>{{ result.results | length }}</td>
-			      <td><a type="button" class="btn btn-primary btn-sm js-open-modal" href="{% url 'main:show_test_results' result.id %}"> Посмотреть детальный результат &raquo;</a></td>
-		      </tr>
-			{% endfor %}
-		    </tbody>
+		  <tbody id='table_body'></tbody>
 		</table>
  	</div>
-
 <script src="{% static 'main/js/table.js' %}"></script>
 <script src="{% static 'main/js/testsResults.js' %}"></script>
 <script type="text/javascript">
-	main('{{ results }}');
+	main('{{ results }}', '{% deserialize_subjects subjects %}', '{% deserialize_tests tests %}', '{% deserialize_lecturers lecturers %}');
 </script>
 
 {% endblock %}

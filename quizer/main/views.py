@@ -394,7 +394,7 @@ def tests_results(request):
         'subjects': Subject.objects.all(),
         'lecturers': User.objects.filter(groups__name='lecturer'),
         'tests': Test.objects.all(),
-        'results': results
+        'results': json.dumps(results)
     }
     return render(request, 'main/lecturer/testsResults.html', context)
 
@@ -415,7 +415,7 @@ def show_test_results(request, test_result_id):
         'test': test,
         'start_date': test_results['date'],
         'questions': json.dumps([result['questions'] for result in results]),
-        'results': json.dumps(results),
+        'results': results,
     }
     return render(request, 'main/lecturer/testingResults.html', context)
 
@@ -591,7 +591,7 @@ def load_questions_result(request):
             storage.add_one(
                 question=question,
                 test_id=test.id)
-    except UnicodeDecodeError:
+    except utils.InvalidFileFormatError:
         context = {
             'title': 'Ошибка | Quizer',
             'message_title': 'Ошибка',

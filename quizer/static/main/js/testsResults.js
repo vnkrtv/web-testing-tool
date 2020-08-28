@@ -1,84 +1,116 @@
-function getTrElement(i, results) {
-    const container = document.createElement('div');
+function getTrElement(counter, result) {
+    const tr = document.createElement('tr');
 
-    const hr = document.createElement('hr');
-    hr.className = "my-4";
+    const counterTd = document.createElement('td');
+    counterTd.scope = "row";
+    const strongCounter = document.createElement('strong');
+    strongCounter.innerHTML = counter;
+    counterTd.appendChild(strongCounter);
 
-    const label = document.createElement('label');
-    label.htmlFor = "test_name";
+    const dateTd = document.createElement('td');
+    dateTd.innerHTML = result.date;
 
-    const test_name_h3 = document.createElement('h3');
-    test_name_h3.innerHTML = `${tests[i].name}`;
+    const studentsCountTd = document.createElement('td');
+    studentsCountTd.innerHTML = result.results.length;
 
-    const description_p = document.createElement('p');
-    description_p.innerHTML = `${tests[i].description}`;
+    const refTd = document.createElement('td');
+    const ref = document.createElement('a');
+    ref.type = 'button';
+    ref.className = 'btn btn-primary btn-sm';
+    ref.href = `/test_results/${result.id}`;
+    ref.innerHTML = 'Посмотреть детальный результат &raquo;';
+    refTd.appendChild(ref);
 
-    const info_p = document.createElement('p');
-    info_p.innerHTML = `<img src='${staticPath}main/images/subject.svg'> Предмет: ${tests[i].subject.name }<br>
-    <img src='${staticPath}main/images/research.svg'> Количество заданий в тесте: ${tests[i].tasks_num}<br>
-    <img src='${staticPath}main/images/clock.svg'> Время на выполнение: ${tests[i].duration} с`;
+    tr.appendChild(counterTd);
+    tr.appendChild(dateTd);
+    tr.appendChild(studentsCountTd);
+    tr.appendChild(refTd);
 
-    const btn = document.createElement('button');
-    btn.className = "btn btn-primary";
-    btn.innerHTML = `<img src='${staticPath}main/images/play.svg'> Запустить`;
-    btn.id =  "test_name";
-    btn.name =  "test_id";
-    btn.value = `${tests[i].id}`;
-
-    label.appendChild(test_name_h3);
-    label.appendChild(description_p);
-    label.appendChild(info_p);
-    label.appendChild(btn);
-
-    container.appendChild(hr);
-    container.appendChild(label);
-
-    return container;
+    return tr;
 }
 
-function main(resultsJson) {
-    const results = JSON.parse(resultsJson.replace(/&quot;/gi, '"'));
-    const resultsCount = parseInt(results.length);
+function main(resultsJson, subjectsJson, testsJson, lecturersJson) {
+    const results = JSON.parse(resultsJson
+        .replace(/&quot;/gi, '"')
+        .replace(/True/gi, 'true')
+        .replace(/False/gi, 'false')
+        .replace(/None/gi, 'null'));
+    let subjectsArray = JSON.parse(subjectsJson.replace(/&quot;/gi, '"'));
+    let subjectsMap = new Map();
+    for (let subject of subjectsArray) {
+        subjectsMap[subject.name.toString()] = subject.id;
+    }
+
+    let lecturersArray = JSON.parse(lecturersJson.replace(/&quot;/gi, '"'));
+    let lecturersMap = new Map();
+    for (let lecturer of lecturersArray) {
+        lecturersMap[lecturer.name.toString()] = lecturer.id;
+    }
+
+    let testsArray = JSON.parse(testsJson.replace(/&quot;/gi, '"'));
+    let testsMap = new Map();
+    for (let test of testsArray) {
+        testsMap[test.name.toString()] = test.id;
+    }
+
     const tableBody = document.getElementById("table_body");
 
-    const subject = document.getElementById("subject");
-    const lecturer = document.getElementById("lecturer");
-    const test = document.getElementById("test");
+    const subjectSelect = document.getElementById("subject");
+    const lecturerSelect = document.getElementById("lecturer");
+    const testSelect = document.getElementById("test");
 
-    for (let i = 0; i < resultsCount; ++i) {
-        if (results[i].subject_id === subject.options[0].text) {
-            tests_container.appendChild(getDivElement(i, tests, staticPath));
+    let counter = 1;
+    for (const result of results) {
+        if (result.subject_id == subjectsMap[subjectSelect.options[0].text]) {
+            if (result.launched_lecturer_id == lecturersMap[lecturerSelect.options[0].text]) {
+                if (result.test_id == testsMap[testSelect.options[0].text]) {
+                    tableBody.appendChild(getTrElement(counter, result));
+                    counter += 1;
+                }
+            }
         }
     }
 
-    subject.onkeyup = subject.onchange = () =>  {
+    subjectSelect.onkeyup = subjectSelect.onchange = () =>  {
         tableBody.innerHTML = '';
-        for (let i = 0; i < resultsCount; ++i) {
-            if (tests[i].name.includes(name_filter.value)) {
-                if (tests[i].subject.name == subject.options[subject.selectedIndex].text) {
-                    tests_container.appendChild(getDivElement(i, tests, staticPath));
+        counter = 1;
+        for (const result of results) {
+            if (result.subject_id == subjectsMap[subjectSelect.options[subjectSelect.selectedIndex].text]) {
+                if (result.launched_lecturer_id == lecturersMap[lecturerSelect.options[lecturerSelect.selectedIndex].text]) {
+                    if (result.test_id == testsMap[testSelect.options[testSelect.selectedIndex].text]) {
+                        tableBody.appendChild(getTrElement(counter, result));
+                        counter += 1;
+                    }
                 }
             }
         }
     };
 
-    lecturer.onkeyup = lecturer.onchange = () =>  {
+    lecturerSelect.onkeyup = lecturerSelect.onchange = () =>  {
         tableBody.innerHTML = '';
-        for (let i = 0; i < resultsCount; ++i) {
-            if (tests[i].name.includes(name_filter.value)) {
-                if (tests[i].subject.name == subject.options[subject.selectedIndex].text) {
-                    tests_container.appendChild(getDivElement(i, tests, staticPath));
+        counter = 1;
+        for (const result of results) {
+            if (result.subject_id == subjectsMap[subjectSelect.options[subjectSelect.selectedIndex].text]) {
+                if (result.launched_lecturer_id == lecturersMap[lecturerSelect.options[lecturerSelect.selectedIndex].text]) {
+                    if (result.test_id == testsMap[testSelect.options[testSelect.selectedIndex].text]) {
+                        tableBody.appendChild(getTrElement(counter, result));
+                        counter += 1;
+                    }
                 }
             }
         }
     };
 
-    test.onkeyup = test.onchange = () =>  {
+    testSelect.onkeyup = testSelect.onchange = () =>  {
         tableBody.innerHTML = '';
-        for (let i = 0; i < tests_count; ++i) {
-            if (tests[i].name.includes(name_filter.value)) {
-                if (tests[i].subject.name == subject.options[subject.selectedIndex].text) {
-                    tests_container.appendChild(getDivElement(i, tests, staticPath));
+        counter = 1;
+        for (const result of results) {
+            if (result.subject_id == subjectsMap[subjectSelect.options[subjectSelect.selectedIndex].text]) {
+                if (result.launched_lecturer_id == lecturersMap[lecturerSelect.options[lecturerSelect.selectedIndex].text]) {
+                    if (result.test_id == testsMap[testSelect.options[testSelect.selectedIndex].text]) {
+                        tableBody.appendChild(getTrElement(counter, result));
+                        counter += 1;
+                    }
                 }
             }
         }

@@ -20,11 +20,15 @@ function getDivElement(i, tests, staticPath) {
     <img src='${staticPath}main/images/database.svg'> Вопросов к тесту: ${tests[i].questions_num}`;
 
     const btn_cont_1 = document.createElement('div');
-    btn_cont_1.className = "btn-group mr-2";
+    btn_cont_1.className = "btn-group mr-3";
     const btn_cont_2 = document.createElement('div');
-    btn_cont_2.className = "btn-group mr-2";
+    btn_cont_2.className = "btn-group mr-1";
     const btn_cont_3 = document.createElement('div');
-    btn_cont_3.className = "btn-group mr-2";
+    btn_cont_3.className = "btn-group mr-3";
+    const btn_cont_4 = document.createElement('div');
+    btn_cont_4.className = "btn-group mr-1";
+    const btn_cont_5 = document.createElement('div');
+    btn_cont_5.className = "btn-group mr-1";
 
     const edit_btn = document.createElement('button');
     edit_btn.className = "btn btn-primary";
@@ -64,10 +68,10 @@ function getDivElement(i, tests, staticPath) {
     btn_cont_1.appendChild(edit_btn);
 
     btn_cont_2.appendChild(add_qstn_btn);
-    btn_cont_2.appendChild(load_qstn_btn);
+    btn_cont_3.appendChild(load_qstn_btn);
 
-    btn_cont_3.appendChild(del_qstn_btn);
-    btn_cont_3.appendChild(del_test_btn);
+    btn_cont_4.appendChild(del_qstn_btn);
+    btn_cont_5.appendChild(del_test_btn);
 
     label.appendChild(test_name_h3);
     label.appendChild(description_p);
@@ -75,6 +79,8 @@ function getDivElement(i, tests, staticPath) {
     label.appendChild(btn_cont_1);
     label.appendChild(btn_cont_2);
     label.appendChild(btn_cont_3);
+    label.appendChild(btn_cont_4);
+    label.appendChild(btn_cont_5);
 
     container.appendChild(hr);
     container.appendChild(label);

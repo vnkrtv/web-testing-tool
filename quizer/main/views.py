@@ -103,22 +103,6 @@ def login_page(request):
     return redirect(reverse('main:tests'))
 
 
-@unauthenticated_user
-@allowed_users(allowed_roles=['admin'])
-def add_subject(request):
-    """
-    Displays page with an empty form for filling out information about new subject
-    """
-    user = User.objects.get(id=1)
-    login(request, user)
-    if request.user.is_superuser:
-        context = {
-            'title': 'Новый предмет | Quizer',
-        }
-        return render(request, 'main/admin/addSubject.html', context)
-    return redirect(reverse('main:tests'))
-
-
 @post_method
 @unauthenticated_user
 @allowed_users(allowed_roles=['admin'])

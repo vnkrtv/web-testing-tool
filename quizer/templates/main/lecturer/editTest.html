@@ -14,7 +14,12 @@
 					<p>Здесь отображаются все добавленные тесты.</p>
 				</div>
 			</div>
-			<a class="btn btn-success" type="submit" href="{% url 'main:add_test' %}"><img src='{% add_icon %}'> Добавить тест</a>
+			<div class="btn-group mr-1">
+				<a class="btn btn-success" type="submit" href="{% url 'main:add_test' %}"><img src='{% add_icon %}'> Добавить тест</a>
+			</div>
+			<div class="btn-group mr-1">
+				<a class="btn btn-success" type="submit" href=""><img src='{% download_icon %}'> Загрузить тест</a>
+			</div>
 			<hr>
 			<div class="row">
 				<div class="col-sm">

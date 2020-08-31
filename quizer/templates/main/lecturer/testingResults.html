@@ -14,7 +14,7 @@
 	{% if end_date %}
 	    Время тестирования: {{ start_date | date:"H:i:s" }} - {{ end_date | date:"H:i:s" }} {{ start_date | date:"d.m.y" }}<br>
 	{% else %}     
-		Дата тестирования: {{ start_date | date:"H:i:s d.m.y" }}<br>
+		Дата тестирования: {{ start_date }}<br> 
 	{% endif %}
 	   <img src='{% team_icon %}'> Выполнило слушателей: {{ results | length }}
 	</p>
@@ -37,7 +37,7 @@
 		      <td>{{ result.username }}</td>
 		      <td>{{ result.right_answers_count }}/{{ result.tasks_num }}</td>
 		      <td>{{ result.time }} c</td>
-		      <td>{{ result.date | date:"H:i:s" }}</td>
+		      <td>{{ result.date }}</td>
 		      <td><button type="button" class="btn btn-primary btn-sm js-open-modal" data-modal="modal" onclick='fillErrorsModal("row_{{ forloop.counter0 }}", questions)'><img src='{% search_icon %}'> Показать</button></td>
 	      </tr>
 		{% endfor %}

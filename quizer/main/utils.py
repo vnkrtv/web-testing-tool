@@ -14,11 +14,66 @@ from django.urls import reverse
 from .models import Test, Subject, QuestionType
 from .mongo import get_conn, QuestionsStorage
 
+
 logger = logging.getLogger('quizer.main.utils')
 
 
 class InvalidFileFormatError(Exception):
     pass
+
+
+class SubjectParser:
+    """
+    Some constants for subjects parser
+    """
+
+    @staticmethod
+    def get_name(short_name: str) -> str:
+        return {
+            'bos': 'Безопасность операционных систем',
+            'bs': 'Безопасность сетей',
+            'c': 'Языки программирования высокого уровня',
+            'java': 'Язык программирования Java',
+            'sharp': 'Язык программирования C#',
+            'python': 'Язык программирования python',
+            'timp': 'Технологии и методы программирования',
+            'timp3': 'Технологии и методы программирования, 3 семестр',
+            'timp4': 'Технологии и методы программирования, 4 семестр',
+            'finish': 'Выходной контроль',
+            'parallel': 'Параллельные вычисления'
+        }.get(short_name, short_name)
+
+    @staticmethod
+    def get_questions_count(short_name: str) -> int:
+        return {
+            'bos': 10,
+            'bs': 30,
+            'c': 10,
+            'java': 10,
+            'sharp': 50,
+            'python': 10,
+            'timp': 10,
+            'timp3': 8,
+            'timp4': 10,
+            'finish': 50,
+            'parallel': 10
+        }.get(short_name, 10)
+
+    @staticmethod
+    def get_test_duration(short_name: str) -> int:
+        return {
+            'bos': 200,
+            'bs': 900,
+            'c': 200,
+            'java': 200,
+            'sharp': 3600,
+            'python': 300,
+            'timp': 600,
+            'timp3': 480,
+            'timp4': 300,
+            'finish': 3600,
+            'parallel': 200
+        }.get(short_name, 200)
 
 
 def get_auth_data(request: HttpRequest) -> tuple:
@@ -226,8 +281,10 @@ def add_subject_with_tests(request: HttpRequest) -> dict:
     """
     storage = QuestionsStorage.connect(db=get_conn())
 
+    short_name = request.POST['name']
+    name = SubjectParser.get_name(short_name)
     subject = Subject(
-        name=request.POST['name'],
+        name=name,
         description=request.POST['description'])
     subject.save()
     tests_count = 0
@@ -235,8 +292,8 @@ def add_subject_with_tests(request: HttpRequest) -> dict:
 
     files_names = request.POST['files_names'].split('<separator>')
     for test_name, test_data in zip(files_names, request.FILES.getlist('tests')):
-        duration = 0
-        tasks_num = 0
+        duration = SubjectParser.get_test_duration(short_name)
+        tasks_num = SubjectParser.get_questions_count(short_name)
         test = Test(
             name=test_name,
             duration=duration,

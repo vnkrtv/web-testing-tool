@@ -8,7 +8,7 @@ from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.auth.models import User, Group
 from django.conf import settings
-from .models import Subject, Test
+from .models import Subject, Test, QuestionType
 from . import mongo
 
 QUESTIONS_FILE_DATA = """Как создать вопрос?
@@ -81,7 +81,7 @@ class MainTest(TestCase):
                 'formulation': 'First question with multiselect',
                 'tasks_num': 3,
                 'multiselect': True,
-                'with_images': False,
+                'type': QuestionType.REGULAR,
                 'options': [
                     {
                         'option': 'First true option',
@@ -104,7 +104,7 @@ class MainTest(TestCase):
                 'formulation': 'Second question with single answer',
                 'tasks_num': 2,
                 'multiselect': False,
-                'with_images': False,
+                'type': QuestionType.REGULAR,
                 'options': [
                     {
                         'option': 'False option',
@@ -135,7 +135,7 @@ class QuestionsStorageTest(MainTest):
             'formulation': 'Test question',
             'tasks_num': 2,
             'multiselect': False,
-            'with_images': False,
+            'type': QuestionType.REGULAR,
             'options': [
                 {
                     'option': 'First true option',

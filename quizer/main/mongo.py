@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 import pymongo
 from bson import ObjectId
 from django.conf import settings
-from .models import Test
+from .models import Test, QuestionType
 
 __db_conn: pymongo.database.Database = None
 
@@ -90,7 +90,7 @@ class QuestionsStorage(MongoDB):
                 'formulation': str,
                 'tasks_num': int,
                 'multiselect': bool,
-                'with_images': bool,
+                'type': str, models.QuestionType,
                 'options': [
                     {
                         'option': str,
@@ -144,7 +144,7 @@ class QuestionsStorage(MongoDB):
             test_id=test_id
         )
         test = Test.objects.get(id=test_id)
-        if question['with_images']:
+        if question['type'] == QuestionType.WITH_IMAGES:
             path = Path(f'{settings.MEDIA_ROOT}/{test.subject.name}/{test.name}/{question["_id"]}')
             shutil.rmtree(path)
         self._col.delete_one({
@@ -162,7 +162,7 @@ class QuestionsStorage(MongoDB):
         questions = self.get_many(test_id=test_id)
         test = Test.objects.get(id=test_id)
         for question in questions:
-            if question['with_images']:
+            if question['type'] == QuestionType.WITH_IMAGES:
                 p = Path(f'{settings.MEDIA_ROOT}/{test.subject.name}/{test.name}/{question["_id"]}')
                 shutil.rmtree(p)
         deleted_questions_count = self._col.delete_many({
@@ -304,14 +304,7 @@ class TestsResultsStorage(MongoDB):
             'launched_lecturer_id': lecturer_id,
             'is_running': True,
             'results': [],
-            'date': datetime.now() + timedelta(hours=3),
-            'time': {
-                'year': date[0],
-                'month': date[1],
-                'day': date[2],
-                'hour': date[3],
-                'minutes': date[4]
-            }
+            'date': datetime.now() + timedelta(hours=3)
         })
 
     def add_results_to_running_test(self, test_result: dict, test_id: int) -> None:
@@ -453,7 +446,6 @@ class TestsResultsStorage(MongoDB):
                 'subject_id': test_results['subject_id'],
                 'launched_lecturer_id': test_results['launched_lecturer_id'],
                 'date': test_results['date'].strftime("%H:%M:%S  %d-%b-%y")
-
             }
         return {}
 
@@ -476,6 +468,5 @@ class TestsResultsStorage(MongoDB):
                     'launched_lecturer_id': result['launched_lecturer_id'],
                     'date': result['date'].strftime("%H:%M:%S  %d.%m.%y"),
                     'results': result['results'],
-
                 })
         return parsed_test_results

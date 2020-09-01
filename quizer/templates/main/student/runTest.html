@@ -25,7 +25,7 @@
                     		<input type="radio" id='{{ forloop.parentloop.counter }}_{{ option.option }}' name='{{ forloop.parentloop.counter }}' value="{{ option.option }}">
             			{% endif %}
             		</label>
-            		{% if question.with_images %}
+            		{% if question.type == 'image' %}
 		        		<img src="/media/{{ option.option }}" alt="Server pribolel" height="341" style="width: auto;">
             		{% else %}
                     	{{ option.option }}          		    

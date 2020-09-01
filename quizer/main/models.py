@@ -65,3 +65,11 @@ class Test(models.Model):
     class Meta:
         verbose_name = 'Тест'
         verbose_name_plural = 'Тесты'
+
+
+class QuestionType:
+    """
+    Class for storing various questions types
+    """
+    REGULAR = ''
+    WITH_IMAGES = 'image'

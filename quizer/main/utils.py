@@ -10,7 +10,7 @@ from bson import ObjectId
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.http import HttpRequest
-from .models import Test, Subject
+from .models import Test, Subject, QuestionType
 from .mongo import get_conn, QuestionsStorage
 
 logger = logging.getLogger('quizer.main.utils')
@@ -53,7 +53,7 @@ def parse_question_form(request: HttpRequest, test: Test) -> dict:
         'formulation': request.POST['question'],
         'tasks_num': request.POST['tasks_num'],
         'multiselect': 'multiselect' in request.POST,
-        'with_images': 'with_images' in request.POST,
+        'type': QuestionType.WITH_IMAGES if 'with_images' in request.POST else QuestionType.REGULAR,
         'options': []
     }
     """
@@ -72,7 +72,7 @@ def parse_question_form(request: HttpRequest, test: Test) -> dict:
         right_options_nums = [key.split('_')[2] for key in request.POST if 'is_true_' in key]
     else:
         right_options_nums = [request.POST['is_true']]
-    if question['with_images']:
+    if question['type'] == QuestionType.WITH_IMAGES:
         options = {
             key.split('_')[1]: request.FILES[key]
             for key in request.FILES if 'option_' in key
@@ -135,7 +135,7 @@ def parse_questions(content: str) -> list:
             'formulation': formulation,
             'tasks_num': len(options),
             'multiselect': multiselect,
-            'with_images': False,
+            'type': QuestionType.REGULAR,
             'options': options
         })
     return parsed_questions_list

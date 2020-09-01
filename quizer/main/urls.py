@@ -10,6 +10,7 @@ urlpatterns = [
     url(r'^tests/$', views.get_tests, name='tests'),
 
     url(r'^add_subject_result/$', views.add_subject_result, name='add_subject_result'),
+    url(r'^load_subject_result/$', views.load_subject_result, name='load_subject_result'),
     url(r'^configure_subject/$', views.configure_subject, name='configure_subject'),
     path('edit_subject/<subject_id>', views.edit_subject, name='edit_subject'),
     url(r'^edit_subject_result/$', views.EditSubjectResultView.as_view(), name='edit_subject_result'),

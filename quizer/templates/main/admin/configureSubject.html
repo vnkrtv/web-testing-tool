@@ -62,14 +62,14 @@
 <div class="modal-window" data-modal="load-modal">
    <img class="modal__cross js-modal-close" src="{% close_icon %}">
    <h4>Загрузить предмет</h4>
-   <hr class="my hr4">  
-   <div>
+   <hr class="my hr4">
+   <form action="{% url 'main:load_subject_result' %}" enctype="multipart/form-data" method="post">
+   {% csrf_token %}
+      <div>
        <div>Выберите папку с тестами к предмету:
-            <input type="file" id="FileUpload" onchange="selectFolder(event)" webkitdirectory mozdirectory msdirectory odirectory directory multiple />
+            <input type="file" id="FileUpload" name='tests' onchange="selectFolder(event)" webkitdirectory mozdirectory msdirectory odirectory directory multiple />
+            <input type="hidden" id="filesNames" name='files_names' value="">
        </div>
-        <form action="{% url 'main:edit_subject_result' %}" method="post">
-        {% csrf_token %}
-        <input type="hidden" name="subject_id" id="subject_id" value="{{ subject.id }}">
         <hr>
           <div class="form-row">
             <div class="col-md-4 mb-3">
@@ -84,12 +84,12 @@
               <textarea class="form-control" rows="3" cols="30" id="subjectDescription" name="description"></textarea>
             </div>
           </div>
-        </form>
-   </div>
-   <div class="modal-footer">
-        <button type="button" class="btn btn-primary js-modal-close"><img class="js-modal-close" src="{% cancel_icon %}"> Закрыть</button>
-        <button class="btn btn-success" type="submit"><img src='{% download_icon %}'> Загрузить</button>
-   </div>
+      </div>
+     <div class="modal-footer">
+          <button type="button" class="btn btn-primary js-modal-close"><img class="js-modal-close" src="{% cancel_icon %}"> Закрыть</button>
+          <button class="btn btn-success" type="submit"><img src='{% download_icon %}'> Загрузить</button>
+     </div>
+   </form>
 </div>
 <div class="overlay js-overlay-modal"></div>
 
@@ -106,8 +106,13 @@
         let theFiles = e.target.files;
         let relativePath = theFiles[0].webkitRelativePath;
         let folder = relativePath.split("/");
+        let filesStr = '';
+        for (let filePath of theFiles) {
+            filesStr += (filePath.name.split('.')[0] + '<separator>');
+        }
+        document.querySelector('input#filesNames').value = filesStr.substr(0, filesStr.length - 11);
+        document.querySelector('input#subjectName.form-control').value = folder[0];
 
-        document.getElementById('subjectName').value = folder[0];
     }
 </script> 
 

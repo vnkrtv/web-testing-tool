@@ -2,7 +2,6 @@
 """
 Some utils for views
 """
-import os
 import logging
 import jwt
 import requests
@@ -10,6 +9,8 @@ from bson import ObjectId
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.http import HttpRequest
+from django.urls import reverse
+
 from .models import Test, Subject, QuestionType
 from .mongo import get_conn, QuestionsStorage
 
@@ -216,32 +217,47 @@ def parse_questions_file(file_name: str) -> list:
     return parse_questions(content)
 
 
-def parse_tests_folder(folder: str):
+def add_subject_with_tests(request: HttpRequest) -> dict:
+    """
+    Get information about new subject and test for it from HttpRequest object
+
+    :param request: <HttpRequest>
+    :return: response context
+    """
     storage = QuestionsStorage.connect(db=get_conn())
-    for folder in [f for f in os.listdir(folder) if os.path.isdir(os.path.join(folder, f))]:
 
-        logger.info('Найдена папка с тестами к предмету %s...' % folder)
-        subject = Subject(name=folder)
-        subject.save()
-        logger.info('Предмет %s добавлен в базу' % folder)
+    subject = Subject(
+        name=request.POST['name'],
+        description=request.POST['description'])
+    subject.save()
+    tests_count = 0
+    questions_count = 0
 
-        for test_file in [f for f in os.listdir(folder) if os.path.isfile(os.path.join(folder, f))]:
-
-            logger.info('Найден файл с тестом %s' % test_file)
-            duration = int(input("Длительность теста (в секундах): "))
-            tasks_num = int(input("Количество заданий: "))
-            test = Test(
-                name=test_file,
-                duration=duration,
-                tasks_num=tasks_num)
-            test.save()
-            logger.info('Тест %s по предмету %s добавлен в базу' % (test_file, folder))
-
-            try:
-                questions_list = parse_questions_file(test_file)
-                for question in questions_list:
-                    storage.add_one(question=question, test_id=test.id)
-                logger.info('%s вопросов к тесту %s по предмету %s добавлены в базу' %
-                            (len(questions_list), test_file, folder))
-            except UnicodeDecodeError:
-                logger.info('Ошибка при обработке файла с вопросами к тесту %s' % test_file)
+    files_names = request.POST['files_names'].split('<separator>')
+    for test_name, test_data in zip(files_names, request.FILES.getlist('tests')):
+        duration = 0
+        tasks_num = 0
+        test = Test(
+            name=test_name,
+            duration=duration,
+            tasks_num=tasks_num)
+        test.save()
+        tests_count += 1
+        try:
+            questions_list = parse_questions(test_data.read().decode('utf-8'))
+            for question in questions_list:
+                storage.add_one(question=question, test_id=test.id)
+            questions_count += len(questions_list)
+        except UnicodeDecodeError:
+            logger.error('UnicodeDecodeError - ошибка при обработке файла с вопросами к тесту %s' % test_name)
+        except InvalidFileFormatError:
+            logger.error('InvalidFileFormatError - ошибка при обработке файла с вопросами к тесту %s' % test_name)
+    message = "Предмет '%s', %d тестов и %d вопросов к ним успешно добавлены."
+    context = {
+        'title': 'Новый предмет | Quizer',
+        'message_title': 'Новый предмет',
+        'message': message % (subject.name, tests_count, questions_count),
+        'ref': reverse('main:configure_subject'),
+        'ref_message': 'Перейти к предметам',
+    }
+    return context

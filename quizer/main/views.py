@@ -19,6 +19,7 @@ from . import mongo
 from . import utils
 from .decorators import unauthenticated_user, allowed_users, post_method
 from .models import Test, Subject
+from .forms import SubjectForm, TestForm
 
 logger = logging.getLogger('quizer.main.views')
 
@@ -121,6 +122,17 @@ def add_subject_result(request):
         'ref': reverse('main:configure_subject'),
         'ref_message': 'Перейти к предметам',
     }
+    return render(request, 'main/lecturer/info.html', context)
+
+
+@post_method
+@unauthenticated_user
+@allowed_users(allowed_roles=['admin'])
+def load_subject_result(request):
+    """
+    Displays page with result of loading new subject with tests
+    """
+    context = utils.add_subject_with_tests(request)
     return render(request, 'main/lecturer/info.html', context)
 
 

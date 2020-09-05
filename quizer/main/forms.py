@@ -18,13 +18,13 @@ class BaseForm(forms.Form):
 
 
 class SubjectForm(BaseForm):
-    name = forms.CharField(label='Название предмета', max_length=100, required=True)
-    description = forms.CharField(label='Описание', widget=forms.Textarea)
+    name = forms.CharField(label='Название предмета', max_length=100)
+    description = forms.CharField(label='Описание', widget=forms.Textarea, required=False)
 
 
 class TestForm(BaseForm):
     subject = forms.ModelChoiceField(label='Автор', queryset=Subject.objects.all())
-    name = forms.CharField(label='Название теста', required=True)
-    description = forms.CharField(label='Описание', widget=forms.Textarea)
+    name = forms.CharField(label='Название теста')
+    description = forms.CharField(label='Описание', widget=forms.Textarea, required=False)
     tasks_num = forms.IntegerField(label='Количество заданий', min_value=1)
     duration = forms.IntegerField(label='Длительность теста в секундах', min_value=1)

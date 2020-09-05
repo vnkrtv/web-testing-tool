@@ -18,8 +18,15 @@ function selectFolder(e) {
 
 }
 
-function fillEditModal(subjectID, subjectName) {
+function fillEditModal(subjectID, subjectName, subjectDescription) {
+    const idInput = document.getElementById('edit-subject-id');
+    idInput.value = subjectID;
 
+    const nameInput = document.getElementById('edit-name');
+    nameInput.value = subjectName;
+
+    const descriptionInput = document.getElementById('edit-description');
+    descriptionInput.value = subjectDescription;
 }
 
 function fillDeleteModal(subjectID, subjectName) {

@@ -22,7 +22,7 @@
     <p>{{ subject.description }}</p>
     <p><img src='{% database_icon %}'> Тестов к предмету: {{ tests_count }}<br>
     <div class="btn-group mr-2">
-        <button class="btn btn-primary js-open-modal" data-modal="edit-modal" onclick='fillEditModal("{{ subject.id }}", "{{ subject.name }}")'><img src="{% edit_icon %}"> Редактировать</button>
+        <button class="btn btn-primary js-open-modal" data-modal="edit-modal" onclick='fillEditModal("{{ subject.id }}", "{{ subject.name }}", "{{ subject.description }}")'><img src="{% edit_icon %}"> Редактировать</button>
     </div>
     <div class="btn-group mr-2">
         <button class="btn btn-danger js-open-modal" data-modal="delete-modal" onclick='fillDeleteModal("{{ subject.id }}", "{{ subject.name }}")'><img src="{% delete_icon %}"> Удалить</button>
@@ -34,23 +34,23 @@
    <img class="modal__cross js-modal-close" src="{% close_icon %}">
    <h4>Новый предмет</h4>
    <hr class="my hr4">
-   <form action="{% url 'main:add_subject' %}" method="post">
+   <form action="{% url 'main:subjects' %}" method="post">
         <div>
-            {% csrf_token %}
-            <input type="hidden" name="subject_id" id="subject_id" value="{{ subject.id }}">
-              <div class="form-row">
-                <div class="col-md-4 mb-3">
-                    <label for="name">Название предмета
-                        <input type="text" class="form-control" id="subjectName" name="name" value="" required>
-                    </label>
-                </div>
+            {% csrf_token %} 
+            <div class="form-row">
+              <div class="col-md-4 mb-3">
+                  <label for="{{ form.name.id_for_label }}">Название предмета<br>
+                    {{ form.name }}
+                  </label>
               </div>
-              <div class="form-row">
-                 <div class="col-md-4 mb-3">
-                  <label for="description">Описание</label>
-                  <textarea class="form-control" rows="3" cols="30" id="description" name="description"></textarea>
-                </div>
+            </div>
+            <div class="form-row">
+               <div class="col-md-4 mb-3">
+                <label for="{{ form.description.id_for_label }}">Описание<br>
+                  {{ form.description }}
+                </label>
               </div>
+            </div>
         </div>
        <div class="modal-footer">
           <div class="btn btn-primary js-modal-close"><img src="{% cancel_icon %}"> Закрыть</div>
@@ -63,7 +63,7 @@
    <img class="modal__cross js-modal-close" src="{% close_icon %}">
    <h4>Загрузить предмет</h4>
    <hr class="my hr4">
-   <form action="{% url 'main:load_subject' %}" enctype="multipart/form-data" method="post">
+   <form action="{% url 'main:subjects' %}" enctype="multipart/form-data" method="post">
    {% csrf_token %}
       <div>
        <div>Выберите папку с тестами к предмету:
@@ -71,19 +71,23 @@
             <input type="hidden" id="filesNames" name='files_names' value="">
        </div>
         <hr>
-          <div class="form-row">
-            <div class="col-md-4 mb-3">
-                <label for="name">Название предмета
-                    <input type="text" class="form-control" id="subjectName" name="name" value="" required>
+          <div>
+            {% csrf_token %} 
+            <div class="form-row">
+              <div class="col-md-4 mb-3">
+                  <label for="{{ form.name.id_for_label }}">Название предмета<br>
+                    {{ form.name }}
+                  </label>
+              </div>
+            </div>
+            <div class="form-row">
+               <div class="col-md-4 mb-3">
+                <label for="{{ form.description.id_for_label }}">Описание<br>
+                  {{ form.description }}
                 </label>
+              </div>
             </div>
-          </div>
-          <div class="form-row">
-             <div class="col-md-4 mb-3">
-              <label for="description">Описание</label>
-              <textarea class="form-control" rows="3" cols="30" id="subjectDescription" name="description"></textarea>
-            </div>
-          </div>
+        </div>
       </div>
      <div class="modal-footer">
         <div class="btn btn-primary js-modal-close"><img src="{% cancel_icon %}"> Закрыть</div>
@@ -96,13 +100,13 @@
    <img class="modal__cross js-modal-close" src="{% close_icon %}">
    <h4>Удалить предмет</h4>
    <hr class="my hr4">
-   <form action="{% url 'main:delete_subject' %}" method="post">
+   <form action="{% url 'main:subjects' %}" method="post">
    {% csrf_token %}
     <p id='delete-p'></p>
     <input type="hidden" name="subject_id" id='delete-subject-id' value="">
      <div class="modal-footer">
         <div class="btn btn-primary js-modal-close"><img src='{% cancel_icon %}'> Закрыть</div>
-        <button class="btn btn-danger" name="del"><img src='{% delete_icon %}'> Удалить</button>
+        <button class="btn btn-danger" name="delete"><img src='{% delete_icon %}'> Удалить</button>
      </div>
    </form>
 </div>
@@ -111,20 +115,20 @@
    <img class="modal__cross js-modal-close" src="{% close_icon %}">
    <h4>Редактировать предмет</h4>
    <hr class="my hr4">
-   <form action="{% url 'main:edit_subject' %}" method="post">
+   <form action="{% url 'main:subjects' %}" method="post">
    {% csrf_token %}
-    <input type="hidden" name="subject_id" id="subject_id" value="{{ subject.id }}">
+    <input type="hidden" name="subject_id" id="edit-subject-id" value="">
       <div class="form-row">
         <div class="col-md-4 mb-3">
             <label for="name">Название предмета
-                <input type="text" class="form-control" id="name" name="name" value="{{ subject.name }}" required>
+                <input type="text" class="form-control" id="edit-name" name="name" value="" required>
             </label>
         </div>
       </div>
       <div class="form-row">
          <div class="col-md-4 mb-3">
           <label for="description">Описание</label>
-          <textarea class="form-control" rows="3" cols="30" id="description" name="description">{{ subject.description }}</textarea>
+          <textarea class="form-control" rows="3" cols="30" id="edit-description" name="description">{{ subject.description }}</textarea>
         </div>
       </div>
      <div class="modal-footer">

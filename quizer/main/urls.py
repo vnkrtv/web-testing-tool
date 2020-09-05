@@ -8,12 +8,7 @@ app_name = 'main'
 urlpatterns = [
     url(r'^$', views.login_page, name='login_page'),
     url(r'^tests/$', views.get_tests, name='tests'),
-
-    url(r'^add_subject/$', views.add_subject, name='add_subject'),
-    url(r'^load_subject/$', views.load_subject, name='load_subject'),
-    url(r'^configure_subject/$', views.configure_subject, name='configure_subject'),
-    url(r'^edit_subject_result/$', views.EditSubjectView.as_view(), name='edit_subject'),
-    url(r'^delete_subject_result/$', views.DeleteSubjectView.as_view(), name='delete_subject'),
+    url(r'^subjects/$', views.SubjectsView.as_view(), name='subjects'),
 
     url(r'^tests_results/$', views.tests_results, name='tests_results'),
     path('test_results/<test_result_id>', views.show_test_results, name='show_test_results'),
@@ -30,7 +25,6 @@ urlpatterns = [
     url(r'^add_question_result/$', views.add_question_result, name='add_question_result'),
     url(r'^load_questions_result/$', views.load_questions_result, name='load_questions_result'),
 
-    url(r'^marks/$', views.get_marks, name='marks'),
     url(r'^run_test/$', views.run_test, name='run_test'),
     url(r'^get_left_time/$', views.get_left_time, name='get_left_time'),
     url(r'^test_result/$', views.test_result, name='test_result')

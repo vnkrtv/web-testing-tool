@@ -9,10 +9,10 @@ from bson import ObjectId
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.http import HttpRequest
-from django.urls import reverse
 
 from .models import Test, Subject, QuestionType
 from .mongo import get_conn, QuestionsStorage
+from .forms import SubjectForm
 
 
 logger = logging.getLogger('quizer.main.utils')
@@ -272,20 +272,21 @@ def parse_questions_file(file_name: str) -> list:
     return parse_questions(content)
 
 
-def add_subject_with_tests(request: HttpRequest) -> dict:
+def add_subject_with_tests(request: HttpRequest, form: SubjectForm) -> str:
     """
     Get information about new subject and test for it from HttpRequest object
 
+    :param form: <SubjectForm>
     :param request: <HttpRequest>
-    :return: response context
+    :return: str with results of loading
     """
     storage = QuestionsStorage.connect(db=get_conn())
 
-    short_name = request.POST['name']
+    short_name = form.cleaned_data.get('name')
     name = SubjectParser.get_name(short_name)
     subject = Subject(
         name=name,
-        description=request.POST['description'])
+        description=form.cleaned_data.get('description'))
     subject.save()
     tests_count = 0
     questions_count = 0
@@ -310,11 +311,4 @@ def add_subject_with_tests(request: HttpRequest) -> dict:
         except InvalidFileFormatError:
             logger.error('InvalidFileFormatError - ошибка при обработке файла с вопросами к тесту %s' % test_name)
     message = "Предмет '%s', %d тестов и %d вопросов к ним успешно добавлены."
-    context = {
-        'title': 'Новый предмет | Quizer',
-        'message_title': 'Новый предмет',
-        'message': message % (subject.name, tests_count, questions_count),
-        'ref': reverse('main:configure_subject'),
-        'ref_message': 'Перейти к предметам',
-    }
-    return context
+    return message % (subject.name, tests_count, questions_count)

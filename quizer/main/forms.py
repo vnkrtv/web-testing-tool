@@ -23,7 +23,7 @@ class SubjectForm(BaseForm):
 
 
 class TestForm(BaseForm):
-    subject = forms.ModelChoiceField(label='Автор', queryset=Subject.objects.all())
+    subject = forms.ModelChoiceField(label='Предмет', queryset=Subject.objects.all(), empty_label=None)
     name = forms.CharField(label='Название теста')
     description = forms.CharField(label='Описание', widget=forms.Textarea, required=False)
     tasks_num = forms.IntegerField(label='Количество заданий', min_value=1)

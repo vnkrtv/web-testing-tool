@@ -68,14 +68,14 @@
       <div>
        <div>Выберите папку с тестами к предмету:
             <input type="file" id="FileUpload" name='tests' onchange="selectFolder(event)" webkitdirectory mozdirectory msdirectory odirectory directory multiple />
-            <input type="hidden" id="filesNames" name='files_names' value="">
+            <input type="hidden" id="filesNames" value="">
        </div>
         <hr>
           <div>
             {% csrf_token %} 
             <div class="form-row">
               <div class="col-md-4 mb-3">
-                  <label for="{{ form.name.id_for_label }}">Название предмета<br>
+                  <label for="{{ form.name.id_for_label }}" id='load-subject-name'>Название предмета<br>
                     {{ form.name }}
                   </label>
               </div>
@@ -154,7 +154,7 @@
 {% endif %}
 
 <script src="{% static 'main/js/modalWindow.js' %}"></script>
-<script src="{% static 'main/js/editSubjects.js' %}"></script>
+<script src="{% static 'main/js/managingSubjects.js' %}"></script>
 <script type="text/javascript">
   
 </script>

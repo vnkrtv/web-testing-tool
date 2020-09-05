@@ -31,11 +31,13 @@ function getDivElement(i, tests, staticPath) {
     btn_cont_5.className = "btn-group mr-1";
 
     const edit_btn = document.createElement('button');
-    edit_btn.className = "btn btn-primary";
+    edit_btn.className = "btn btn-primary js-open-modal";
     edit_btn.innerHTML = `<img src='${staticPath}main/images/edit.svg'> Редактировать`;
     edit_btn.id = `test_name_${tests[i].name}`;
     edit_btn.name = `test_name_${tests[i].id}`;
-    edit_btn.value = "edit_test_btn";
+    edit_btn.setAttribute('data-modal', 'edit-modal');
+    edit_btn.setAttribute('onclick',
+        `fillEditModal(${tests[i].id}, "${tests[i].name}", "${tests[i].description}", "${tests[i].tasks_num}", "${tests[i].duration}")`);
 
     const add_qstn_btn = document.createElement('button');
     add_qstn_btn.className = "btn btn-success";
@@ -59,11 +61,11 @@ function getDivElement(i, tests, staticPath) {
     del_qstn_btn.value = "del_qstn_btn";
 
     const del_test_btn = document.createElement('button');
-    del_test_btn.className = "btn btn-danger";
+    del_test_btn.className = "btn btn-danger js-open-modal";
     del_test_btn.innerHTML = `<img src='${staticPath}main/images/delete.svg'> Удалить тест`;
-    del_test_btn.id = `test_name_${tests[i].name}`;
-    del_test_btn.name = `test_name_${tests[i].id}`;
-    del_test_btn.value = "del_test_btn";
+    del_test_btn.setAttribute('data-modal', 'delete-modal');
+    del_test_btn.setAttribute('onclick',
+        `fillDeleteModal(${tests[i].id}, "${tests[i].name}")`);
 
     btn_cont_1.appendChild(edit_btn);
 
@@ -88,37 +90,63 @@ function getDivElement(i, tests, staticPath) {
     return container;
 }
 
+function fillEditModal(testID, testName, testDescription, testTasksNum, testDuration) {
+    const idInput = document.getElementById('edit-test-id');
+    idInput.value = testID;
+
+    const nameInput = document.getElementById('edit-test-name');
+    nameInput.value = testName;
+
+    const descriptionInput = document.getElementById('edit-test-description');
+    descriptionInput.value = testDescription;
+
+    const tasksNumInput = document.getElementById('edit-test-tasks-num');
+    tasksNumInput.value = testTasksNum;
+
+    const durationInput = document.getElementById('edit-test-duration');
+    durationInput.value = testDuration;
+}
+
+function fillDeleteModal(testID, testName) {
+    const deleteP = document.getElementById('delete-p');
+    deleteP.innerHTML = `Вы действительно хотите удалить тест '${testName}'?<br>
+ 		                 Тогда все связанные с ним вопросы будут удалены.`;
+
+    const deleteSubjectInput = document.getElementById('delete-test-id');
+    deleteSubjectInput.value = testID;
+}
+
 function main(testsJson, staticPath) {
     const tests = JSON.parse(testsJson.replace(/&quot;/gi, '"'));
-    const tests_count = parseInt(tests.length);
-    const tests_container = document.getElementById("tests_container");
+    const testsCount = parseInt(tests.length);
+    const testsContainer = document.getElementById("tests_container");
 
     const subject = document.getElementById("subject");
-    const name_filter = document.getElementById("name_filter");
+    const nameFilter = document.getElementById("name_filter");
 
-    for (let i = 0; i < tests_count; ++i) {
+    for (let i = 0; i < testsCount; ++i) {
         if (tests[i].subject.name == subject.options[0].text) {
-            tests_container.appendChild(getDivElement(i, tests, staticPath));
+            testsContainer.appendChild(getDivElement(i, tests, staticPath));
         }
     }
 
     subject.onkeyup = subject.onchange = () =>  {
-        tests_container.innerHTML = '';
-        for (let i = 0; i < tests_count; ++i) {
-            if (tests[i].name.includes(name_filter.value)) {
+        testsContainer.innerHTML = '';
+        for (let i = 0; i < testsCount; ++i) {
+            if (tests[i].name.includes(nameFilter.value)) {
                 if (tests[i].subject.name == subject.options[subject.selectedIndex].text) {
-                    tests_container.appendChild(getDivElement(i, tests, staticPath));
+                    testsContainer.appendChild(getDivElement(i, tests, staticPath));
                 }
             }
         }
     };
 
-    name_filter.onkeyup = name_filter.onchange = () =>  {
-        tests_container.innerHTML = '';
-        for (let i = 0; i < tests_count; ++i) {
-            if (tests[i].name.includes(name_filter.value)) {
+    nameFilter.onkeyup = nameFilter.onchange = () =>  {
+        testsContainer.innerHTML = '';
+        for (let i = 0; i < testsCount; ++i) {
+            if (tests[i].name.includes(nameFilter.value)) {
                 if (tests[i].subject.name == subject.options[subject.selectedIndex].text) {
-                    tests_container.appendChild(getDivElement(i, tests, staticPath));
+                    testsContainer.appendChild(getDivElement(i, tests, staticPath));
                 }
             }
         }

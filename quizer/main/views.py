@@ -25,7 +25,7 @@ logger = logging.getLogger('quizer.main.views')
 
 
 @unauthenticated_user
-def get_tests(request):
+def available_tests(request):
     """
     Page to which user is redirected after successful authorization
     For lecturer - displays list of tests that can be run
@@ -42,7 +42,7 @@ def get_tests(request):
             'subjects': list(Subject.objects.all()),
             'tests': json.dumps([t.to_dict() for t in not_running_tests]),
         }
-        return render(request, 'main/lecturer/tests.html', context)
+        return render(request, 'main/lecturer/availableTests.html', context)
     if len(running_tests_ids) == 0:
         context = {
             'title': 'Тесты | Quizer',
@@ -60,12 +60,12 @@ def get_tests(request):
             for test in running_tests
         ],
     }
-    return render(request, 'main/student/tests.html', context)
+    return render(request, 'main/student/availableTests.html', context)
 
 
 def login_page(request):
     """
-    Authorize user and redirect him to get_tests page
+    Authorize user and redirect him to available_tests page
     """
     logout(request)
     logger.error("login view - call utils.get_auth_data")
@@ -101,7 +101,7 @@ def login_page(request):
         host=settings.DATABASES['default']['HOST'],
         port=settings.DATABASES['default']['PORT'],
         db_name=settings.DATABASES['default']['NAME'])
-    return redirect(reverse('main:tests'))
+    return redirect(reverse('main:available_tests'))
 
 
 class SubjectsView(View):
@@ -113,12 +113,15 @@ class SubjectsView(View):
     @method_decorator(unauthenticated_user, allowed_users(allowed_roles=['admin']))
     def get(self, request):
         """Displays page with all subjects"""
-        self.context['title'] = self.title
-        self.context['form'] = SubjectForm()
-        self.context['subjects'] = [
-            (subject, Test.objects.filter(subject__id=subject.id).count())
-            for subject in Subject.objects.all()
-        ]
+        self.context = {
+            **self.context,
+            'title': self.title,
+            'form': SubjectForm(),
+            'subjects': [
+                (subject, Test.objects.filter(subject__id=subject.id).count())
+                for subject in Subject.objects.all()
+            ]
+        }
         return render(request, self.template, self.context)
 
     @method_decorator(unauthenticated_user, allowed_users(allowed_roles=['admin']))
@@ -135,7 +138,7 @@ class SubjectsView(View):
             self.load_subject(request, form)
         else:
             self.context = {}
-        return redirect(reverse('main:subjects'))
+        return self.get(request)
 
     def add_subject(self, form: SubjectForm) -> None:
         """Adding new study subject"""
@@ -199,6 +202,105 @@ class SubjectsView(View):
         }
 
 
+class TestsView(View):
+    """Configuring tests view"""
+    template = 'main/lecturer/tests.html'
+    title = 'Тесты | Quizer'
+    context = {}
+
+    @method_decorator(unauthenticated_user, allowed_users(allowed_roles=['lecturer']))
+    def get(self, request):
+        """Displays page with all tests"""
+        storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())
+        tests = [t.to_dict() for t in Test.objects.all()]
+        for test in tests:
+            test['questions_num'] = len(storage.get_many(test_id=test['id']))
+        self.context = {
+            **self.context,
+            'title': self.title,
+            'subjects': list(Subject.objects.all()),
+            'tests': json.dumps(tests),
+            'form': TestForm()
+        }
+        return render(request, self.template, self.context)
+
+    @method_decorator(unauthenticated_user, allowed_users(allowed_roles=['lecturer']))
+    def post(self, request):
+        """Configuring tests"""
+        form = TestForm(request.POST)
+        if 'add' in request.POST:
+            self.add_test(request, form)
+        elif 'edit' in request.POST:
+            self.edit_test(request)
+        elif 'delete' in request.POST:
+            self.delete_test(request)
+        elif 'load' in request.POST:
+            self.load_test(request, form)
+        else:
+            self.context = {}
+        return self.get(request)
+
+    def add_test(self, request, form: TestForm) -> None:
+        """Adding new test"""
+        if form.is_valid():
+            subject = form.cleaned_data['subject']
+            test = Test(
+                name=form.cleaned_data['test_name'],
+                author=request.user,
+                subject=subject,
+                description=form.cleaned_data['description'],
+                tasks_num=form.cleaned_data['tasks_num'],
+                duration=form.cleaned_data['duration'])
+            test.save()
+            self.context = {
+                'modal_title': 'Новый тест',
+                'modal_message': "Тест '%s' по предмету '%s' успешно добавлен." % (test.name, subject)
+            }
+        else:
+            self.context = {
+                'modal_title': 'Ошибка',
+                'modal_message': 'Форма добавления некорректно заполнена.'
+            }
+
+    def load_test(self, request, form: TestForm):
+        """Loading new test from text file"""
+        if form.is_valid():
+            self.context = {
+                'modal_title': 'Новый тест',
+                'modal_message': ''
+            }
+        else:
+            self.context = {
+                'modal_title': 'Ошибка',
+                'modal_message': 'Форма загрузки некорректно заполнена.'
+            }
+
+    def edit_test(self, request):
+        """Editing test"""
+        Test.objects.filter(id=request.POST['test_id']).update(**dict(
+            name=request.POST['name'],
+            author=request.user,
+            description=request.POST['description'],
+            tasks_num=request.POST['tasks_num'],
+            duration=request.POST['duration']))
+        self.context = {
+            'modal_title': 'Тест отредактирован',
+            'modal_message': "Тест '%s' успешно изменен." % request.POST['name']
+        }
+
+    def delete_test(self, request):
+        """Deleting test with all questions"""
+        test = Test.objects.get(id=request.POST['test_id'])
+        storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())
+        deleted_questions_count = storage.delete_many(test_id=test.id)
+        message = "Тест '%s' и %d вопросов к нему были успешно удалены."
+        self.context = {
+            'modal_title': 'Тест удален',
+            'modal_message': message % (test.name, deleted_questions_count)
+        }
+        Test.delete(test)
+
+
 @post_method
 @unauthenticated_user
 @allowed_users(allowed_roles=['lecturer'])
@@ -229,45 +331,6 @@ def run_test_result(request):
         'message': "Состояние его прохождения можно отследить во вкладке 'Запущенные тесты'",
         'ref': reverse('main:running_tests'),
         'ref_message': 'Перейти к запущенным тестам',
-    }
-    return render(request, 'main/lecturer/info.html', context)
-
-
-@unauthenticated_user
-@allowed_users(allowed_roles=['lecturer'])
-def add_test(request):
-    """
-    Displays page with an empty form for filling out information about new test
-    """
-    context = {
-        'title': 'Новый тест | Quizer',
-        'subjects': list(Subject.objects.all())
-    }
-    return render(request, 'main/lecturer/addTest.html', context)
-
-
-@post_method
-@unauthenticated_user
-@allowed_users(allowed_roles=['lecturer'])
-def add_test_result(request):
-    """
-    Displays page with result of adding new test
-    """
-    subject = request.POST['subject']
-    test = Test(
-        name=request.POST['test_name'],
-        author=request.user,
-        subject=Subject.objects.get(name=subject),
-        description=request.POST['description'],
-        tasks_num=request.POST['tasks_num'],
-        duration=request.POST['duration'])
-    test.save()
-    context = {
-        'title': 'Новый тест | Quizer',
-        'message_title': 'Новый тест',
-        'message': "Тест '%s' по предмету '%s' успешно добавлен." % (test.name, subject),
-        'ref': reverse('main:edit_test'),
-        'ref_message': 'Перейти к тестам',
     }
     return render(request, 'main/lecturer/info.html', context)
 
@@ -366,25 +429,6 @@ def show_test_results(request, test_result_id):
     return render(request, 'main/lecturer/testingResults.html', context)
 
 
-@unauthenticated_user
-@allowed_users(allowed_roles=['lecturer'])
-def edit_test(request):
-    """
-    Displays page with all tests
-    """
-    storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())
-    tests = [t.to_dict() for t in Test.objects.all()]
-    for test in tests:
-        test['questions_num'] = len(storage.get_many(test_id=test['id']))
-
-    context = {
-        'title': 'Редактировать тест | Quizer',
-        'subjects': list(Subject.objects.all()),
-        'tests': json.dumps(tests)
-    }
-    return render(request, 'main/lecturer/editTest.html', context)
-
-
 @post_method
 @unauthenticated_user
 @allowed_users(allowed_roles=['lecturer'])
@@ -421,29 +465,6 @@ def edit_test_redirect(request):
 @post_method
 @unauthenticated_user
 @allowed_users(allowed_roles=['lecturer'])
-def edit_test_result(request):
-    """
-    Displays page with result of editing test
-    """
-    Test.objects.filter(id=request.POST['test_id']).update(**dict(
-        name=request.POST['test_name'],
-        author=request.user,
-        description=request.POST['description'],
-        tasks_num=request.POST['tasks_num'],
-        duration=request.POST['duration']))
-    context = {
-        'title': 'Тест отредактирован | Quizer',
-        'message_title': 'Редактиктирование теста',
-        'message': "Тест '%s' успешно изменен." % request.POST['test_name'],
-        'ref': reverse('main:edit_test'),
-        'ref_message': 'Перейти к тестам',
-    }
-    return render(request, 'main/lecturer/info.html', context)
-
-
-@post_method
-@unauthenticated_user
-@allowed_users(allowed_roles=['lecturer'])
 def delete_questions_result(request):
     """
     Displays page with result of deleting questions
@@ -460,33 +481,10 @@ def delete_questions_result(request):
         'title': 'Вопросы удалены | Quizer',
         'message_title': 'Результат удаления',
         'message': "Вопросы к тесту '%s' в количестве %d были успешно удалены." % (test.name, len(request_dict)),
-        'ref': reverse('main:edit_test'),
+        'ref': reverse('main:tests'),
         'ref_message': 'Перейти к тестам',
     }
     return render(request, 'main/lecturer/info.html', context)
-
-
-@post_method
-@unauthenticated_user
-@allowed_users(allowed_roles=['lecturer'])
-def delete_test_result(request):
-    """
-    Displays page with result of deleting test
-    """
-    test = Test.objects.get(id=request.POST['test_id'])
-    if 'del' in request.POST:
-        storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())
-        deleted_questions_count = storage.delete_many(test_id=test.id)
-        context = {
-            'title': 'Тест удален | Quizer',
-            'message_title': 'Результат удаления',
-            'message': "Тест '%s' и %d вопросов к нему были успешно удалены." % (test.name, deleted_questions_count),
-            'ref': reverse('main:edit_test'),
-            'ref_message': 'Перейти к тестам',
-        }
-        Test.delete(test)
-        return render(request, 'main/lecturer/info.html', context)
-    return redirect(reverse('main:edit_test'))
 
 
 @post_method
@@ -516,7 +514,7 @@ def add_question_result(request):
         'title': 'Вопрос добавлен | Quizer',
         'message_title': 'Новый вопрос',
         'message': "Вопрос '%s' к тесту '%s' успешно добавлен." % (question['formulation'], test.name),
-        'ref': reverse('main:edit_test'),
+        'ref': reverse('main:tests'),
         'ref_message': 'Перейти к тестам',
     }
     return render(request, 'main/lecturer/info.html', context)
@@ -542,7 +540,7 @@ def load_questions_result(request):
             'title': 'Ошибка | Quizer',
             'message_title': 'Ошибка',
             'message': 'Файл некорректного формата.',
-            'ref': reverse('main:edit_test'),
+            'ref': reverse('main:tests'),
             'ref_message': 'Перейти к тестам',
         }
         return render(request, 'main/lecturer/info.html', context)
@@ -551,7 +549,7 @@ def load_questions_result(request):
         'title': 'Вопросы загружены | Quizer',
         'message_title': 'Новые вопросы',
         'message': "Вопросы к тесту '%s' в количестве %d успешно добавлены." % (test.name, len(questions_list)),
-        'ref': reverse('main:edit_test'),
+        'ref': reverse('main:tests'),
         'ref_message': 'Перейти к тестам',
     }
     return render(request, 'main/lecturer/info.html', context)

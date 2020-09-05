@@ -7,20 +7,15 @@
 {% load main_extras %}
 
  	<div class='jumbotron'>
-		<h2>Тесты</h2><br>
+ 		<h2>Доступные для запуска тесты</h2><br>
  		<div>
  			<div class="row">
 				<div class="col-sm">
-					<p>Здесь отображаются все добавленные тесты.</p>
+					<p>Запустите тест, чтобы слушатели могли приступить к его выполнению.<br>
+ 					Запущенные тесты отображаются во вкладке 'Запущенные тесты'.</p>
 				</div>
 			</div>
-			<div class="btn-group mr-1">
-				<a class="btn btn-success" type="submit" href="{% url 'main:add_test' %}"><img src='{% add_icon %}'> Добавить тест</a>
-			</div>
-			<div class="btn-group mr-1">
-				<a class="btn btn-success" type="submit" href=""><img src='{% download_icon %}'> Загрузить тест</a>
-			</div>
-			<hr>
+			<hr class="my-4">
 			<div class="row">
 				<div class="col-sm">
 					<label class="my-1 mr-2">Предмет
@@ -40,13 +35,13 @@
 		      	</div>
 	  		</div>
 	    </div>
-	    <form action="{% url 'main:edit_test_redirect' %}" method="post">
+	    <form action="{% url 'main:run_test_result' %}" method="post">
 	    	{% csrf_token %}
 	    	<div id='tests_container'></div>
 	    </form>
  	</div>
 
-<script src="{% static 'main/js/editTests.js' %}"></script>
+<script src="{% static 'main/js/lecturerTests.js' %}"></script>
 <script type="text/javascript">
 	main('{{ tests }}', '{% static_url %}');
 </script>

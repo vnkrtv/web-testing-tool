@@ -13,8 +13,8 @@ function selectFolder(e) {
     for (let filePath of theFiles) {
         filesStr += (filePath.name.split('.')[0] + '<separator>');
     }
-    document.querySelector('input#filesNames').value = filesStr.substr(0, filesStr.length - 11);
-    document.querySelector('input#subjectName.form-control').value = folder[0];
+    document.getElementById('filesNames').value = filesStr.substr(0, filesStr.length - 11);
+    document.getElementById('load-subject-name').children[1].value = folder[0];
 
 }
 

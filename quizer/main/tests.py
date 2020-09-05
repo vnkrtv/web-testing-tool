@@ -265,7 +265,7 @@ class AccessRightsTest(MainTest):
             username=self.student.username,
             password=''
         )
-        response = client.post(reverse('main:edit_test'), {
+        response = client.post(reverse('main:tests'), {
             'username': self.student.username,
             'password': ''
         }, follow=True)
@@ -351,7 +351,7 @@ class TestEditingTest(MainTest):
             username=self.student.username,
             password=''
         )
-        response = client.post(reverse('main:edit_test'), {}, follow=True)
+        response = client.post(reverse('main:tests'), {}, follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'You are not permitted to see this page.')
 
@@ -364,7 +364,7 @@ class TestEditingTest(MainTest):
             username=self.lecturer.username,
             password=''
         )
-        response = client.post(reverse('main:edit_test'), {}, follow=True)
+        response = client.post(reverse('main:tests'), {}, follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Тесты')
 
@@ -405,7 +405,7 @@ class TestEditingTest(MainTest):
             username=self.lecturer.username,
             password=''
         )
-        response = client.post(reverse('main:edit_test'), {}, follow=True)
+        response = client.post(reverse('main:tests'), {}, follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Тесты')
 
@@ -436,7 +436,7 @@ class TestEditingTest(MainTest):
             username=self.lecturer.username,
             password=''
         )
-        response = client.post(reverse('main:edit_test'), {}, follow=True)
+        response = client.post(reverse('main:tests'), {}, follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Тесты')
 
@@ -479,7 +479,7 @@ class LoadingQuestionsTest(MainTest):
             username=self.lecturer.username,
             password=''
         )
-        response = client.post(reverse('main:edit_test'), {}, follow=True)
+        response = client.post(reverse('main:tests'), {}, follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Тесты')
 
@@ -526,7 +526,7 @@ class AddQuestionTest(MainTest):
             username=self.lecturer.username,
             password=''
         )
-        response = client.post(reverse('main:edit_test'), {}, follow=True)
+        response = client.post(reverse('main:tests'), {}, follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Тесты')
 

@@ -150,6 +150,64 @@
    </form>
 </div>
 
+<div class="modal-window" data-modal="add-question-modal">
+   <img class="modal__cross js-modal-close" src="{% close_icon %}">
+   <h4>Добавить вопрос</h4>
+   <hr class="my hr4">
+   <form action="{% url 'main:tests' %}" enctype="multipart/form-data" method="post">
+   {% csrf_token %}
+		<input type="hidden" name="test_id" id='add-question-test-id' value="">
+	    <div class="form-row">
+		  	<div class="col-md-4 mb-3">
+		  		<label for="question">Формулировка вопроса
+		      		<input type="text" class="form-control" name="question" required>
+		      	</label>
+			    <div class="custom-control custom-checkbox my-1 mr-sm-2">
+			    	<input type="checkbox" class="custom-control-input" id="multiselect" name="multiselect">
+			    	<label class="custom-control-label" for="multiselect">Мультивыбор</label>
+			    </div>
+			    <div class="custom-control custom-checkbox my-1 mr-sm-2">
+			    	<input type="checkbox" class="custom-control-input" id="with_images" name="with_images">
+			    	<label class="custom-control-label" for="with_images">Фотографии</label>
+			    </div>
+		  	</div>
+	    </div>
+	    <div class="form-row">
+	        <div class="col-md-4 mb-3">
+	        	<label for="tasks_num">Число вариантов</label>
+	        	<input type="number" class="form-control" name="tasks_num" id='add-question-tasks-num' min="2" required>
+	    	</div>
+	    </div>
+	    <div id="add-question-questions-div"></div><br>
+		<div class="modal-footer">
+		   <div class="btn btn-primary js-modal-close"><img src='{% cancel_icon %}'> Закрыть</div>
+		   <button class="btn btn-success" name="add-question"><img src='{% add_icon %}'> Добавить</button>
+		</div>
+   </form>
+</div>
+
+<div class="modal-window" data-modal="load-questions-modal">
+   <img class="modal__cross js-modal-close" src="{% close_icon %}">
+   <h4>Загрузить вопросы</h4>
+   <hr class="my hr4">
+   <form action="{% url 'main:tests' %}" enctype="multipart/form-data" method="post">
+   {% csrf_token %}
+	<input type="hidden" name="test_id" id='load-questions-test-id' value="">
+    <div class="form-row">
+  	    <div class="col-md-4 mb-3">
+		    <div class="form-group">
+		  		<label for="file">Выберите файл</label>
+		    	<input type="file" class="form-control-file" id="file" name="file" required="required"> 
+		    </div>
+  	    </div>
+    </div>
+     <div class="modal-footer">
+        <div class="btn btn-primary js-modal-close"><img src='{% cancel_icon %}'> Закрыть</div>
+        <button class="btn btn-success" name="load-questions"><img src='{% download_icon %}'> Загрузить</button>
+     </div>
+   </form>
+</div>
+
 {% if modal_title %}
     <div class="modal-window active" data-modal="info-modal">
        <img class="modal__cross js-modal-close" src="{% close_icon %}">
@@ -166,9 +224,11 @@
 {% endif %}
 
 <script src="{% static 'main/js/modalWindow.js' %}"></script>
+<script src="{% static 'main/js/addQuestion.js' %}"></script>
 <script src="{% static 'main/js/managingTests.js' %}"></script>
 <script type="text/javascript">
 	main('{{ tests }}', '{% static_url %}');
+	addQuestionMain();
 </script>
 
 {% endblock %}

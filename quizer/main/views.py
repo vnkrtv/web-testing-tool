@@ -230,12 +230,18 @@ class TestsView(View):
         form = TestForm(request.POST)
         if 'add' in request.POST:
             self.add_test(request, form)
+        elif 'load' in request.POST:
+            self.load_test(request, form)
         elif 'edit' in request.POST:
             self.edit_test(request)
         elif 'delete' in request.POST:
             self.delete_test(request)
-        elif 'load' in request.POST:
-            self.load_test(request, form)
+        elif 'add-question' in request.POST:
+            self.add_question(request)
+        elif 'load-questions' in request.POST:
+            self.load_questions(request)
+        elif 'delete-questions' in request.POST:
+            self.delete_questions(request)
         else:
             self.context = {}
         return self.get(request)
@@ -299,6 +305,52 @@ class TestsView(View):
             'modal_message': message % (test.name, deleted_questions_count)
         }
         Test.delete(test)
+
+    def add_question(self, request):
+        """Adding new question for test"""
+        test = Test.objects.get(id=int(request.POST['test_id']))
+        try:
+            question = utils.parse_question_form(
+                request=request,
+                test=test)
+            storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())
+            storage.add_one(
+                question=question,
+                test_id=test.id)
+            message = "Вопрос '%s' к тесту '%s' успешно добавлен."
+            self.context = {
+                'modal_title': 'Вопрос добавлен',
+                'modal_message': message % (question['formulation'], test.name)
+            }
+        except KeyError:
+            self.context = {
+                'modal_title': 'Ошибка',
+                'modal_message': 'Форма некорректно заполнена'
+            }
+
+    def load_questions(self, request):
+        """Loading questions from file"""
+        test = Test.objects.get(id=int(request.POST['test_id']))
+        try:
+            questions_list = utils.get_questions_list(request)
+            storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())
+            for question in questions_list:
+                storage.add_one(
+                    question=question,
+                    test_id=test.id)
+            message = "Вопросы к тесту '%s' в количестве %d успешно добавлены."
+            self.context = {
+                'modal_title': 'Вопросы загружены',
+                'modal_message': message % (test.name, len(questions_list))
+            }
+        except utils.InvalidFileFormatError:
+            self.context = {
+                'modal_title': 'Ошибка',
+                'modal_message': 'Файл некорректного формата.'
+            }
+
+    def delete_questions(self, request):
+        pass
 
 
 @post_method
@@ -432,39 +484,6 @@ def show_test_results(request, test_result_id):
 @post_method
 @unauthenticated_user
 @allowed_users(allowed_roles=['lecturer'])
-def edit_test_redirect(request):
-    """
-    Redirecting 'lecturer' to specific page depending on his choose
-    """
-    key = [key for key in request.POST if 'test_name_' in key][0]
-    test_id = int(key.split('test_name_')[1])
-    test = Test.objects.get(id=test_id)
-    storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())
-    questions = [question['formulation'] for question in storage.get_many(test_id=test.id)]
-    context = {
-        'test': test,
-        'questions': questions,
-        'title': {
-            'edit_test_btn': 'Редактировать тест | Quizer',
-            'add_qstn_btn': 'Добавить вопрос | Quizer',
-            'load_qstn_btn': 'Загрузить вопросы | Quizer',
-            'del_test_btn': 'Удалить тест | Quizer',
-            'del_qstn_btn': 'Удалить вопросы | Quizer'
-        }[request.POST[key]]
-    }
-    template = {
-        'edit_test_btn': 'editingTestPage',
-        'add_qstn_btn': 'addQuestion',
-        'load_qstn_btn': 'loadQuestions',
-        'del_test_btn': 'deleteTestPage',
-        'del_qstn_btn': 'deleteQuestionPage'
-    }[request.POST[key]]
-    return render(request, f'main/lecturer/{template}.html', context)
-
-
-@post_method
-@unauthenticated_user
-@allowed_users(allowed_roles=['lecturer'])
 def delete_questions_result(request):
     """
     Displays page with result of deleting questions
@@ -481,74 +500,6 @@ def delete_questions_result(request):
         'title': 'Вопросы удалены | Quizer',
         'message_title': 'Результат удаления',
         'message': "Вопросы к тесту '%s' в количестве %d были успешно удалены." % (test.name, len(request_dict)),
-        'ref': reverse('main:tests'),
-        'ref_message': 'Перейти к тестам',
-    }
-    return render(request, 'main/lecturer/info.html', context)
-
-
-@post_method
-@unauthenticated_user
-@allowed_users(allowed_roles=['lecturer'])
-def add_question_result(request):
-    """
-    Displays page with result of adding new question
-    """
-    test = Test.objects.get(id=int(request.POST['test_id']))
-    try:
-        question = utils.parse_question_form(
-            request=request,
-            test=test)
-        mdb = mongo.QuestionsStorage.connect(db=mongo.get_conn())
-        mdb.add_one(
-            question=question,
-            test_id=test.id)
-    except KeyError:
-        context = {
-            'title': 'Ошибка | Quizer',
-            'message_title': 'Ошибка',
-            'message': 'Форма некорректно заполнена',
-        }
-        return render(request, 'main/lecturer/info.html', context)
-    context = {
-        'title': 'Вопрос добавлен | Quizer',
-        'message_title': 'Новый вопрос',
-        'message': "Вопрос '%s' к тесту '%s' успешно добавлен." % (question['formulation'], test.name),
-        'ref': reverse('main:tests'),
-        'ref_message': 'Перейти к тестам',
-    }
-    return render(request, 'main/lecturer/info.html', context)
-
-
-@post_method
-@unauthenticated_user
-@allowed_users(allowed_roles=['lecturer'])
-def load_questions_result(request):
-    """
-    Displays result of loading questions from file
-    """
-    test = Test.objects.get(id=int(request.POST['test_id']))
-    try:
-        questions_list = utils.get_questions_list(request)
-        storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())
-        for question in questions_list:
-            storage.add_one(
-                question=question,
-                test_id=test.id)
-    except utils.InvalidFileFormatError:
-        context = {
-            'title': 'Ошибка | Quizer',
-            'message_title': 'Ошибка',
-            'message': 'Файл некорректного формата.',
-            'ref': reverse('main:tests'),
-            'ref_message': 'Перейти к тестам',
-        }
-        return render(request, 'main/lecturer/info.html', context)
-
-    context = {
-        'title': 'Вопросы загружены | Quizer',
-        'message_title': 'Новые вопросы',
-        'message': "Вопросы к тесту '%s' в количестве %d успешно добавлены." % (test.name, len(questions_list)),
         'ref': reverse('main:tests'),
         'ref_message': 'Перейти к тестам',
     }

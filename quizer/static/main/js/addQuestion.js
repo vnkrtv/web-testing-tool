@@ -195,10 +195,10 @@ function getQuestionsWithMultiselectAndImages(i) {
     return container;
 }
 
-function main() {
-    const questions = document.getElementById('questions');
+function addQuestionMain() {
+    const questions = document.getElementById('add-question-questions-div');
 
-    const tasks_num = document.getElementById('tasks_num');
+    const tasks_num = document.getElementById('add-question-tasks-num');
     tasks_num.onkeyup = tasks_num.onchange = () => {
         const count = +(tasks_num.value);
         questions.innerHTML = '';

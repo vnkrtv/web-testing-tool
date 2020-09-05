@@ -16,10 +16,7 @@ urlpatterns = [
     url(r'^run_new_test/$', views.run_test_result, name='run_test_result'),
     url(r'^running_tests/$', views.get_running_tests, name='running_tests'),
     url(r'^stop_running_test/$', views.stop_running_test, name='stop_running_test'),
-    url(r'^editing_test/$', views.edit_test_redirect, name='edit_test_redirect'),
     url(r'^delete_questions_result/$', views.delete_questions_result, name='delete_questions_result'),
-    url(r'^add_question_result/$', views.add_question_result, name='add_question_result'),
-    url(r'^load_questions_result/$', views.load_questions_result, name='load_questions_result'),
 
     url(r'^run_test/$', views.run_test, name='run_test'),
     url(r'^get_left_time/$', views.get_left_time, name='get_left_time'),

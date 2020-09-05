@@ -1,7 +1,6 @@
 !function(e){"function"!=typeof e.matches&&(e.matches=e.msMatchesSelector||e.mozMatchesSelector||e.webkitMatchesSelector||function(e){for(var t=this,o=(t.document||t.ownerDocument).querySelectorAll(e),n=0;o[n]&&o[n]!==t;)++n;return Boolean(o[n])}),"function"!=typeof e.closest&&(e.closest=function(e){for(var t=this;t&&1===t.nodeType;){if(t.matches(e))return t;t=t.parentNode}return null})}(window.Element.prototype);
 
-document.addEventListener('DOMContentLoaded', function() {
-
+function activateModalWindows() {
     const modalButtons = document.querySelectorAll('.js-open-modal');
     const overlay      = document.querySelector('.js-overlay-modal');
     const closeButtons = document.querySelectorAll('.js-modal-close');
@@ -44,15 +43,14 @@ document.addEventListener('DOMContentLoaded', function() {
     document.body.addEventListener('keyup', function (e) {
         let key = e.keyCode;
 
-            if (key === 27) {
-                document.querySelector('.modal-window.active').classList.remove('active');
-                document.querySelector('.overlay').classList.remove('active');
-        };
+        if (key === 27) {
+            document.querySelector('.modal-window.active').classList.remove('active');
+            document.querySelector('.overlay').classList.remove('active');
+        }
     }, false);
 
     overlay.addEventListener('click', function() {
         document.querySelector('.modal-window.active').classList.remove('active');
         this.classList.remove('active');
     });
-
-}); // end ready
+}

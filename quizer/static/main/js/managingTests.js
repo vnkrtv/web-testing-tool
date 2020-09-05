@@ -33,28 +33,24 @@ function getDivElement(i, tests, staticPath) {
     const edit_btn = document.createElement('button');
     edit_btn.className = "btn btn-primary js-open-modal";
     edit_btn.innerHTML = `<img src='${staticPath}main/images/edit.svg'> Редактировать`;
-    edit_btn.id = `test_name_${tests[i].name}`;
-    edit_btn.name = `test_name_${tests[i].id}`;
     edit_btn.setAttribute('data-modal', 'edit-modal');
     edit_btn.setAttribute('onclick',
         `fillEditModal(${tests[i].id}, "${tests[i].name}", "${tests[i].description}", "${tests[i].tasks_num}", "${tests[i].duration}")`);
 
     const add_qstn_btn = document.createElement('button');
-    add_qstn_btn.className = "btn btn-success";
+    add_qstn_btn.className = "btn btn-success js-open-modal";
     add_qstn_btn.innerHTML = `<img src='${staticPath}main/images/add.svg'> Добавить вопрос`;
-    add_qstn_btn.id = `test_name_${tests[i].name}`;
-    add_qstn_btn.name = `test_name_${tests[i].id}`;
-    add_qstn_btn.value = "add_qstn_btn";
+    add_qstn_btn.setAttribute('data-modal', 'add-question-modal');
+    add_qstn_btn.setAttribute('onclick', `fillAddQuestionModal(${tests[i].id})`);
 
     const load_qstn_btn = document.createElement('button');
-    load_qstn_btn.className = "btn btn-success";
+    load_qstn_btn.className = "btn btn-success js-open-modal";
     load_qstn_btn.innerHTML = `<img src='${staticPath}main/images/download.svg'> Загрузить вопросы`;
-    load_qstn_btn.id = `test_name_${tests[i].name}`;
-    load_qstn_btn.name = `test_name_${tests[i].id}`;
-    load_qstn_btn.value = "load_qstn_btn";
+    load_qstn_btn.setAttribute('data-modal', 'load-questions-modal');
+    load_qstn_btn.setAttribute('onclick', `fillLoadQuestionsModal(${tests[i].id})`);
 
     const del_qstn_btn = document.createElement('button');
-    del_qstn_btn.className = "btn btn-danger";
+    del_qstn_btn.className = "btn btn-danger js-open-modal";
     del_qstn_btn.innerHTML = `<img src='${staticPath}main/images/delete.svg'> Удалить вопросы`;
     del_qstn_btn.id = `test_name_${tests[i].name}`;
     del_qstn_btn.name = `test_name_${tests[i].id}`;
@@ -112,8 +108,18 @@ function fillDeleteModal(testID, testName) {
     deleteP.innerHTML = `Вы действительно хотите удалить тест '${testName}'?<br>
  		                 Тогда все связанные с ним вопросы будут удалены.`;
 
-    const deleteSubjectInput = document.getElementById('delete-test-id');
-    deleteSubjectInput.value = testID;
+    const deleteTestInput = document.getElementById('delete-test-id');
+    deleteTestInput.value = testID;
+}
+
+function fillAddQuestionModal(testID) {
+    const testIDInput = document.getElementById('add-question-test-id');
+    testIDInput.value = testID;
+}
+
+function fillLoadQuestionsModal(testID) {
+    const testIDInput = document.getElementById('load-questions-test-id');
+    testIDInput.value = testID;
 }
 
 function main(testsJson, staticPath) {
@@ -129,6 +135,7 @@ function main(testsJson, staticPath) {
             testsContainer.appendChild(getDivElement(i, tests, staticPath));
         }
     }
+    activateModalWindows();
 
     subject.onkeyup = subject.onchange = () =>  {
         testsContainer.innerHTML = '';
@@ -139,6 +146,7 @@ function main(testsJson, staticPath) {
                 }
             }
         }
+        activateModalWindows();
     };
 
     nameFilter.onkeyup = nameFilter.onchange = () =>  {
@@ -150,5 +158,6 @@ function main(testsJson, staticPath) {
                 }
             }
         }
+        activateModalWindows();
     };
 }

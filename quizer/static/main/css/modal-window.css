@@ -27,6 +27,8 @@
    /*  Установаем ширину окна  */
    width: 100%;
    max-width: 1000px;
+   overflow: auto;
+   max-height: 80vh;
 
    /*  Центрируем и задаем z-index */
    position: fixed;

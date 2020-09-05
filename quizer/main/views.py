@@ -104,10 +104,57 @@ def login_page(request):
     return redirect(reverse('main:tests'))
 
 
+class ConfigureSubjectsView(View):
+    """Configuring study subject view"""
+    context = {
+        'template': 'main/admin/configureSubject.html',
+        'title': 'Учебные предметы | Quizer'
+    }
+
+    @method_decorator(unauthenticated_user, allowed_users(allowed_roles=['admin']))
+    def get(self, request):
+        """Displays page with all subjects"""
+        self.context['subjects'] = [
+            (subject, Test.objects.filter(subject__id=subject.id).count())
+            for subject in Subject.objects.all()
+        ]
+        return render(request, 'main/admin/configureSubject.html', self.context)
+
+    @method_decorator(unauthenticated_user, allowed_users(allowed_roles=['admin']))
+    def post(self, request):
+        """Configuring subjects"""
+        if 'add' in request.POST:
+            self.add_subject(request)
+        elif 'load' in request.POST:
+            pass
+        elif 'edit' in request.POST:
+            pass
+        elif 'delete' in request.POST:
+            pass
+        else:
+            return self.get(request)
+
+    def add_subject(self, request):
+        """Add new study subject"""
+        subject = Subject(
+            name=request.POST['name'],
+            description=request.POST['description'])
+        subject.save()
+        context = {
+            'title': 'Новый предмет | Quizer',
+            'message_title': 'Новый предмет',
+            'message': "Предмет '%s' успешно добавлен." % subject.name,
+            'ref': reverse('main:configure_subject'),
+            'ref_message': 'Перейти к предметам',
+        }
+        return render(request, 'main/lecturer/info.html', context)
+
+
+
 @post_method
 @unauthenticated_user
 @allowed_users(allowed_roles=['admin'])
-def add_subject_result(request):
+def add_subject(request):
     """
     Displays page with result of adding new subject
     """
@@ -128,7 +175,7 @@ def add_subject_result(request):
 @post_method
 @unauthenticated_user
 @allowed_users(allowed_roles=['admin'])
-def load_subject_result(request):
+def load_subject(request):
     """
     Displays page with result of loading new subject with tests
     """
@@ -152,23 +199,7 @@ def configure_subject(request):
     return render(request, 'main/admin/configureSubject.html', context)
 
 
-@unauthenticated_user
-@allowed_users(allowed_roles=['admin'])
-def edit_subject(request, subject_id: int):
-    """
-    Displays editing study subject page
-    """
-    query = Subject.objects.filter(id=subject_id)
-    if query:
-        context = {
-            'title': 'Редактировать тест | Quizer',
-            'subject': query[0]
-        }
-        return render(request, 'main/admin/editSubject.html', context)
-    return redirect(reverse('main:configure_subject'))
-
-
-class EditSubjectResultView(View):
+class EditSubjectView(View):
     """Displays result of editing study subject"""
     template = 'main/lecturer/info.html'
     title = 'Предмет отредактирован | Quizer'
@@ -198,23 +229,7 @@ class EditSubjectResultView(View):
         return redirect(reverse('main:configure_subject'))
 
 
-@unauthenticated_user
-@allowed_users(allowed_roles=['admin'])
-def delete_subject(request, subject_id: int):
-    """
-    Displays deleting study subject page
-    """
-    query = Subject.objects.filter(id=subject_id)
-    if query:
-        context = {
-            'title': 'Удалить тест | Quizer',
-            'subject': query[0]
-        }
-        return render(request, 'main/admin/deleteSubject.html', context)
-    return redirect(reverse('main:configure_subject'))
-
-
-class DeleteSubjectResultView(View):
+class DeleteSubjectView(View):
     """Displays result of deleting study subject"""
     template = 'main/lecturer/info.html'
     title = 'Удалить тест | Quizer'

@@ -9,13 +9,11 @@ urlpatterns = [
     url(r'^$', views.login_page, name='login_page'),
     url(r'^tests/$', views.get_tests, name='tests'),
 
-    url(r'^add_subject_result/$', views.add_subject_result, name='add_subject_result'),
-    url(r'^load_subject_result/$', views.load_subject_result, name='load_subject_result'),
+    url(r'^add_subject/$', views.add_subject, name='add_subject'),
+    url(r'^load_subject/$', views.load_subject, name='load_subject'),
     url(r'^configure_subject/$', views.configure_subject, name='configure_subject'),
-    path('edit_subject/<subject_id>', views.edit_subject, name='edit_subject'),
-    url(r'^edit_subject_result/$', views.EditSubjectResultView.as_view(), name='edit_subject_result'),
-    path('delete_subject/<subject_id>', views.delete_subject, name='delete_subject'),
-    url(r'^delete_subject_result/$', views.DeleteSubjectResultView.as_view(), name='delete_subject_result'),
+    url(r'^edit_subject_result/$', views.EditSubjectView.as_view(), name='edit_subject'),
+    url(r'^delete_subject_result/$', views.DeleteSubjectView.as_view(), name='delete_subject'),
 
     url(r'^tests_results/$', views.tests_results, name='tests_results'),
     path('test_results/<test_result_id>', views.show_test_results, name='show_test_results'),

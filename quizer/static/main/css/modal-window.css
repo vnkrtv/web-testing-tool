@@ -64,3 +64,7 @@
    fill: #444;
    cursor: pointer;
 }
+
+.js-modal-close {
+   cursor: pointer;
+}

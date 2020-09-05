@@ -24,45 +24,6 @@ from .forms import SubjectForm, TestForm
 logger = logging.getLogger('quizer.main.views')
 
 
-@unauthenticated_user
-def available_tests(request):
-    """
-    Page to which user is redirected after successful authorization
-    For lecturer - displays list of tests that can be run
-    For student - displays list of running tests
-    """
-    storage = mongo.TestsResultsStorage.connect(db=mongo.get_conn())
-    running_tests = storage.get_running_tests()
-    running_tests_ids = [test['test_id'] for test in running_tests]
-    if request.user.groups.filter(name='lecturer'):
-        tests = Test.objects.all()
-        not_running_tests = [t for t in tests if t.id not in running_tests_ids]
-        context = {
-            'title': 'Тесты | Quizer',
-            'subjects': list(Subject.objects.all()),
-            'tests': json.dumps([t.to_dict() for t in not_running_tests]),
-        }
-        return render(request, 'main/lecturer/availableTests.html', context)
-    if len(running_tests_ids) == 0:
-        context = {
-            'title': 'Тесты | Quizer',
-            'message_title': 'Доступные тесты отсутствуют',
-            'message': 'Ни один из тестов пока не запущен.',
-        }
-        return render(request, 'main/student/info.html', context)
-    context = {
-        'title': 'Тесты | Quizer',
-        'tests': [
-            {
-                'launched_lecturer': User.objects.get(id=test['launched_lecturer_id']),
-                **Test.objects.get(id=test['test_id']).to_dict()
-            }
-            for test in running_tests
-        ],
-    }
-    return render(request, 'main/student/availableTests.html', context)
-
-
 def login_page(request):
     """
     Authorize user and redirect him to available_tests page
@@ -102,6 +63,95 @@ def login_page(request):
         port=settings.DATABASES['default']['PORT'],
         db_name=settings.DATABASES['default']['NAME'])
     return redirect(reverse('main:available_tests'))
+
+
+class AvailableTestsView(View):
+    """View for available tests"""
+    lecturer_template = 'main/lecturer/availableTests.html'
+    student_template = 'main/student/availableTests.html'
+    title = 'Доступные тесты | Quizer'
+    context = {}
+
+    @method_decorator(unauthenticated_user)
+    def get(self, request):
+        """
+        Page to which user is redirected after successful authorization
+        For lecturer - displays list of tests that can be run
+        For student - displays list of running tests
+        """
+        storage = mongo.TestsResultsStorage.connect(db=mongo.get_conn())
+        running_tests = storage.get_running_tests()
+        running_tests_ids = [test['test_id'] for test in running_tests]
+        if request.user.groups.filter(name='lecturer'):
+            return self.lecturer_available_tests(request, running_tests_ids)
+        return self.student_available_tests(request, running_tests_ids)
+
+    @method_decorator(unauthenticated_user)
+    def post(self, request):
+        """Configuring running tests"""
+        if 'lecturer-running-test-id' in request.POST:
+            self.lecturer_run_test(request)
+        elif 'student-run-test' in request.POST:
+            self.student_run_test(request)
+        else:
+            self.context = {}
+        return self.get(request)
+
+    def lecturer_available_tests(self, request, running_tests_ids: list):
+        tests = Test.objects.all()
+        not_running_tests = [t for t in tests if t.id not in running_tests_ids]
+        self.context = {
+            **self.context,
+            'title': self.title,
+            'subjects': list(Subject.objects.all()),
+            'tests': json.dumps([t.to_dict() for t in not_running_tests]),
+        }
+        return render(request, self.lecturer_template, self.context)
+
+    def student_available_tests(self, request, running_tests: list):
+        if len(running_tests) == 0:
+            self.context = {
+                'title': self.title,
+                'message_title': 'Доступные тесты отсутствуют',
+                'message': 'Ни один из тестов пока не запущен.',
+            }
+            return render(request, 'main/student/info.html', self.context)
+        self.context = {
+            'title': self.title,
+            'tests': [
+                {
+                    'launched_lecturer': User.objects.get(id=test['launched_lecturer_id']),
+                    **Test.objects.get(id=test['test_id']).to_dict()
+                }
+                for test in running_tests
+            ]
+        }
+        return render(request, self.student_template, self.context)
+
+    def lecturer_run_test(self, request):
+        """Running test for students"""
+        test = Test.objects.get(id=int(request.POST['lecturer-running-test-id']))
+        storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())
+        questions = storage.get_many(test_id=test.id)
+        if len(questions) < test.tasks_num:
+            self.context = {
+                'modal_title': 'Ошибка',
+                'modal_message': "Тест '%s' не запущен, так как вопросов в базе меньше %d."
+                                 % (test.name, test.tasks_num)
+            }
+        else:
+            storage = mongo.TestsResultsStorage.connect(db=mongo.get_conn())
+            storage.add_running_test(
+                test_id=test.id,
+                lecturer_id=request.user.id,
+                subject_id=test.subject.id)
+            self.context = {
+                'modal_title': "Тест '%s' запущен" % test.name,
+                'modal_message': "Состояние его прохождения можно отследить во вкладке 'Запущенные тесты'."
+            }
+
+    def student_run_test(self, request):
+        pass
 
 
 class SubjectsView(View):
@@ -251,7 +301,7 @@ class TestsView(View):
         if form.is_valid():
             subject = form.cleaned_data['subject']
             test = Test(
-                name=form.cleaned_data['test_name'],
+                name=form.cleaned_data['name'],
                 author=request.user,
                 subject=subject,
                 description=form.cleaned_data['description'],
@@ -351,40 +401,6 @@ class TestsView(View):
 
     def delete_questions(self, request):
         pass
-
-
-@post_method
-@unauthenticated_user
-@allowed_users(allowed_roles=['lecturer'])
-def run_test_result(request):
-    """
-    Displays page with test run result
-    """
-    test = Test.objects.get(id=int(request.POST['test_id']))
-    storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())
-    questions = storage.get_many(test_id=test.id)
-    if len(questions) < test.tasks_num:
-        context = {
-            'title': 'Запуск теста | Quizer',
-            'message_title': 'Ошибка',
-            'message': 'Тест не запущен, так как вопросов в базе меньше %d.' % test.tasks_num,
-            'ref': reverse('main:tests'),
-            'ref_message': 'Перейти к тестам',
-        }
-        return render(request, 'main/lecturer/info.html', context)
-    storage = mongo.TestsResultsStorage.connect(db=mongo.get_conn())
-    storage.add_running_test(
-        test_id=test.id,
-        lecturer_id=request.user.id,
-        subject_id=test.subject.id)
-    context = {
-        'title': 'Запуск теста | Quizer',
-        'message_title': 'Тест запущен',
-        'message': "Состояние его прохождения можно отследить во вкладке 'Запущенные тесты'",
-        'ref': reverse('main:running_tests'),
-        'ref_message': 'Перейти к запущенным тестам',
-    }
-    return render(request, 'main/lecturer/info.html', context)
 
 
 @unauthenticated_user

@@ -6,44 +6,59 @@
 
 {% load main_extras %}
 
- 	<div class='jumbotron'>
- 		<h2>Доступные для запуска тесты</h2><br>
- 		<div>
- 			<div class="row">
-				<div class="col-sm">
-					<p>Запустите тест, чтобы слушатели могли приступить к его выполнению.<br>
- 					Запущенные тесты отображаются во вкладке 'Запущенные тесты'.</p>
-				</div>
-			</div>
-			<hr class="my-4">
-			<div class="row">
-				<div class="col-sm">
-					<label class="my-1 mr-2">Предмет
-		      			<select class="custom-select my-1 mr-sm-2" id="subject" name="subject" required="required">
-					  	{% for subject in subjects %}
-					  		<option value="{{ subject }}">{{ subject }}</option>
-					  	{% endfor %}
-					    </select>
-		      		</label>
-				</div>
-			</div>
-			<div class="row">
-				<div class="col-sm">
-			      	<label class="my-1 mr-2">Фильтр по названию теста
-			      		<input type="text" class="form-control" id="name_filter" name="name_filter">
-			      	</label>
-		      	</div>
-	  		</div>
-	    </div>
-	    <form action="{% url 'main:run_test_result' %}" method="post">
-	    	{% csrf_token %}
-	    	<div id='tests_container'></div>
-	    </form>
- 	</div>
+<link rel="stylesheet" href="{% static 'main/css/modal-window.css' %}">
 
+<div class='jumbotron'>
+	<h2>Доступные для запуска тесты</h2><br>
+	<div>
+		<div class="row">
+		<div class="col-sm">
+			<p>Запустите тест, чтобы слушатели могли приступить к его выполнению.<br>
+				Запущенные тесты отображаются во вкладке 'Запущенные тесты'.</p>
+		</div>
+		</div>
+		<hr class="my-4">
+		<div class="row">
+			<div class="col-sm">
+				<label class="my-1 mr-2">Предмет
+	      			<select class="custom-select my-1 mr-sm-2" id="subject" name="subject" required="required">
+				  	{% for subject in subjects %}
+				  		<option value="{{ subject }}">{{ subject }}</option>
+				  	{% endfor %}
+				    </select>
+	      		</label>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-sm">
+		      	<label class="my-1 mr-2">Фильтр по названию теста
+		      		<input type="text" class="form-control" id="name_filter" name="name_filter">
+		      	</label>
+	      	</div>
+			</div>
+	</div>
+	<div id='tests_container'></div>		
+</div>
+
+{% if modal_title %}
+    <div class="modal-window active" data-modal="info-modal">
+       <img class="modal__cross js-modal-close" src="{% close_icon %}">
+       <h4>{{ modal_title }}</h4>
+       <hr class="my hr4">
+       <p>{{ modal_message }}</p>
+       <div class="modal-footer">
+          <button class="btn btn-primary js-modal-close"><img src='{% cancel_icon %}'> Закрыть</button>
+       </div>
+    </div>
+    <div class="overlay js-overlay-modal active"></div>
+{% else %}
+    <div class="overlay js-overlay-modal"></div>
+{% endif %}
+
+<script src="{% static 'main/js/modalWindow.js' %}"></script>
 <script src="{% static 'main/js/lecturerTests.js' %}"></script>
 <script type="text/javascript">
-	main('{{ tests }}', '{% static_url %}');
+	main('{{ tests }}', '{% static_url %}', "{% url 'main:available_tests' %}", '{% csrf_token %}');
 </script>
 
 {% endblock %}

@@ -10,75 +10,72 @@ function getDivElement(i, tests, staticPath) {
     const test_name_h3 = document.createElement('h3');
     test_name_h3.innerHTML = `${tests[i].name}`;
 
-    const description_p = document.createElement('p');
-    description_p.innerHTML = `${tests[i].description}`;
+    const descriptionP = document.createElement('p');
+    descriptionP.innerHTML = `${tests[i].description}`;
 
-    const info_p = document.createElement('p');
-    info_p.innerHTML = `<img src='${staticPath}main/images/subject.svg'> Предмет: ${tests[i].subject.name }<br>
+    const infoP = document.createElement('p');
+    infoP.innerHTML = `<img src='${staticPath}main/images/subject.svg'> Предмет: ${tests[i].subject.name }<br>
     <img src='${staticPath}main/images/research.svg'> Количество заданий в тесте: ${tests[i].tasks_num}<br>
     <img src='${staticPath}main/images/clock.svg'> Время на выполнение: ${tests[i].duration} с<br>
     <img src='${staticPath}main/images/database.svg'> Вопросов к тесту: ${tests[i].questions_num}`;
 
-    const btn_cont_1 = document.createElement('div');
-    btn_cont_1.className = "btn-group mr-3";
-    const btn_cont_2 = document.createElement('div');
-    btn_cont_2.className = "btn-group mr-1";
-    const btn_cont_3 = document.createElement('div');
-    btn_cont_3.className = "btn-group mr-3";
-    const btn_cont_4 = document.createElement('div');
-    btn_cont_4.className = "btn-group mr-1";
-    const btn_cont_5 = document.createElement('div');
-    btn_cont_5.className = "btn-group mr-1";
+    const btnCont1 = document.createElement('div');
+    btnCont1.className = "btn-group mr-3";
+    const btnCont2 = document.createElement('div');
+    btnCont2.className = "btn-group mr-1";
+    const btnCont3 = document.createElement('div');
+    btnCont3.className = "btn-group mr-3";
+    const btnCont4 = document.createElement('div');
+    btnCont4.className = "btn-group mr-1";
+    const btnCont5 = document.createElement('div');
+    btnCont5.className = "btn-group mr-1";
 
-    const edit_btn = document.createElement('button');
-    edit_btn.className = "btn btn-primary js-open-modal";
-    edit_btn.innerHTML = `<img src='${staticPath}main/images/edit.svg'> Редактировать`;
-    edit_btn.setAttribute('data-modal', 'edit-modal');
-    edit_btn.setAttribute('onclick',
+    const editBtn = document.createElement('button');
+    editBtn.className = "btn btn-primary js-open-modal";
+    editBtn.innerHTML = `<img src='${staticPath}main/images/edit.svg'> Редактировать`;
+    editBtn.setAttribute('data-modal', 'edit-modal');
+    editBtn.setAttribute('onclick',
         `fillEditModal(${tests[i].id}, "${tests[i].name}", "${tests[i].description}", "${tests[i].tasks_num}", "${tests[i].duration}")`);
 
-    const add_qstn_btn = document.createElement('button');
-    add_qstn_btn.className = "btn btn-success js-open-modal";
-    add_qstn_btn.innerHTML = `<img src='${staticPath}main/images/add.svg'> Добавить вопрос`;
-    add_qstn_btn.setAttribute('data-modal', 'add-question-modal');
-    add_qstn_btn.setAttribute('onclick', `fillAddQuestionModal(${tests[i].id})`);
+    const addQstnBtn = document.createElement('button');
+    addQstnBtn.className = "btn btn-success js-open-modal";
+    addQstnBtn.innerHTML = `<img src='${staticPath}main/images/add.svg'> Добавить вопрос`;
+    addQstnBtn.setAttribute('data-modal', 'add-question-modal');
+    addQstnBtn.setAttribute('onclick', `fillAddQuestionModal(${tests[i].id})`);
 
-    const load_qstn_btn = document.createElement('button');
-    load_qstn_btn.className = "btn btn-success js-open-modal";
-    load_qstn_btn.innerHTML = `<img src='${staticPath}main/images/download.svg'> Загрузить вопросы`;
-    load_qstn_btn.setAttribute('data-modal', 'load-questions-modal');
-    load_qstn_btn.setAttribute('onclick', `fillLoadQuestionsModal(${tests[i].id})`);
+    const loadQstnBtn = document.createElement('button');
+    loadQstnBtn.className = "btn btn-success js-open-modal";
+    loadQstnBtn.innerHTML = `<img src='${staticPath}main/images/download.svg'> Загрузить вопросы`;
+    loadQstnBtn.setAttribute('data-modal', 'load-questions-modal');
+    loadQstnBtn.setAttribute('onclick', `fillLoadQuestionsModal(${tests[i].id})`);
 
-    const del_qstn_btn = document.createElement('button');
-    del_qstn_btn.className = "btn btn-danger js-open-modal";
-    del_qstn_btn.innerHTML = `<img src='${staticPath}main/images/delete.svg'> Удалить вопросы`;
-    del_qstn_btn.id = `test_name_${tests[i].name}`;
-    del_qstn_btn.name = `test_name_${tests[i].id}`;
-    del_qstn_btn.value = "del_qstn_btn";
+    const delQstnBtn = document.createElement('button');
+    delQstnBtn.className = "btn btn-danger js-open-modal";
+    delQstnBtn.innerHTML = `<img src='${staticPath}main/images/delete.svg'> Удалить вопросы`;
 
-    const del_test_btn = document.createElement('button');
-    del_test_btn.className = "btn btn-danger js-open-modal";
-    del_test_btn.innerHTML = `<img src='${staticPath}main/images/delete.svg'> Удалить тест`;
-    del_test_btn.setAttribute('data-modal', 'delete-modal');
-    del_test_btn.setAttribute('onclick',
+    const delTestBtn = document.createElement('button');
+    delTestBtn.className = "btn btn-danger js-open-modal";
+    delTestBtn.innerHTML = `<img src='${staticPath}main/images/delete.svg'> Удалить тест`;
+    delTestBtn.setAttribute('data-modal', 'delete-modal');
+    delTestBtn.setAttribute('onclick',
         `fillDeleteModal(${tests[i].id}, "${tests[i].name}")`);
 
-    btn_cont_1.appendChild(edit_btn);
+    btnCont1.appendChild(editBtn);
 
-    btn_cont_2.appendChild(add_qstn_btn);
-    btn_cont_3.appendChild(load_qstn_btn);
+    btnCont2.appendChild(addQstnBtn);
+    btnCont3.appendChild(loadQstnBtn);
 
-    btn_cont_4.appendChild(del_qstn_btn);
-    btn_cont_5.appendChild(del_test_btn);
+    btnCont4.appendChild(delQstnBtn);
+    btnCont5.appendChild(delTestBtn);
 
     label.appendChild(test_name_h3);
-    label.appendChild(description_p);
-    label.appendChild(info_p);
-    label.appendChild(btn_cont_1);
-    label.appendChild(btn_cont_2);
-    label.appendChild(btn_cont_3);
-    label.appendChild(btn_cont_4);
-    label.appendChild(btn_cont_5);
+    label.appendChild(descriptionP);
+    label.appendChild(infoP);
+    label.appendChild(btnCont1);
+    label.appendChild(btnCont2);
+    label.appendChild(btnCont3);
+    label.appendChild(btnCont4);
+    label.appendChild(btnCont5);
 
     container.appendChild(hr);
     container.appendChild(label);

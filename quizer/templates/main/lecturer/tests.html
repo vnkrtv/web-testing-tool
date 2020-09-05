@@ -8,7 +8,6 @@
 
 <link rel="stylesheet" href="{% static 'main/css/modal-window.css' %}">
 
-
 <div class='jumbotron'>
 	<h2>Тесты</h2><br>
 		<div>
@@ -20,9 +19,9 @@
 		<div class="btn-group mr-1">
 			<button class="btn btn-success js-open-modal" data-modal="add-modal"><img src='{% add_icon %}'> Добавить тест</button>
 		</div>
-		<div class="btn-group mr-1">
+		<!--div class="btn-group mr-1">
 			<button class="btn btn-success js-open-modal"><img src='{% download_icon %}'> Загрузить тест</button>
-		</div>
+		</div-->
 		<hr>
 		<div class="row">
 			<div class="col-sm">
@@ -163,11 +162,11 @@
 		      		<input type="text" class="form-control" name="question" required>
 		      	</label>
 			    <div class="custom-control custom-checkbox my-1 mr-sm-2">
-			    	<input type="checkbox" class="custom-control-input" id="multiselect" name="multiselect">
+			    	<input type="checkbox" class="custom-control-input" id="add-question-multiselect" name="multiselect">
 			    	<label class="custom-control-label" for="multiselect">Мультивыбор</label>
 			    </div>
 			    <div class="custom-control custom-checkbox my-1 mr-sm-2">
-			    	<input type="checkbox" class="custom-control-input" id="with_images" name="with_images">
+			    	<input type="checkbox" class="custom-control-input" id="add-question-with-images" name="with_images">
 			    	<label class="custom-control-label" for="with_images">Фотографии</label>
 			    </div>
 		  	</div>
@@ -183,6 +182,21 @@
 		   <div class="btn btn-primary js-modal-close"><img src='{% cancel_icon %}'> Закрыть</div>
 		   <button class="btn btn-success" name="add-question"><img src='{% add_icon %}'> Добавить</button>
 		</div>
+   </form>
+</div>
+
+<div class="modal-window" data-modal="delete-questions-modal">
+   <img class="modal__cross js-modal-close" src="{% close_icon %}">
+   <h4>Удалить вопросы</h4>
+   <hr class="my hr4">
+   <form action="{% url 'main:tests' %}" enctype="multipart/form-data" method="post">
+   {% csrf_token %}
+	<input type="hidden" name="test_id" id='delete-questions-test-id' value="">
+    
+    <div class="modal-footer">
+       <div class="btn btn-primary js-modal-close"><img src='{% cancel_icon %}'> Закрыть</div>
+       <button class="btn btn-success" name="delete-questions"><img src='{% download_icon %}'> Загрузить</button>
+    </div>
    </form>
 </div>
 
@@ -224,11 +238,11 @@
 {% endif %}
 
 <script src="{% static 'main/js/modalWindow.js' %}"></script>
-<script src="{% static 'main/js/addQuestion.js' %}"></script>
+<script src="{% static 'main/js/manageQuestions.js' %}"></script>
 <script src="{% static 'main/js/managingTests.js' %}"></script>
 <script type="text/javascript">
 	main('{{ tests }}', '{% static_url %}');
-	addQuestionMain();
+	manageQuestions();
 </script>
 
 {% endblock %}

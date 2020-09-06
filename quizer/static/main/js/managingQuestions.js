@@ -1,4 +1,4 @@
-function getQuestionOption(i) {
+function getQuestionOption(i, value, isTrue) {
     const container = document.createElement('div');
     container.className = 'form-row';
 
@@ -15,6 +15,7 @@ function getQuestionOption(i) {
     optionInput.id = `option_${i}`;
     optionInput.name = `option_${i}`;
     optionInput.required = 'required';
+    optionInput.value = value;
 
     optionLabel.appendChild(optionInput);
 
@@ -28,6 +29,7 @@ function getQuestionOption(i) {
     isTrueInput.id = `is_true_${i}`;
     isTrueInput.name = `is_true`;
     isTrueInput.value = `${i}`;
+    isTrueInput.checked = (isTrue === true) ? 'checked' : '';
 
     const isTrueLabel = document.createElement('label');
     isTrueLabel.className = 'custom-control-label'
@@ -45,7 +47,7 @@ function getQuestionOption(i) {
     return container;
 }
 
-function getQuestionOptionWithImages(i) {
+function getQuestionOptionWithImages(i, value, isTrue) {
     const container = document.createElement('div');
     container.className = 'form-row';
 
@@ -66,7 +68,9 @@ function getQuestionOptionWithImages(i) {
     optionInput.id = `option_${i}`;
     optionInput.name = `option_${i}`;
     optionInput.required = 'required';
-    optionInput.accept="image/*"
+    optionInput.accept="image/*";
+    optionInput.value = value;
+    optionInput.disabled = 'disabled';
 
     fileContainer.appendChild(optionLabel);
     fileContainer.appendChild(optionInput);
@@ -80,6 +84,7 @@ function getQuestionOptionWithImages(i) {
     isTrueInput.id = `is_true_${i}`;
     isTrueInput.name = `is_true`;
     isTrueInput.value = `${i}`;
+    isTrueInput.checked = (isTrue === true) ? 'checked' : '';
 
     const isTrueLabel = document.createElement('label');
     isTrueLabel.className = 'custom-control-label'
@@ -97,7 +102,7 @@ function getQuestionOptionWithImages(i) {
     return container;
 }
 
-function getQuestionOptionWithMultiselect(i) {
+function getQuestionOptionWithMultiselect(i, value, isTrue) {
     const container = document.createElement('div');
     container.className = 'form-row';
 
@@ -114,6 +119,7 @@ function getQuestionOptionWithMultiselect(i) {
     optionInput.id = `option_${i}`;
     optionInput.name = `option_${i}`;
     optionInput.required = 'required';
+    optionInput.value = value;
 
     optionLabel.appendChild(optionInput);
 
@@ -126,6 +132,7 @@ function getQuestionOptionWithMultiselect(i) {
     isTrueInput.type = 'checkbox';
     isTrueInput.id = `is_true_${i}`;
     isTrueInput.name = `is_true_${i}`;
+    isTrueInput.checked = (isTrue === true) ? 'checked' : '';
 
     const isTrueLabel = document.createElement('label');
     isTrueLabel.className = 'custom-control-label'
@@ -143,7 +150,7 @@ function getQuestionOptionWithMultiselect(i) {
     return container;
 }
 
-function getQuestionOptionWithMultiselectAndImages(i) {
+function getQuestionOptionWithMultiselectAndImages(i, value, isTrue) {
     const container = document.createElement('div');
     container.className = 'form-row';
 
@@ -164,7 +171,9 @@ function getQuestionOptionWithMultiselectAndImages(i) {
     optionInput.id = `option_${i}`;
     optionInput.name = `option_${i}`;
     optionInput.required = 'required';
-    optionInput.accept="image/*"
+    optionInput.accept="image/*";
+    optionInput.value = value;
+    optionInput.disabled = 'disabled';
 
     fileContainer.appendChild(option_label);
     fileContainer.appendChild(optionInput);
@@ -178,6 +187,7 @@ function getQuestionOptionWithMultiselectAndImages(i) {
     isTrueInput.type = 'checkbox';
     isTrueInput.id = `is_true_${i}`;
     isTrueInput.name = `is_true_${i}`;
+    isTrueInput.checked = (isTrue === true) ? 'checked' : '';
 
     const isTrueLabel = document.createElement('label');
     isTrueLabel.className = 'custom-control-label'
@@ -195,70 +205,63 @@ function getQuestionOptionWithMultiselectAndImages(i) {
     return container;
 }
 
-function manageQuestions() {
-    const questions = document.getElementById('add-question-questions-div');
+function fillQuestionModal(i) {
+    const question = questions[i];
 
-    const tasksNum = document.getElementById('add-question-tasks-num');
-    const multiselect = document.getElementById('add-question-multiselect');
-    const withImages = document.getElementById('add-question-with-images');
+    const formulationInput = document.getElementById('question-formulation');
+    formulationInput.value = question.formulation;
 
-    tasksNum.onkeyup = tasksNum.onchange = () => {
-        const count = +(tasksNum.value);
-        questions.innerHTML = '';
-        for (let i = 0; i < count; ++i) {
-            if (multiselect.checked) {
-                if (withImages.checked) {
-                    questions.appendChild(getQuestionOptionWithMultiselectAndImages(i));
-                } else {
-                    questions.appendChild(getQuestionOptionWithMultiselect(i));
-                }
+    const optionsNumInput = document.getElementById('question-tasks-num');
+    optionsNumInput.value = question.tasks_num;
+
+    const multiselectInput = document.getElementById('question-multiselect');
+    const hiddenMultelelectInput = document.getElementById('hidden-question-multiselect');
+    multiselectInput.checked = (question.multiselect === true) ? 'checked' : '';
+    hiddenMultelelectInput.value = (question.multiselect === true) ? 'on' : '';
+
+    const withImageInput = document.getElementById('question-with-images');
+    const hiddenWithImagesInput = document.getElementById('hidden-question-with-images');
+    withImageInput.checked = (question.type === 'image') ? 'checked' : '';
+    hiddenWithImagesInput.value = (question.type === 'image') ? 'on' : '';
+
+    const optionsDiv = document.getElementById('options-div');
+    optionsDiv.innerHTML = '';
+    for (let t = 0; t < question.options.length; t++) {
+        if (question.type === '') {
+            if (question.multiselect) {
+                optionsDiv.appendChild(getQuestionOptionWithMultiselect(
+                        t, question.options[t].option, question.options[t].is_true))
             } else {
-                if (withImages.checked) {
-                    questions.appendChild(getQuestionOptionWithImages(i))
-                } else {
-                    questions.appendChild(getQuestionOption(i));
-                }
+                optionsDiv.appendChild(getQuestionOption(
+                        t, question.options[t].option, question.options[t].is_true))
+            }
+        } else if (question.type === 'image') {
+            if (question.multiselect) {
+                optionsDiv.appendChild(getQuestionOptionWithMultiselectAndImages(
+                        t, question.options[t].option, question.options[t].is_true))
+            } else {
+                optionsDiv.appendChild(getQuestionOptionWithImages(
+                        t, question.options[t].option, questions[i].options[t].is_true))
             }
         }
-    };
+    }
+    const qstnIDInput = document.getElementById('edit-question-id');
+    qstnIDInput.value = question.id;
 
-    multiselect.onkeyup = multiselect.onchange = () => {
-        const count = +(tasksNum.value);
-        questions.innerHTML = '';
-        for (let i = 0; i < count; ++i) {
-            if (multiselect.checked) {
-                if (withImages.checked) {
-                    questions.appendChild(getQuestionOptionWithMultiselectAndImages(i));
-                } else {
-                    questions.appendChild(getQuestionOptionWithMultiselect(i));
-                }
-            } else {
-                if (withImages.checked) {
-                    questions.appendChild(getQuestionOptionWithImages(i))
-                } else {
-                    questions.appendChild(getQuestionOption(i));
-                }
-            }
-        }
-    };
+    const delQstnBtn = document.getElementById('delete-question-button');
+    delQstnBtn.setAttribute('onclick', `fillDeleteQuestionModal('${question.id}', '${question.formulation}', ${question.test_id})`);
+}
 
-    withImages.onkeyup = withImages.onchange = () => {
-        const count = +(tasksNum.value);
-        questions.innerHTML = '';
-        for (let i = 0; i < count; ++i) {
-            if (multiselect.checked) {
-                if (withImages.checked) {
-                    questions.appendChild(getQuestionOptionWithMultiselectAndImages(i));
-                } else {
-                    questions.appendChild(getQuestionOptionWithMultiselect(i));
-                }
-            } else {
-                if (withImages.checked) {
-                    questions.appendChild(getQuestionOptionWithImages(i))
-                } else {
-                    questions.appendChild(getQuestionOption(i));
-                }
-            }
-        }
-    };
+function fillDeleteQuestionModal(qstnID, qstnFormulation, testID) {
+    const deleteP = document.getElementById('delete-p');
+    deleteP.innerHTML = `Вы действительно хотите удалить вопрос '${qstnFormulation}'?`;
+
+    const testIDInput = document.getElementById('delete-question-test-id');
+    testIDInput.value = testID;
+
+    const qstnIDInput = document.getElementById('delete-question-id');
+    qstnIDInput.value = qstnID;
+
+    const overlay = document.getElementById('overlay');
+    overlay.classList.toggle('active');
 }

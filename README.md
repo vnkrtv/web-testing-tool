@@ -75,15 +75,15 @@ Run all tests with coverage by running (venv must be activated):
 ```
 Name                                      Stmts   Miss  Cover
 -------------------------------------------------------------
-quizer/main/decorators.py                    27      1    96%
-quizer/main/models.py                        27      1    96%
-quizer/main/mongo.py                        105     11    90%
-quizer/main/templatetags/main_extras.py      44      3    93%
-quizer/main/utils.py                         67     18    73%
-quizer/main/views.py                        211     26    88%
+quizer/main/decorators.py                    29      3    90%
+quizer/main/forms.py                         17      0   100%
+quizer/main/models.py                        30      1    97%
+quizer/main/mongo.py                        141     41    71%
+quizer/main/templatetags/main_extras.py      60      8    87%
+quizer/main/utils.py                        140     63    55%
+quizer/main/views.py                        338    115    66%
 -------------------------------------------------------------
-TOTAL                                       481     60    88%
-
+TOTAL                                       755    231    69%
 ```
 For detailed report run:
 - ```coverage report```  

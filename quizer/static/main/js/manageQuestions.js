@@ -1,4 +1,4 @@
-function getQuestions(i) {
+function getQuestionOption(i) {
     const container = document.createElement('div');
     container.className = 'form-row';
 
@@ -45,7 +45,7 @@ function getQuestions(i) {
     return container;
 }
 
-function getQuestionsWithImages(i) {
+function getQuestionOptionWithImages(i) {
     const container = document.createElement('div');
     container.className = 'form-row';
 
@@ -97,7 +97,7 @@ function getQuestionsWithImages(i) {
     return container;
 }
 
-function getQuestionsWithMultiselect(i) {
+function getQuestionOptionWithMultiselect(i) {
     const container = document.createElement('div');
     container.className = 'form-row';
 
@@ -143,7 +143,7 @@ function getQuestionsWithMultiselect(i) {
     return container;
 }
 
-function getQuestionsWithMultiselectAndImages(i) {
+function getQuestionOptionWithMultiselectAndImages(i) {
     const container = document.createElement('div');
     container.className = 'form-row';
 
@@ -208,15 +208,15 @@ function manageQuestions() {
         for (let i = 0; i < count; ++i) {
             if (multiselect.checked) {
                 if (withImages.checked) {
-                    questions.appendChild(getQuestionsWithMultiselectAndImages(i));
+                    questions.appendChild(getQuestionOptionWithMultiselectAndImages(i));
                 } else {
-                    questions.appendChild(getQuestionsWithMultiselect(i));
+                    questions.appendChild(getQuestionOptionWithMultiselect(i));
                 }
             } else {
                 if (withImages.checked) {
-                    questions.appendChild(getQuestionsWithImages(i))
+                    questions.appendChild(getQuestionOptionWithImages(i))
                 } else {
-                    questions.appendChild(getQuestions(i));
+                    questions.appendChild(getQuestionOption(i));
                 }
             }
         }
@@ -228,15 +228,15 @@ function manageQuestions() {
         for (let i = 0; i < count; ++i) {
             if (multiselect.checked) {
                 if (withImages.checked) {
-                    questions.appendChild(getQuestionsWithMultiselectAndImages(i));
+                    questions.appendChild(getQuestionOptionWithMultiselectAndImages(i));
                 } else {
-                    questions.appendChild(getQuestionsWithMultiselect(i));
+                    questions.appendChild(getQuestionOptionWithMultiselect(i));
                 }
             } else {
                 if (withImages.checked) {
-                    questions.appendChild(getQuestionsWithImages(i))
+                    questions.appendChild(getQuestionOptionWithImages(i))
                 } else {
-                    questions.appendChild(getQuestions(i));
+                    questions.appendChild(getQuestionOption(i));
                 }
             }
         }
@@ -248,15 +248,15 @@ function manageQuestions() {
         for (let i = 0; i < count; ++i) {
             if (multiselect.checked) {
                 if (withImages.checked) {
-                    questions.appendChild(getQuestionsWithMultiselectAndImages(i));
+                    questions.appendChild(getQuestionOptionWithMultiselectAndImages(i));
                 } else {
-                    questions.appendChild(getQuestionsWithMultiselect(i));
+                    questions.appendChild(getQuestionOptionWithMultiselect(i));
                 }
             } else {
                 if (withImages.checked) {
-                    questions.appendChild(getQuestionsWithImages(i))
+                    questions.appendChild(getQuestionOptionWithImages(i))
                 } else {
-                    questions.appendChild(getQuestions(i));
+                    questions.appendChild(getQuestionOption(i));
                 }
             }
         }

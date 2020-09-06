@@ -8,6 +8,14 @@ register = template.Library()
 
 
 @register.simple_tag
+def get_question_type(question_type):
+    types_dict = {
+        '': 'Обычный',
+        'image': 'Изображения'
+    }
+    return types_dict.get(question_type, '')
+
+@register.simple_tag
 def deserialize_subjects(subjects):
     return json.dumps([{'name': subject.name, 'id': subject.id} for subject in subjects])
 

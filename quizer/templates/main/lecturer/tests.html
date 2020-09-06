@@ -241,7 +241,7 @@
 <script src="{% static 'main/js/manageQuestions.js' %}"></script>
 <script src="{% static 'main/js/managingTests.js' %}"></script>
 <script type="text/javascript">
-	main('{{ tests }}', '{% static_url %}');
+	main('{{ tests }}', '{% static_url %}', "{% url 'main:questions' 'test_id' %}");
 	manageQuestions();
 </script>
 

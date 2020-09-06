@@ -1,4 +1,4 @@
-function getDivElement(i, tests, staticPath) {
+function getDivElement(i, tests, staticPath, questionsRef) {
     const container = document.createElement('div');
 
     const hr = document.createElement('hr');
@@ -24,18 +24,24 @@ function getDivElement(i, tests, staticPath) {
     const btnCont2 = document.createElement('div');
     btnCont2.className = "btn-group mr-1";
     const btnCont3 = document.createElement('div');
-    btnCont3.className = "btn-group mr-3";
+    btnCont3.className = "btn-group mr-1";
     const btnCont4 = document.createElement('div');
-    btnCont4.className = "btn-group mr-1";
+    btnCont4.className = "btn-group mr-3";
     const btnCont5 = document.createElement('div');
     btnCont5.className = "btn-group mr-1";
 
-    const editBtn = document.createElement('button');
-    editBtn.className = "btn btn-primary js-open-modal";
-    editBtn.innerHTML = `<img src='${staticPath}main/images/edit.svg'> Редактировать`;
-    editBtn.setAttribute('data-modal', 'edit-modal');
-    editBtn.setAttribute('onclick',
+    const editTestBtn = document.createElement('button');
+    editTestBtn.className = "btn btn-primary js-open-modal";
+    editTestBtn.innerHTML = `<img src='${staticPath}main/images/edit.svg'> Редактировать`;
+    editTestBtn.setAttribute('data-modal', 'edit-modal');
+    editTestBtn.setAttribute('onclick',
         `fillEditModal(${tests[i].id}, "${tests[i].name}", "${tests[i].description}", "${tests[i].tasks_num}", "${tests[i].duration}")`);
+
+    const qstnsRef = document.createElement('a');
+    qstnsRef.className = "btn btn-success";
+    qstnsRef.innerHTML = `<img src='${staticPath}main/images/white_database.svg'> Вопросы к тесту`;
+    qstnsRef.href = questionsRef.replace(/test_id/gi, `${tests[i].id}`)
+    console.log(questionsRef);
 
     const addQstnBtn = document.createElement('button');
     addQstnBtn.className = "btn btn-success js-open-modal";
@@ -49,10 +55,6 @@ function getDivElement(i, tests, staticPath) {
     loadQstnBtn.setAttribute('data-modal', 'load-questions-modal');
     loadQstnBtn.setAttribute('onclick', `fillLoadQuestionsModal(${tests[i].id})`);
 
-    const delQstnBtn = document.createElement('button');
-    delQstnBtn.className = "btn btn-danger js-open-modal";
-    delQstnBtn.innerHTML = `<img src='${staticPath}main/images/delete.svg'> Удалить вопросы`;
-
     const delTestBtn = document.createElement('button');
     delTestBtn.className = "btn btn-danger js-open-modal";
     delTestBtn.innerHTML = `<img src='${staticPath}main/images/delete.svg'> Удалить тест`;
@@ -60,12 +62,12 @@ function getDivElement(i, tests, staticPath) {
     delTestBtn.setAttribute('onclick',
         `fillDeleteModal(${tests[i].id}, "${tests[i].name}")`);
 
-    btnCont1.appendChild(editBtn);
+    btnCont1.appendChild(editTestBtn);
+    btnCont2.appendChild(qstnsRef);
 
-    btnCont2.appendChild(addQstnBtn);
-    btnCont3.appendChild(loadQstnBtn);
+    btnCont3.appendChild(addQstnBtn);
+    btnCont4.appendChild(loadQstnBtn);
 
-    btnCont4.appendChild(delQstnBtn);
     btnCont5.appendChild(delTestBtn);
 
     label.appendChild(test_name_h3);
@@ -119,7 +121,7 @@ function fillLoadQuestionsModal(testID) {
     testIDInput.value = testID;
 }
 
-function main(testsJson, staticPath) {
+function main(testsJson, staticPath, questionsRef) {
     const tests = JSON.parse(testsJson.replace(/&quot;/gi, '"'));
     const testsCount = parseInt(tests.length);
     const testsContainer = document.getElementById("tests_container");
@@ -129,7 +131,7 @@ function main(testsJson, staticPath) {
 
     for (let i = 0; i < testsCount; ++i) {
         if (tests[i].subject.name == subject.options[0].text) {
-            testsContainer.appendChild(getDivElement(i, tests, staticPath));
+            testsContainer.appendChild(getDivElement(i, tests, staticPath, questionsRef));
         }
     }
     activateModalWindows();
@@ -139,7 +141,7 @@ function main(testsJson, staticPath) {
         for (let i = 0; i < testsCount; ++i) {
             if (tests[i].name.includes(nameFilter.value)) {
                 if (tests[i].subject.name == subject.options[subject.selectedIndex].text) {
-                    testsContainer.appendChild(getDivElement(i, tests, staticPath));
+                    testsContainer.appendChild(getDivElement(i, tests, staticPath, questionsRef));
                 }
             }
         }
@@ -151,7 +153,7 @@ function main(testsJson, staticPath) {
         for (let i = 0; i < testsCount; ++i) {
             if (tests[i].name.includes(nameFilter.value)) {
                 if (tests[i].subject.name == subject.options[subject.selectedIndex].text) {
-                    testsContainer.appendChild(getDivElement(i, tests, staticPath));
+                    testsContainer.appendChild(getDivElement(i, tests, staticPath, questionsRef));
                 }
             }
         }

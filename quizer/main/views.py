@@ -22,15 +22,22 @@ from .forms import SubjectForm, TestForm
 logger = logging.getLogger('quizer.main.views')
 
 
-def questions(request):
+@unauthenticated_user
+@allowed_users(allowed_roles=['lecturer'])
+def questions(request, test_id: int):
+    test = Test.objects.get(id=test_id)
+    if not test:
+        return redirect(reverse('main:available_tests'))
     storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())
-    questions = storage.get_many(test_id=68)
-    for question in questions:
-        question['_id'] = str(question['_id'])
+    test_questions = storage.get_many(test_id=test.id)
+    for question in test_questions:
+        question['id'] = str(question.pop('_id'))
     context = {
-        'questions': json.dumps(questions)
+        'title': 'Вопросы',
+        'test': test,
+        'questions': test_questions
     }
-    return render(request, 'main/lecturer/deleteQuestionsPage.html', context)
+    return render(request, 'main/lecturer/managingQuestions.html', context)
 
 
 def login_page(request):

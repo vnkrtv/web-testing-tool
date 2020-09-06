@@ -1,0 +1,322 @@
+{% extends "main/lecturerWrapper.html" %}
+
+{% block content %}
+
+{% load static %}
+
+{% load main_extras %}
+
+<link rel="stylesheet" href="{% static 'main/css/modal-window.css' %}">
+
+<div class='jumbotron'>
+	<h2>Вопросы к тесту {{ test.name }}</h2><br>
+	<p>Нажмите на вопрос, чтобы редактировать его.</p>
+ 	<input class="form-control" type="text" placeholder="Искать..." id="search" onkeyup='tableSearch("search", "table")'>
+	<table id="table" class="table table-hover">
+	    <thead>
+	      <tr>
+	      	<th><img class="pointer" src='{% sort_icon %}' onclick="sortTableByNums('table', 0, true)"></th>
+		      <th><img class="pointer" src='{% sort_icon %}' onclick="sortTable('table', 1)"> Формулировка</th>
+		      <th><img class="pointer" src='{% sort_icon %}' onclick="sortTableByNums('table', 2)"> Число вариантов ответов</th>
+		      <th><img class="pointer" src='{% sort_icon %}' onclick="sortTable('table', 3)"> Мультивыбор</th>
+		      <th><img class="pointer" src='{% sort_icon %}' onclick="sortTable('table', 4)"> Тип</th>
+	      </tr>
+	  </thead>
+	  <tbody>
+	  	{% for question in questions %}
+		  <tr id="row_{{ forloop.counter0 }}" class="js-open-modal" onclick="fillQuestionModal({{ forloop.counter0 }})" data-modal="question-modal">
+		      <td scope="row"><strong>{{ forloop.counter }}</strong></td>
+		      <td>{{ question.formulation }}</td>
+		      <td>{{ question.tasks_num }}</td>
+		      <td>{% if question.multiselect %}+{% else %}-{% endif %}</td>
+		      <td>{% get_question_type question.type %}</td>
+	      </tr>
+		{% endfor %}
+	    </tbody>
+	</table>
+    <input type="hidden" name="test_id" id="test_id" value="{{ test.id }}">
+</div>
+
+<div class="modal-window active" data-modal="question-modal">
+   <img class="modal__cross js-modal-close" src="{% close_icon %}">
+   <h4>Вопрос</h4>
+   <hr class="my hr4">
+   <form action="{% url 'main:tests' %}" method="post">
+   {% csrf_token %}
+   		<div id="question-div" class='form-row'></div>
+	     <div class="modal-footer">
+	        <div class="btn btn-primary js-modal-close"><img src='{% cancel_icon %}'> Закрыть</div>
+	        <button class="btn btn-danger"><img src='{% delete_icon %}'> Удалить</button>
+	        <button class="btn btn-primary" name="edit"><img src='{% edit_icon %}'> Изменить</button>
+	     </div>
+	   </form>
+</div>
+<div class="overlay js-overlay-modal active"></div>
+
+<script src="{% static 'main/js/modalWindow.js' %}"></script>
+<script src="{% static 'main/js/table.js' %}"></script>
+<script type="text/javascript">
+	const questions = JSON.parse('{{ questions }}'.replace(/&quot;/gi, '"')
+        .replace(/&#39;/gi, '"')
+        .replace(/True/gi, 'true')
+        .replace(/False/gi, 'false')
+        .replace(/None/gi, 'null'));
+
+	function getQuestionOption(i, value, isTrue) {
+	    const container = document.createElement('div');
+	    container.className = 'form-row';
+
+	    const childContainer = document.createElement('div');
+	    childContainer.className = 'col-md-4 mb-3';
+
+	    const optionLabel = document.createElement('label');
+	    optionLabel.htmlFor = `option_${i}`;
+	    optionLabel.innerHTML = `Вариант ${i + 1}`;
+
+	    const optionInput = document.createElement('input');
+	    optionInput.className = "form-control"
+	    optionInput.type = 'text';
+	    optionInput.id = `option_${i}`;
+	    optionInput.name = `option_${i}`;
+	    optionInput.required = 'required';
+	    optionInput.value = value;
+
+	    optionLabel.appendChild(optionInput);
+
+
+	    const radioContainer = document.createElement('div');
+	    radioContainer.className = 'custom-control custom-checkbox my-1 mr-sm-2';
+
+	    const isTrueInput = document.createElement('input');
+	    isTrueInput.className = "custom-control-input"
+	    isTrueInput.type = 'radio';
+	    isTrueInput.id = `is_true_${i}`;
+	    isTrueInput.name = `is_true`;
+	    isTrueInput.value = `${i}`;
+	    isTrueInput.
+
+	    const isTrueLabel = document.createElement('label');
+	    isTrueLabel.className = 'custom-control-label'
+	    isTrueLabel.htmlFor = `is_true_${i}`;
+	    isTrueLabel.innerHTML = 'Верный ответ';
+
+	    radioContainer.appendChild(isTrueInput);
+	    radioContainer.appendChild(isTrueLabel);
+
+	    childContainer.appendChild(optionLabel);
+	    childContainer.appendChild(radioContainer);
+
+	    container.appendChild(childContainer);
+
+	    return container;
+	}
+
+	function getQuestionOptionWithImages(i) {
+	    const container = document.createElement('div');
+	    container.className = 'form-row';
+
+	    const childContainer = document.createElement('div');
+	    childContainer.className = 'col-md-4 mb-3';
+
+
+	    const fileContainer = document.createElement('div');
+	    fileContainer.className = 'form-group';
+
+	    const optionLabel = document.createElement('label');
+	    optionLabel.htmlFor = `option_${i}`;
+	    optionLabel.innerHTML = `Вариант ${i + 1}`;
+
+	    const optionInput = document.createElement('input');
+	    optionInput.className = "form-control-file"
+	    optionInput.type = 'file';
+	    optionInput.id = `option_${i}`;
+	    optionInput.name = `option_${i}`;
+	    optionInput.required = 'required';
+	    optionInput.accept="image/*"
+
+	    fileContainer.appendChild(optionLabel);
+	    fileContainer.appendChild(optionInput);
+
+	    const radioContainer = document.createElement('div');
+	    radioContainer.className = 'custom-control custom-checkbox my-1 mr-sm-2';
+
+	    const isTrueInput = document.createElement('input');
+	    isTrueInput.className = "custom-control-input"
+	    isTrueInput.type = 'radio';
+	    isTrueInput.id = `is_true_${i}`;
+	    isTrueInput.name = `is_true`;
+	    isTrueInput.value = `${i}`;
+
+	    const isTrueLabel = document.createElement('label');
+	    isTrueLabel.className = 'custom-control-label'
+	    isTrueLabel.htmlFor = `is_true_${i}`;
+	    isTrueLabel.innerHTML = 'Верный ответ';
+
+	    radioContainer.appendChild(isTrueInput);
+	    radioContainer.appendChild(isTrueLabel);
+
+	    childContainer.appendChild(fileContainer);
+	    childContainer.appendChild(radioContainer);
+
+	    container.appendChild(childContainer);
+
+	    return container;
+	}
+
+	function getQuestionOptionWithMultiselect(i) {
+	    const container = document.createElement('div');
+	    container.className = 'form-row';
+
+	    const childContainer = document.createElement('div');
+	    childContainer.className = 'col-md-4 mb-3';
+
+	    const optionLabel = document.createElement('label');
+	    optionLabel.htmlFor = `option_${i}`;
+	    optionLabel.innerHTML = `Вариант ${i + 1}`;
+
+	    const optionInput = document.createElement('input');
+	    optionInput.className = "form-control"
+	    optionInput.type = 'text';
+	    optionInput.id = `option_${i}`;
+	    optionInput.name = `option_${i}`;
+	    optionInput.required = 'required';
+
+	    optionLabel.appendChild(optionInput);
+
+
+	    const checkboxContainer = document.createElement('div');
+	    checkboxContainer.className = 'custom-control custom-checkbox my-1 mr-sm-2';
+
+	    const isTrueInput = document.createElement('input');
+	    isTrueInput.className = "custom-control-input"
+	    isTrueInput.type = 'checkbox';
+	    isTrueInput.id = `is_true_${i}`;
+	    isTrueInput.name = `is_true_${i}`;
+
+	    const isTrueLabel = document.createElement('label');
+	    isTrueLabel.className = 'custom-control-label'
+	    isTrueLabel.htmlFor = `is_true_${i}`;
+	    isTrueLabel.innerHTML = 'Верный ответ';
+
+	    checkboxContainer.appendChild(isTrueInput);
+	    checkboxContainer.appendChild(isTrueLabel);
+
+	    childContainer.appendChild(optionLabel);
+	    childContainer.appendChild(checkboxContainer);
+
+	    container.appendChild(childContainer);
+
+	    return container;
+	}
+
+	function getQuestionOptionWithMultiselectAndImages(i) {
+	    const container = document.createElement('div');
+	    container.className = 'form-row';
+
+	    const childContainer = document.createElement('div');
+	    childContainer.className = 'col-md-4 mb-3';
+
+
+	    const fileContainer = document.createElement('div');
+	    fileContainer.className = 'form-group';
+
+	    const option_label = document.createElement('label');
+	    option_label.htmlFor = `option_${i}`;
+	    option_label.innerHTML = `Вариант ${i + 1}`;
+
+	    const optionInput = document.createElement('input');
+	    optionInput.className = "form-control-file"
+	    optionInput.type = 'file';
+	    optionInput.id = `option_${i}`;
+	    optionInput.name = `option_${i}`;
+	    optionInput.required = 'required';
+	    optionInput.accept="image/*"
+
+	    fileContainer.appendChild(option_label);
+	    fileContainer.appendChild(optionInput);
+
+
+	    const checkboxContainer = document.createElement('div');
+	    checkboxContainer.className = 'custom-control custom-checkbox my-1 mr-sm-2';
+
+	    const isTrueInput = document.createElement('input');
+	    isTrueInput.className = "custom-control-input"
+	    isTrueInput.type = 'checkbox';
+	    isTrueInput.id = `is_true_${i}`;
+	    isTrueInput.name = `is_true_${i}`;
+
+	    const isTrueLabel = document.createElement('label');
+	    isTrueLabel.className = 'custom-control-label'
+	    isTrueLabel.htmlFor = `is_true_${i}`;
+	    isTrueLabel.innerHTML = 'Верный ответ';
+
+	    checkboxContainer.appendChild(isTrueInput);
+	    checkboxContainer.appendChild(isTrueLabel);
+
+	    childContainer.appendChild(fileContainer);
+	    childContainer.appendChild(checkboxContainer);
+
+	    container.appendChild(childContainer);
+
+	    return container;
+	}
+
+	function fillQuestionModal(i) {
+		const questionDiv = document.getElementById('question-div');
+
+		const childContainer = document.createElement('div');
+	    childContainer.className = 'col-md-4 mb-3';
+
+	    const optionLabel = document.createElement('label');
+	    optionLabel.htmlFor = `option_${i}`;
+	    optionLabel.innerHTML = `Вариант ${i + 1}`;
+
+	    if (questions[i].type === '') {
+	    	if (questions[i].multiselect) {
+
+			} else {
+
+			}
+		} else if (questions[i].type === 'image') {
+	    	if (questions[i].multiselect) {
+
+			} else {
+
+			}
+		}
+	    const optionInput = document.createElement('input');
+	    optionInput.className = "form-control"
+	    optionInput.type = 'text';
+	    optionInput.id = `option_${i}`;
+	    optionInput.name = `option_${i}`;
+	    optionInput.required = 'required';
+
+	    optionLabel.appendChild(optionInput);
+
+
+	    const radioContainer = document.createElement('div');
+	    radioContainer.className = 'custom-control custom-checkbox my-1 mr-sm-2';
+
+	    const isTrueInput = document.createElement('input');
+	    isTrueInput.className = "custom-control-input"
+	    isTrueInput.type = 'radio';
+	    isTrueInput.id = `is_true_${i}`;
+	    isTrueInput.name = `is_true`;
+	    isTrueInput.value = `${i}`;
+
+	    const isTrueLabel = document.createElement('label');
+	    isTrueLabel.className = 'custom-control-label'
+	    isTrueLabel.htmlFor = `is_true_${i}`;
+	    isTrueLabel.innerHTML = 'Верный ответ';
+
+	    radioContainer.appendChild(isTrueInput);
+	    radioContainer.appendChild(isTrueLabel);
+
+	    childContainer.appendChild(optionLabel);
+	    childContainer.appendChild(radioContainer);
+
+	    questionDiv.appendChild(childContainer);
+	}
+</script>
+
+{% endblock %}

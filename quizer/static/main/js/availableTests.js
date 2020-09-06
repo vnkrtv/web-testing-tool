@@ -23,16 +23,39 @@ function getForm(i, tests, staticPath, url, tokenTag) {
     <img src='${staticPath}main/images/research.svg'> Количество заданий в тесте: ${tests[i].tasks_num}<br>
     <img src='${staticPath}main/images/clock.svg'> Время на выполнение: ${tests[i].duration} с`;
 
-    const btn = document.createElement('button');
-    btn.className = "btn btn-primary";
-    btn.innerHTML = `<img src='${staticPath}main/images/play.svg'> Запустить`;
-    btn.name =  "lecturer-running-test-id";
-    btn.value = `${tests[i].id}`;
+    const btnCont1 = document.createElement('div');
+    btnCont1.className = "btn-group mr-1";
+    btnCont1.title = 'Запусить тест, чтобы слушатели могли приступить к его выполнению';
+
+    const btnCont2 = document.createElement('div');
+    btnCont2.className = "btn-group mr-1";
+    btnCont2.title = 'Пробный запуск теста';
+
+    const launchBtn = document.createElement('button');
+    launchBtn.className = "btn btn-primary";
+    launchBtn.innerHTML = `<img src='${staticPath}main/images/play.svg'> Запустить`;
+    launchBtn.name =  "lecturer-running-test-id";
+    launchBtn.value = tests[i].id;
+
+    const runTestBtn = document.createElement('button');
+    runTestBtn.className = "btn btn-primary";
+    runTestBtn.innerHTML = `<img src='${staticPath}main/images/play.svg'> Пройти`;
+    runTestBtn.name =  "run-test";
+
+    btnCont1.appendChild(launchBtn);
+    btnCont2.appendChild(runTestBtn);
+
+    const hiddenTestID = document.createElement('input');
+    hiddenTestID.type = 'hidden';
+    hiddenTestID.name = 'test_id';
+    hiddenTestID.value = tests[i].id;
 
     label.appendChild(testNameH3);
     label.appendChild(description_p);
     label.appendChild(infoP);
-    label.appendChild(btn);
+    label.appendChild(btnCont1);
+    label.appendChild(btnCont2);
+    label.appendChild(hiddenTestID);
 
     container.appendChild(hr);
     container.appendChild(label);

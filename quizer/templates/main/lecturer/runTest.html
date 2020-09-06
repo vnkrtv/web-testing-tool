@@ -1,5 +1,4 @@
-
-{% extends "main/studentWrapper.html" %}
+{% extends "main/lecturerWrapper.html" %}
 
 {% block content %}
 
@@ -7,7 +6,7 @@
 
 {% load static %}
 
-<form action="{% url 'main:test_result' %}" method="post">
+<form action="{% url 'main:available_tests' %}" method="post">
 	<div class="jumbotron">
 	<div id="time-div" style="font-size: 175%;"></div>
 	<label for='time'>
@@ -41,7 +40,7 @@
  		{% endfor %}
     </ul>
     <br>
-    <button class="btn btn-primary" id="stop-button" name="test-passed"><img src='{% finish_icon %}'> Закончить тест</button>
+    <button class="btn btn-primary" id="stop-button" name="lecturer-passed-test"><img src='{% finish_icon %}'> Закончить тест</button>
     </div>
 </form>
 <script src="{% static 'main/js/runTest.js' %}"></script>

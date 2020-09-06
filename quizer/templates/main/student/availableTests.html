@@ -22,7 +22,7 @@
 					<form action="{% url 'main:available_tests' %}" method="post">
 	    			{% csrf_token %}
 	    				<input type="hidden" name="test_id" value="{{ test.id }}">
-						<button class="btn btn-primary" name='student-run-test'><img src='/static/main/images/play.svg'> Приступить</button>
+						<button class="btn btn-primary" name='run-test'><img src='{% play_icon %}'> Приступить</button>
 					</form>
 				</label>
 	 		</div>

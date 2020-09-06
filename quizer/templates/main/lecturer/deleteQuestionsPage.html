@@ -14,7 +14,7 @@
 		      	</label>
 	  		</div>
 	    </div>
- 		<form action="{% url 'main:delete_questions_result' %}" method="post">
+ 		<form action="" method="post">
 			{% csrf_token %}
 		    Вопросы
 		    <ul id="questions_container" class="list-group"></ul>
@@ -29,13 +29,13 @@
 					const input = document.createElement('input');
 					input.className = "custom-control-input"
 					input.type = 'checkbox';
-					input.id = questions[i];
-					input.name = questions[i];
+					input.id = questions[i]._id;
+					input.name = questions[i].formulation;
 
 					const label = document.createElement('label');
 					label.className = 'custom-control-label'
-					label.htmlFor = questions[i];
-					label.innerHTML = `${questions[i]}`;
+					label.htmlFor = questions[i]._id;
+					label.innerHTML = `${questions[i].formulation}`;
 
 					checkboxContainer.appendChild(input);
 					checkboxContainer.appendChild(label);
@@ -43,21 +43,23 @@
 					li.appendChild(checkboxContainer);
 					return li;
 		    	}
-
-		    	const q = '{{ questions }}'.replace(/&#39;/gi, '"');
-		    	const questions = JSON.parse(q);
-		    	const questions_count = parseInt('{{ questions|length }}');
-		    	const questions_container = document.getElementById("questions_container");
-		    	for (let i = 0; i < questions_count; ++i) {
-		    			questions_container.appendChild(getLiElement(i));
+		    	const q = '{{ questions }}';
+		    	const questions = JSON.parse(q
+			        .replace(/&quot;/gi, '"')
+			        .replace(/True/gi, 'true')
+			        .replace(/False/gi, 'false')
+			        .replace(/None/gi, 'null'));
+		    	const questionsContainer = document.getElementById("questions_container");
+		    	for (let i = 0; i < questions.length; ++i) {
+		    			questionsContainer.appendChild(getLiElement(i));
 		    		}
 
-		    	const name_filter = document.getElementById("name_filter");
-		    	name_filter.onkeyup = name_filter.onchange = () =>  {
-		    		questions_container.innerHTML = '';
-		    		for (let i = 0; i < questions_count; ++i) {
-		    			if (questions[i].includes(name_filter.value)) {
-		    				questions_container.appendChild(getLiElement(i));
+		    	const nameFilter = document.getElementById("name_filter");
+		    	nameFilter.onkeyup = nameFilter.onchange = () =>  {
+		    		questionsContainer.innerHTML = '';
+		    		for (let i = 0; i < questions.length; ++i) {
+		    			if (questions[i].formulation.includes(nameFilter.value)) {
+		    				questionsContainer.appendChild(getLiElement(i));
 		    			}
 		    		}
 		    	};

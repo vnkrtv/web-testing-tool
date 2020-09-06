@@ -22,6 +22,17 @@ from .forms import SubjectForm, TestForm
 logger = logging.getLogger('quizer.main.views')
 
 
+def questions(request):
+    storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())
+    questions = storage.get_many(test_id=68)
+    for question in questions:
+        question['_id'] = str(question['_id'])
+    context = {
+        'questions': json.dumps(questions)
+    }
+    return render(request, 'main/lecturer/deleteQuestionsPage.html', context)
+
+
 def login_page(request):
     """Authorize user and redirect him to available_tests page"""
     logout(request)
@@ -65,7 +76,7 @@ class AvailableTestsView(View):
     """View for available tests"""
     lecturer_template = 'main/lecturer/availableTests.html'
     student_template = 'main/student/availableTests.html'
-    title = 'Доступные тесты | Quizer'
+    title = 'Доступные тесты'
     context = {}
     decorators = [unauthenticated_user]
 
@@ -87,9 +98,11 @@ class AvailableTestsView(View):
     def post(self, request):
         """Configuring running tests"""
         if 'lecturer-running-test-id' in request.POST:
-            self.lecturer_run_test(request)
-        elif 'student-run-test' in request.POST:
-            return self.student_run_test(request)
+            self.lecturer_start_test(request)
+        if 'lecturer-passed-test' in request.POST:
+            self.lecturer_passed_test_result(request)
+        elif 'run-test' in request.POST:
+            return self.run_test(request)
         else:
             self.context = {}
         return self.get(request)
@@ -125,8 +138,8 @@ class AvailableTestsView(View):
         }
         return render(request, self.student_template, self.context)
 
-    def lecturer_run_test(self, request):
-        """Running test for students"""
+    def lecturer_start_test(self, request):
+        """Launching test for students"""
         test = Test.objects.get(id=int(request.POST['lecturer-running-test-id']))
         storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())
         questions = storage.get_many(test_id=test.id)
@@ -147,7 +160,32 @@ class AvailableTestsView(View):
                 'modal_message': "Состояние его прохождения можно отследить во вкладке 'Запущенные тесты'."
             }
 
-    def student_run_test(self, request):
+    def lecturer_passed_test_result(self, request):
+        """Test results"""
+        storage = mongo.RunningTestsAnswersStorage.connect(db=mongo.get_conn())
+        passed_test_answers = storage.get(user_id=request.user.id)
+
+        test_id = passed_test_answers['test_id']
+        storage.delete(user_id=request.user.id)
+
+        result = utils.get_test_result(
+            request=request,
+            right_answers=passed_test_answers['right_answers'],
+            test_duration=passed_test_answers['test_duration'])
+
+        storage = mongo.TestsResultsStorage.connect(db=mongo.get_conn())
+        storage.add_results_to_running_test(
+            test_result=result,
+            test_id=test_id)
+
+        self.context = {
+            'title': 'Доступные тесты',
+            'modal_title': 'Результат',
+            'modal_message': 'Число правильных ответов: %d/%d' % (result['right_answers_count'], result['tasks_num'])
+        }
+        return render(request, self.lecturer_template, self.context)
+
+    def run_test(self, request):
         """Running available test"""
         test = Test.objects.get(id=int(request.POST['test_id']))
 
@@ -181,19 +219,21 @@ class AvailableTestsView(View):
                 test_result=result,
                 test_id=test.id)
         self.context = {
-            'title': 'Тест | Quizer',
+            'title': 'Тест',
             'questions': questions,
             'test_duration': test.duration,
             'test_name': test.name,
             'right_answers': right_answers,
         }
-        return render(request, 'main/student/runTest.html', self.context)
+        if request.user.groups.filter(name='student'):
+            return render(request, 'main/student/runTest.html', self.context)
+        return render(request, 'main/lecturer/runTest.html', self.context)
 
 
 class SubjectsView(View):
     """Configuring study subject view"""
     template = 'main/admin/subjects.html'
-    title = 'Учебные предметы | Quizer'
+    title = 'Учебные предметы'
     context = {}
     decorators = [unauthenticated_user, allowed_users(allowed_roles=['admin'])]
 
@@ -292,7 +332,7 @@ class SubjectsView(View):
 class TestsView(View):
     """Configuring tests view"""
     template = 'main/lecturer/tests.html'
-    title = 'Тесты | Quizer'
+    title = 'Тесты'
     context = {}
     decorators = [unauthenticated_user, allowed_users(allowed_roles=['lecturer'])]
 
@@ -453,12 +493,55 @@ class TestsView(View):
         }
 
 
+class PassedTestView(View):
+    """View for results of passed tests"""
+    template = 'main/student/availableTests.html'
+    context = {}
+    decorators = [unauthenticated_user, allowed_users(allowed_roles=['student'])]
+
+    @method_decorator(decorators)
+    def get(self, _):
+        """Redirect user to available tests page"""
+        return redirect(reverse('main:available_tests'))
+
+    @method_decorator(decorators)
+    def post(self, request):
+        """Displays page with results of passing test"""
+        if 'test-passed' in request.POST:
+            return self.get_passed_test_results(request)
+        return self.get(request)
+
+    def get_passed_test_results(self, request):
+        """Test results"""
+        storage = mongo.RunningTestsAnswersStorage.connect(db=mongo.get_conn())
+        passed_test_answers = storage.get(user_id=request.user.id)
+        if not passed_test_answers:
+            return redirect(reverse('main:available_tests'))
+        test_id = passed_test_answers['test_id']
+        storage.delete(user_id=request.user.id)
+
+        result = utils.get_test_result(
+            request=request,
+            right_answers=passed_test_answers['right_answers'],
+            test_duration=passed_test_answers['test_duration'])
+
+        storage = mongo.TestsResultsStorage.connect(db=mongo.get_conn())
+        storage.add_results_to_running_test(
+            test_result=result,
+            test_id=test_id)
+
+        self.context = {
+            'title': 'Результаты тестирования',
+            'message_title': 'Результат',
+            'message': 'Число правильных ответов: %d/%d' % (result['right_answers_count'], result['tasks_num'])
+        }
+        return render(request, self.template, self.context)
+
+
 @unauthenticated_user
 @allowed_users(allowed_roles=['lecturer'])
 def get_running_tests(request):
-    """
-    Displays page with running lecturer's tests
-    """
+    """Displays page with running lecturer's tests"""
     storage = mongo.TestsResultsStorage.connect(db=mongo.get_conn())
     running_tests = storage.get_running_tests()
     tests = []
@@ -473,7 +556,7 @@ def get_running_tests(request):
             test['finished_students_results'] = results
             tests.append(test)
     context = {
-        'title': 'Запущенные тесты | Quizer',
+        'title': 'Запущенные тесты',
         'tests': tests
     }
     return render(request, 'main/lecturer/runningTests.html', context)
@@ -497,7 +580,7 @@ def stop_running_test(request):
     results = test_results['results']
     results.sort(key=lambda result: result['date'])
     context = {
-        'title': 'Результаты тестирования | Quizer',
+        'title': 'Результаты тестирования',
         'test': test,
         'start_date': test_results['date'],
         'questions': json.dumps([result['questions'] for result in results]),
@@ -517,7 +600,7 @@ def tests_results(request):
     results = storage.get_all_tests_results()
 
     context = {
-        'title': 'Результаты тестирований | Quizer',
+        'title': 'Результаты тестирований',
         'subjects': Subject.objects.all(),
         'lecturers': User.objects.filter(groups__name='lecturer'),
         'tests': Test.objects.all(),
@@ -538,7 +621,7 @@ def show_test_results(request, test_result_id):
     results = test_results['results']
     results.sort(key=lambda result: result['date'])
     context = {
-        'title': 'Результаты тестирования | Quizer',
+        'title': 'Результаты тестирования',
         'test': test,
         'start_date': test_results['date'],
         'questions': json.dumps([result['questions'] for result in results]),
@@ -548,38 +631,10 @@ def show_test_results(request, test_result_id):
 
 
 def get_left_time(request):
-    """Updates time that left for passing test"""
+    """Return time that left for passing test"""
     if request.user.is_authenticated and request.method == 'POST':
         storage = mongo.RunningTestsAnswersStorage.connect(db=mongo.get_conn())
         left_time = storage.get_left_time(user_id=request.user.id)
         if left_time is not None:
             return JsonResponse(left_time, safe=False)
     return JsonResponse({}, safe=False)
-
-
-@post_method
-@unauthenticated_user
-@allowed_users(allowed_roles=['student'])
-def test_result(request):
-    """Displays page with results of passing test"""
-    storage = mongo.RunningTestsAnswersStorage.connect(db=mongo.get_conn())
-    passed_test_answers = storage.get(user_id=request.user.id)
-    if not passed_test_answers:
-        return redirect(reverse('main:available_tests'))
-    test_id = passed_test_answers['test_id']
-    storage.delete(user_id=request.user.id)
-
-    result = utils.get_test_result(
-        request=request,
-        right_answers=passed_test_answers['right_answers'],
-        test_duration=passed_test_answers['test_duration'])
-    storage = mongo.TestsResultsStorage.connect(db=mongo.get_conn())
-    storage.add_results_to_running_test(
-        test_result=result,
-        test_id=test_id)
-    context = {
-        'title': 'Результат тестирования | Quizer',
-        'tasks_num': result['tasks_num'],
-        'right_answers_count': result['right_answers_count']
-    }
-    return render(request, 'main/student/testResult.html', context)

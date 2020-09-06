@@ -56,7 +56,7 @@
 {% endif %}
 
 <script src="{% static 'main/js/modalWindow.js' %}"></script>
-<script src="{% static 'main/js/lecturerTests.js' %}"></script>
+<script src="{% static 'main/js/availableTests.js' %}"></script>
 <script type="text/javascript">
 	main('{{ tests }}', '{% static_url %}', "{% url 'main:available_tests' %}", '{% csrf_token %}');
 </script>

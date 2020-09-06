@@ -17,5 +17,7 @@ urlpatterns = [
     url(r'^stop_running_test/$', views.stop_running_test, name='stop_running_test'),
 
     url(r'^get_left_time/$', views.get_left_time, name='get_left_time'),
-    url(r'^test_result/$', views.test_result, name='test_result')
+    url(r'^test_result/$', views.PassedTestView.as_view(), name='test_result'),
+
+    url(r'^questions/$', views.questions, name='questions')
 ]

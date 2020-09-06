@@ -23,6 +23,12 @@ def deserialize_tests(tests):
 
 
 @register.simple_tag
+def media_url():
+    """Return media path"""
+    return settings.MEDIA_URL
+
+
+@register.simple_tag
 def static_url():
     """Return static path"""
     return settings.STATIC_URL

@@ -19,7 +19,8 @@ function getTimeLeft(post_url, csrf_token) {
 
 function runTest(timeLeft, post_url, csrf_token) {
     if (timeLeft < 0) {
-       document.getElementById("stop-button").click();      
+       document.getElementById("stop-button").click();
+       return;
     }
     if (timeLeft % 5 == 0) {
     	getTimeLeft(post_url, csrf_token);

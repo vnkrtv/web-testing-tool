@@ -1,0 +1,33 @@
+{% extends "main/studentWrapper.html" %}
+
+{% block content %}
+
+{% load main_extras %}
+
+{% if message_title %}
+    <div class='jumbotron'>
+		<h3>{{ message_title }}</h3>
+		<p>{{ message }}</p>
+	</div>
+{% else %}
+	<div class="column">
+		{% for test in tests %}
+			<div class='jumbotron'>
+				<label for='test_name'>
+					<h3>{{ test.name }}</h3>
+					<p>{{ test.description }}</p>
+					<p><img src='{% user_icon %}'> Запустил: {{ test.launched_lecturer.username }}<br>
+					<img src='{% research_icon %}'> Количество заданий в тесте: {{ test.tasks_num }}<br>
+					<img src='{% clock_icon %}'> Время на выполнение: {{ test.duration }} с</p>
+					<form action="{% url 'main:available_tests' %}" method="post">
+	    			{% csrf_token %}
+	    				<input type="hidden" name="test_id" value="{{ test.id }}">
+						<button class="btn btn-primary" name='student-run-test'><img src='/static/main/images/play.svg'> Приступить</button>
+					</form>
+				</label>
+	 		</div>
+		{% endfor %}
+	</div>
+{% endif %}
+
+{% endblock %}

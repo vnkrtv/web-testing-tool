@@ -5,7 +5,7 @@ function getTestOption(test) {
     return option
 }
 
-function getTrElement(counter, result) {
+function getTrElement(counter, result, testsResultUrl) {
     const tr = document.createElement('tr');
 
     const counterTd = document.createElement('td');
@@ -24,7 +24,7 @@ function getTrElement(counter, result) {
     const ref = document.createElement('a');
     ref.type = 'button';
     ref.className = 'btn btn-primary btn-sm';
-    ref.href = `/test_results/${result.id}`;
+    ref.href = testsResultUrl + result.id;
     ref.innerHTML = 'Посмотреть детальный результат &raquo;';
     refTd.appendChild(ref);
 
@@ -36,7 +36,7 @@ function getTrElement(counter, result) {
     return tr;
 }
 
-function main(resultsJson, subjectsJson, testsJson, lecturersJson) {
+function main(resultsJson, subjectsJson, testsJson, lecturersJson, testsResultUrl) {
     const results = JSON.parse(resultsJson
         .replace(/&quot;/gi, '"')
         .replace(/True/gi, 'true')
@@ -68,15 +68,15 @@ function main(resultsJson, subjectsJson, testsJson, lecturersJson) {
 
     let counter = 1;
     for (const test of testsArray) {
-        if (test.subject_id == subjectsMap[subjectSelect.options[0].text]) {
+        if (test.subject_id == subjectsMap[subjectSelect.options[subjectSelect.selectedIndex].text]) {
             testSelect.appendChild(getTestOption(test));
         }
     }
     for (const result of results) {
-        if (result.subject_id == subjectsMap[subjectSelect.options[0].text]) {
-            if (result.launched_lecturer_id == lecturersMap[lecturerSelect.options[0].text]) {
-                if (result.test_id == testsMap[testSelect.options[0].text]) {
-                    tableBody.appendChild(getTrElement(counter, result));
+        if (result.subject_id == subjectsMap[subjectSelect.options[subjectSelect.selectedIndex].text]) {
+            if (result.launched_lecturer_id == lecturersMap[lecturerSelect.options[lecturerSelect.selectedIndex].text]) {
+                if (result.test_id == testsMap[testSelect.options[testSelect.selectedIndex].text]) {
+                    tableBody.appendChild(getTrElement(counter, result, testsResultUrl));
                     counter += 1;
                 }
             }
@@ -96,7 +96,7 @@ function main(resultsJson, subjectsJson, testsJson, lecturersJson) {
             if (result.subject_id == subjectsMap[subjectSelect.options[subjectSelect.selectedIndex].text]) {
                 if (result.launched_lecturer_id == lecturersMap[lecturerSelect.options[lecturerSelect.selectedIndex].text]) {
                     if (result.test_id == testsMap[testSelect.options[testSelect.selectedIndex].text]) {
-                        tableBody.appendChild(getTrElement(counter, result));
+                        tableBody.appendChild(getTrElement(counter, result, testsResultUrl));
                         counter += 1;
                     }
                 }
@@ -111,7 +111,7 @@ function main(resultsJson, subjectsJson, testsJson, lecturersJson) {
             if (result.subject_id == subjectsMap[subjectSelect.options[subjectSelect.selectedIndex].text]) {
                 if (result.launched_lecturer_id == lecturersMap[lecturerSelect.options[lecturerSelect.selectedIndex].text]) {
                     if (result.test_id == testsMap[testSelect.options[testSelect.selectedIndex].text]) {
-                        tableBody.appendChild(getTrElement(counter, result));
+                        tableBody.appendChild(getTrElement(counter, result, testsResultUrl));
                         counter += 1;
                     }
                 }
@@ -126,7 +126,7 @@ function main(resultsJson, subjectsJson, testsJson, lecturersJson) {
             if (result.subject_id == subjectsMap[subjectSelect.options[subjectSelect.selectedIndex].text]) {
                 if (result.launched_lecturer_id == lecturersMap[lecturerSelect.options[lecturerSelect.selectedIndex].text]) {
                     if (result.test_id == testsMap[testSelect.options[testSelect.selectedIndex].text]) {
-                        tableBody.appendChild(getTrElement(counter, result));
+                        tableBody.appendChild(getTrElement(counter, result, testsResultUrl));
                         counter += 1;
                     }
                 }

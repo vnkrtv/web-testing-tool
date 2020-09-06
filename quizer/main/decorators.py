@@ -2,8 +2,7 @@
 """
 Decorators for differentiate user rights
 """
-from django.http import HttpResponse
-from django.shortcuts import redirect
+from django.shortcuts import redirect, reverse
 
 
 def unauthenticated_user(view_func):
@@ -14,7 +13,7 @@ def unauthenticated_user(view_func):
         if request.user.is_authenticated:
             return view_func(request, *args, **kwargs)
         else:
-            return redirect('/')
+            return redirect(reverse('main:login_page'))
     return wrapper_func
 
 
@@ -26,7 +25,6 @@ def allowed_users(allowed_roles: list):
     """
     def decorator(view_func):
         def wrapper_func(request, *args, **kwargs):
-
             is_allowed = False
             for group in allowed_roles:
                 if request.user.groups.filter(name=group):
@@ -39,18 +37,18 @@ def allowed_users(allowed_roles: list):
             if is_allowed:
                 return view_func(request, *args, **kwargs)
             else:
-                return HttpResponse('You are not permitted to see this page.')
+                return redirect(reverse('main:available_tests'))
         return wrapper_func
     return decorator
 
 
 def post_method(view_func):
     """
-    Redirect to '/tests' page if method is not 'post'
+    Redirect to '/available_tests' page if method is not 'post'
     """
     def wrapper_func(request, *args, **kwargs):
         if request.method != 'POST':
-            return redirect('/tests/')
+            return redirect(reverse('main:available_tests'))
         else:
             return view_func(request, *args, **kwargs)
     return wrapper_func

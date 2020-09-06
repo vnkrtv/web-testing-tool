@@ -58,7 +58,7 @@
 <script src="{% static 'main/js/table.js' %}"></script>
 <script src="{% static 'main/js/testsResults.js' %}"></script>
 <script type="text/javascript">
-	main('{{ results }}', '{% deserialize_subjects subjects %}', '{% deserialize_tests tests %}', '{% deserialize_lecturers lecturers %}');
+	main('{{ results }}', '{% deserialize_subjects subjects %}', '{% deserialize_tests tests %}', '{% deserialize_lecturers lecturers %}', "{% url 'main:tests_results' %}");
 </script>
 
 {% endblock %}

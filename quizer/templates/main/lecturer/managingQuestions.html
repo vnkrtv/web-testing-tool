@@ -93,7 +93,7 @@
 	    isTrueInput.id = `is_true_${i}`;
 	    isTrueInput.name = `is_true`;
 	    isTrueInput.value = `${i}`;
-	    isTrueInput.
+	    isTrueInput.checked = (isTrue === true) ? 'checked' : '';
 
 	    const isTrueLabel = document.createElement('label');
 	    isTrueLabel.className = 'custom-control-label'
@@ -111,7 +111,7 @@
 	    return container;
 	}
 
-	function getQuestionOptionWithImages(i) {
+	function getQuestionOptionWithImages(i, value, isTrue) {
 	    const container = document.createElement('div');
 	    container.className = 'form-row';
 
@@ -132,7 +132,9 @@
 	    optionInput.id = `option_${i}`;
 	    optionInput.name = `option_${i}`;
 	    optionInput.required = 'required';
-	    optionInput.accept="image/*"
+	    optionInput.accept="image/*";
+		optionInput.value = value;
+		optionInput.disabled = 'disabled';
 
 	    fileContainer.appendChild(optionLabel);
 	    fileContainer.appendChild(optionInput);
@@ -146,6 +148,7 @@
 	    isTrueInput.id = `is_true_${i}`;
 	    isTrueInput.name = `is_true`;
 	    isTrueInput.value = `${i}`;
+	    isTrueInput.checked = (isTrue === true) ? 'checked' : '';
 
 	    const isTrueLabel = document.createElement('label');
 	    isTrueLabel.className = 'custom-control-label'
@@ -163,7 +166,7 @@
 	    return container;
 	}
 
-	function getQuestionOptionWithMultiselect(i) {
+	function getQuestionOptionWithMultiselect(i, value, isTrue) {
 	    const container = document.createElement('div');
 	    container.className = 'form-row';
 
@@ -180,6 +183,7 @@
 	    optionInput.id = `option_${i}`;
 	    optionInput.name = `option_${i}`;
 	    optionInput.required = 'required';
+	    optionInput.value = value;
 
 	    optionLabel.appendChild(optionInput);
 
@@ -192,6 +196,7 @@
 	    isTrueInput.type = 'checkbox';
 	    isTrueInput.id = `is_true_${i}`;
 	    isTrueInput.name = `is_true_${i}`;
+	    isTrueInput.checked = (isTrue === true) ? 'checked' : '';
 
 	    const isTrueLabel = document.createElement('label');
 	    isTrueLabel.className = 'custom-control-label'
@@ -209,7 +214,7 @@
 	    return container;
 	}
 
-	function getQuestionOptionWithMultiselectAndImages(i) {
+	function getQuestionOptionWithMultiselectAndImages(i, value, isTrue) {
 	    const container = document.createElement('div');
 	    container.className = 'form-row';
 
@@ -230,7 +235,9 @@
 	    optionInput.id = `option_${i}`;
 	    optionInput.name = `option_${i}`;
 	    optionInput.required = 'required';
-	    optionInput.accept="image/*"
+	    optionInput.accept="image/*";
+	    optionInput.value = value;
+	    optionInput.disabled = 'disabled';
 
 	    fileContainer.appendChild(option_label);
 	    fileContainer.appendChild(optionInput);
@@ -244,6 +251,7 @@
 	    isTrueInput.type = 'checkbox';
 	    isTrueInput.id = `is_true_${i}`;
 	    isTrueInput.name = `is_true_${i}`;
+	    isTrueInput.checked = (isTrue === true) ? 'checked' : '';
 
 	    const isTrueLabel = document.createElement('label');
 	    isTrueLabel.className = 'custom-control-label'

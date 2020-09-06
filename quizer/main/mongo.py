@@ -260,13 +260,13 @@ class RunningTestsAnswersStorage(MongoDB):
 
         :param user_id: <int>
         """
-        docs = list(self._col.find({
+        docs = self._col.find({
             'user_id': user_id,
-        }))
+        })
         self._col.delete_many({
             'user_id': user_id,
         })
-        return list(docs)
+        return list(docs) if docs else []
 
 
 class TestsResultsStorage(MongoDB):

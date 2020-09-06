@@ -49,9 +49,7 @@ def login_page(request):
     except DecodeError:
         return HttpResponse('JWT decode error: %s' % traceback.format_exc().replace('File', '<br><br>File'))
     logger.error("login view - get username(%s) and group(%s)" % (username, group))
-    user = authenticate(
-        username=username,
-        password='')
+    user = authenticate(username=username, password='')
     if user is None:
         group2id = {
             'dev': 1,
@@ -60,13 +58,9 @@ def login_page(request):
             'student': 2
         }
         if group in ['student', 'teacher']:
-            user = User(
-                username=username,
-                password='')
+            user = User(username=username, password='')
         elif group in ['dev', 'admin']:
-            user = User.objects.create_superuser(username=username,
-                                                 email='',
-                                                 password='')
+            user = User.objects.create_superuser(username=username, email='', password='')
         else:
             return HttpResponse('Incorrect group.')
         user.save()
@@ -105,8 +99,8 @@ class AvailableTestsView(View):
     def post(self, request):
         """Configuring running tests"""
         if 'lecturer-running-test-id' in request.POST:
-            self.lecturer_start_test(request)
-        if 'lecturer-passed-test' in request.POST:
+            self.lecturer_launch_test(request)
+        elif 'lecturer-passed-test' in request.POST:
             self.lecturer_passed_test_result(request)
         elif 'run-test' in request.POST:
             return self.run_test(request)
@@ -115,6 +109,7 @@ class AvailableTestsView(View):
         return self.get(request)
 
     def lecturer_available_tests(self, request, running_tests_ids: list):
+        """Tests available for launching by lecturers"""
         tests = Test.objects.all()
         not_running_tests = [t for t in tests if t.id not in running_tests_ids]
         self.context = {
@@ -126,6 +121,7 @@ class AvailableTestsView(View):
         return render(request, self.lecturer_template, self.context)
 
     def student_available_tests(self, request, running_tests: list):
+        """Tests available for running by students"""
         if len(running_tests) == 0:
             self.context = {
                 'title': self.title,
@@ -145,7 +141,7 @@ class AvailableTestsView(View):
         }
         return render(request, self.student_template, self.context)
 
-    def lecturer_start_test(self, request):
+    def lecturer_launch_test(self, request):
         """Launching test for students"""
         test = Test.objects.get(id=int(request.POST['lecturer-running-test-id']))
         storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())
@@ -197,13 +193,20 @@ class AvailableTestsView(View):
         test = Test.objects.get(id=int(request.POST['test_id']))
 
         storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())
-        questions = storage.get_many(test_id=test.id)
-        questions = random.sample(questions, k=test.tasks_num)
-        for question in questions:
+        test_questions = storage.get_many(test_id=test.id)
+        if request.user.groups.filter(name='lecturer') and len(test_questions) < test.tasks_num:
+            self.context = {
+                'modal_title': 'Ошибка',
+                'modal_message': "Тест '%s' не запущен, так как вопросов в базе меньше %d."
+                                 % (test.name, test.tasks_num)
+            }
+            return self.get(request)
+        test_questions = random.sample(test_questions, k=test.tasks_num)
+        for question in test_questions:
             random.shuffle(question['options'])
 
         right_answers = {}
-        for i, question in enumerate(questions):
+        for i, question in enumerate(test_questions):
             right_answers[str(i + 1)] = {
                 'right_answers': [option for option in question['options'] if option['is_true']],
                 'id': str(question['_id'])
@@ -215,7 +218,6 @@ class AvailableTestsView(View):
             test_id=test.id,
             user_id=request.user.id,
             test_duration=test.duration)
-
         for test_answers in docs:
             result = utils.get_test_result(
                 request=request,
@@ -227,7 +229,7 @@ class AvailableTestsView(View):
                 test_id=test.id)
         self.context = {
             'title': 'Тест',
-            'questions': questions,
+            'questions': test_questions,
             'test_duration': test.duration,
             'test_name': test.name,
             'right_answers': right_answers,

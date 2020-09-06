@@ -156,10 +156,10 @@ class QuestionsStorageTest(MainTest):
 
     def test_deleting_questions(self) -> None:
         """
-        Test for 'delete_one' and 'get_many' QuestionsStorage methods
+        Test for 'delete_by_formulation' and 'get_many' QuestionsStorage methods
         """
         questions = self.questions_storage.get_many(test_id=self.test.id)
-        self.questions_storage.delete_one(
+        self.questions_storage.delete_by_formulation(
             question_formulation='First question with multiselect',
             test_id=self.test.id
         )

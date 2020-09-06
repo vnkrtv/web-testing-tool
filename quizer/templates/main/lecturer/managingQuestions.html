@@ -34,24 +34,65 @@
 		{% endfor %}
 	    </tbody>
 	</table>
-    <input type="hidden" name="test_id" id="test_id" value="{{ test.id }}">
 </div>
 
-<div class="modal-window active" data-modal="question-modal">
+<div class="modal-window" data-modal="question-modal">
    <img class="modal__cross js-modal-close" src="{% close_icon %}">
    <h4>Вопрос</h4>
    <hr class="my hr4">
    <form action="{% url 'main:tests' %}" method="post">
    {% csrf_token %}
-   		<div id="question-div" class='form-row'></div>
+	   <div class="form-row">
+		  	<div class="col-md-4 mb-3">
+		  		<label for="question">Формулировка вопроса
+		      		<input type="text" class="form-control" id='question-formulation' name="formulation" required>
+		      	</label>
+			    <div class="custom-control custom-checkbox my-1 mr-sm-2">
+			    	<input type="checkbox" class="custom-control-input" id="question-multiselect" disabled>
+			    	<label class="custom-control-label" for="question-multiselect">Мультивыбор</label>
+			    </div>
+			    <div class="custom-control custom-checkbox my-1 mr-sm-2">
+			    	<input type="checkbox" class="custom-control-input" id="question-with-images" disabled>
+			    	<label class="custom-control-label" for="question-with-images">Фотографии</label>
+			    </div>
+		  	</div>
+		</div>
+		<div class="form-row">
+		    <div class="col-md-4 mb-3">
+		    	<label for="tasks_num">Число вариантов</label>
+		    	<input type="number" class="form-control" name="tasks_num" id='question-tasks-num' min="2" disabled required>
+			</div>
+		</div>
+   		<div id="options-div"></div>
+   		<input type="hidden" name="test_id" id="test_id" value="{{ test.id }}">
+   		<input type="hidden" name="question_id" id="edit-question-id" value="">
+   		<input type="hidden" name="multiselect" id="hidden-question-multiselect" value="">
+   		<input type="hidden" name="with_images" id="hidden-question-with-images" value="">
 	     <div class="modal-footer">
 	        <div class="btn btn-primary js-modal-close"><img src='{% cancel_icon %}'> Закрыть</div>
-	        <button class="btn btn-danger"><img src='{% delete_icon %}'> Удалить</button>
-	        <button class="btn btn-primary" name="edit"><img src='{% edit_icon %}'> Изменить</button>
+	        <button class="btn btn-primary" name="edit-question"><img src='{% edit_icon %}'> Изменить</button>
+	        <button class="btn btn-danger js-modal-close js-open-modal" id='delete-question-button' data-modal="delete-question-modal"><img src='{% delete_icon %}'> Удалить</button>
 	     </div>
 	   </form>
 </div>
-<div class="overlay js-overlay-modal active"></div>
+
+<div class="modal-window" data-modal="delete-question-modal">
+   <img class="modal__cross js-modal-close" src="{% close_icon %}">
+   <h4>Удалить вопрос</h4>
+   <hr class="my hr4">
+   <form action="{% url 'main:tests' %}" method="post">
+   {% csrf_token %}
+	<input type="hidden" name="test_id" id='delete-question-test-id' value="">
+	<input type="hidden" name="question_id" id='delete-question-id' value="">
+    <p id='delete-p'></p>
+     <div class="modal-footer">
+        <div class="btn btn-primary js-modal-close"><img src='{% cancel_icon %}'> Закрыть</div>
+        <button class="btn btn-danger" name="delete-question"><img src='{% delete_icon %}'> Удалить</button>
+     </div>
+   </form>
+</div>
+
+<div id='overlay' class="overlay js-overlay-modal"></div>
 
 <script src="{% static 'main/js/modalWindow.js' %}"></script>
 <script src="{% static 'main/js/table.js' %}"></script>
@@ -270,60 +311,64 @@
 	}
 
 	function fillQuestionModal(i) {
-		const questionDiv = document.getElementById('question-div');
+		const question = questions[i];
 
-		const childContainer = document.createElement('div');
-	    childContainer.className = 'col-md-4 mb-3';
+		const formulationInput = document.getElementById('question-formulation');
+		formulationInput.value = question.formulation;
 
-	    const optionLabel = document.createElement('label');
-	    optionLabel.htmlFor = `option_${i}`;
-	    optionLabel.innerHTML = `Вариант ${i + 1}`;
+		const optionsNumInput = document.getElementById('question-tasks-num');
+		optionsNumInput.value = question.tasks_num;
 
-	    if (questions[i].type === '') {
-	    	if (questions[i].multiselect) {
+		const multiselectInput = document.getElementById('question-multiselect');
+		const hiddenMultelelectInput = document.getElementById('hidden-question-multiselect');
+		multiselectInput.checked = (question.multiselect === true) ? 'checked' : '';
+		hiddenMultelelectInput.value = (question.multiselect === true) ? 'on' : '';
 
-			} else {
+		const withImageInput = document.getElementById('question-with-images');
+		const hiddenWithImagesInput = document.getElementById('hidden-question-with-images');
+		withImageInput.checked = (question.type === 'image') ? 'checked' : '';
+		hiddenWithImagesInput.value = (question.type === 'image') ? 'on' : '';
 
-			}
-		} else if (questions[i].type === 'image') {
-	    	if (questions[i].multiselect) {
-
-			} else {
-
+		const optionsDiv = document.getElementById('options-div');
+		optionsDiv.innerHTML = '';
+		for (let t = 0; t < question.options.length; t++) {
+			if (question.type === '') {
+				if (question.multiselect) {
+					optionsDiv.appendChild(getQuestionOptionWithMultiselect(
+							t, question.options[t].option, question.options[t].is_true))
+				} else {
+					optionsDiv.appendChild(getQuestionOption(
+							t, question.options[t].option, question.options[t].is_true))
+				}
+			} else if (question.type === 'image') {
+				if (question.multiselect) {
+					optionsDiv.appendChild(getQuestionOptionWithMultiselectAndImages(
+							t, question.options[t].option, question.options[t].is_true))
+				} else {
+					optionsDiv.appendChild(getQuestionOptionWithImages(
+							t, question.options[t].option, questions[i].options[t].is_true))
+				}
 			}
 		}
-	    const optionInput = document.createElement('input');
-	    optionInput.className = "form-control"
-	    optionInput.type = 'text';
-	    optionInput.id = `option_${i}`;
-	    optionInput.name = `option_${i}`;
-	    optionInput.required = 'required';
+		const qstnIDInput = document.getElementById('edit-question-id');
+		qstnIDInput.value = question.id;
 
-	    optionLabel.appendChild(optionInput);
+		const delQstnBtn = document.getElementById('delete-question-button');
+		delQstnBtn.setAttribute('onclick', `fillDeleteQuestionModal('${question.id}', '${question.formulation}', ${question.test_id})`);
+	}
 
+	function fillDeleteQuestionModal(qstnID, qstnFormulation, testID) {
+		const deleteP = document.getElementById('delete-p');
+		deleteP.innerHTML = `Вы действительно хотите удалить вопрос '${qstnFormulation}'?`;
 
-	    const radioContainer = document.createElement('div');
-	    radioContainer.className = 'custom-control custom-checkbox my-1 mr-sm-2';
+		const testIDInput = document.getElementById('delete-question-test-id');
+		testIDInput.value = testID;
 
-	    const isTrueInput = document.createElement('input');
-	    isTrueInput.className = "custom-control-input"
-	    isTrueInput.type = 'radio';
-	    isTrueInput.id = `is_true_${i}`;
-	    isTrueInput.name = `is_true`;
-	    isTrueInput.value = `${i}`;
+		const qstnIDInput = document.getElementById('delete-question-id');
+		qstnIDInput.value = qstnID;
 
-	    const isTrueLabel = document.createElement('label');
-	    isTrueLabel.className = 'custom-control-label'
-	    isTrueLabel.htmlFor = `is_true_${i}`;
-	    isTrueLabel.innerHTML = 'Верный ответ';
-
-	    radioContainer.appendChild(isTrueInput);
-	    radioContainer.appendChild(isTrueLabel);
-
-	    childContainer.appendChild(optionLabel);
-	    childContainer.appendChild(radioContainer);
-
-	    questionDiv.appendChild(childContainer);
+		const overlay = document.getElementById('overlay');
+		overlay.classList.toggle('active');
 	}
 </script>
 

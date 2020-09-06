@@ -185,21 +185,6 @@
    </form>
 </div>
 
-<div class="modal-window" data-modal="delete-questions-modal">
-   <img class="modal__cross js-modal-close" src="{% close_icon %}">
-   <h4>Удалить вопросы</h4>
-   <hr class="my hr4">
-   <form action="{% url 'main:tests' %}" enctype="multipart/form-data" method="post">
-   {% csrf_token %}
-	<input type="hidden" name="test_id" id='delete-questions-test-id' value="">
-    
-    <div class="modal-footer">
-       <div class="btn btn-primary js-modal-close"><img src='{% cancel_icon %}'> Закрыть</div>
-       <button class="btn btn-success" name="delete-questions"><img src='{% download_icon %}'> Загрузить</button>
-    </div>
-   </form>
-</div>
-
 <div class="modal-window" data-modal="load-questions-modal">
    <img class="modal__cross js-modal-close" src="{% close_icon %}">
    <h4>Загрузить вопросы</h4>

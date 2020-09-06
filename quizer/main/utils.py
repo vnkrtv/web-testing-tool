@@ -150,6 +150,45 @@ def parse_question_form(request: HttpRequest, test: Test) -> dict:
     return question
 
 
+def parse_edit_question_form(request: HttpRequest, test: Test) -> dict:
+    """
+    Parse request with editing question params to dict with updated params
+
+    :param request: <HttpRequest>
+    :param test: <Test>
+    :return: updated question's params
+    """
+    updated_params = {
+        'formulation': request.POST['formulation'],
+        'options': []
+    }
+    """
+        request.POST:
+        - if not 'with_images':
+            - option_{i} = {option} - possible answer
+        - if 'multiselect':
+            - is_true_{i} = 'on' - if exists in request.POST then option_{i} is true
+        - if single answer:
+            - is_true = {i} -  option_{i} is true
+    """
+    if request.POST['multiselect'] == 'on':
+        right_options_nums = [key.split('_')[2] for key in request.POST if 'is_true_' in key]
+    else:
+        right_options_nums = [request.POST['is_true']]
+    options = {}
+    if request.POST['with_images'] == '':
+        options = {
+            key.split('_')[1]: request.POST[key]
+            for key in request.POST if 'option_' in key
+        }
+    for option_num in options:
+        updated_params['options'].append({
+            'option': options[option_num],
+            'is_true': option_num in right_options_nums
+        })
+    return updated_params
+
+
 def parse_questions(content: str) -> list:
     """
     Parsing string with questions to questions list

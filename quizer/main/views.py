@@ -377,8 +377,10 @@ class TestsView(View):
             self.add_question(request)
         elif 'load-questions' in request.POST:
             self.load_questions(request)
-        elif 'delete-questions' in request.POST:
-            self.delete_questions(request)
+        elif 'delete-question' in request.POST:
+            self.delete_question(request)
+        elif 'edit-question' in request.POST:
+            self.edit_question(request)
         else:
             self.context = {}
         return self.get(request)
@@ -486,19 +488,43 @@ class TestsView(View):
                 'modal_message': 'Файл некорректного формата.'
             }
 
-    def delete_questions(self, request):
+    def delete_question(self, request):
         """Deleting questions for test"""
-        request_dict = dict(request.POST)
-        request_dict.pop('csrfmiddlewaretoken')
-        test = Test.objects.get(id=request_dict.pop('test_id')[0])
+        question_id = request.POST['question_id']
+        test_id = int(request.POST['test_id'])
+        test = Test.objects.get(id=test_id)
+
         storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())
-        for question_formulation in request_dict:
-            storage.delete_one(
-                question_formulation=question_formulation,
-                test_id=test.id)
+        storage.delete_by_id(
+            question_id=question_id,
+            test_id=test.id)
         self.context = {
-            'modal_title': 'Вопросы удалены',
-            'modal_message': "Вопросы к тесту '%s' в количестве %d были успешно удалены." % (test.name, len(request_dict))
+            'modal_title': 'Вопрос удален',
+            'modal_message': "Вопрос к тесту '%s' был успешно удален." % test.name
+        }
+
+    def edit_question(self, request):
+        """Editing question for test"""
+        test_id = int(request.POST['test_id'])
+        test = Test.objects.get(id=test_id)
+        updated_params = utils.parse_edit_question_form(request, test)
+
+        storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())
+        if request.POST['with_images'] == 'on':
+            storage.update_formulation(
+                question_id=request.POST['question_id'],
+                formulation=updated_params['formulation']
+            )
+        else:
+            storage.update(
+                question_id=request.POST['question_id'],
+                formulation=updated_params['formulation'],
+                options=updated_params['options']
+            )
+        message = "Вопрос '%s' к тесту '%s' успешно отредактирован."
+        self.context = {
+            'modal_title': 'Вопрос отредактирован',
+            'modal_message': message % (updated_params['formulation'], test.name)
         }
 
 

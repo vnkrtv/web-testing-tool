@@ -131,7 +131,7 @@ class QuestionsStorage(MongoDB):
         })
         return list(questions) if questions else []
 
-    def delete_one(self, question_formulation: str, test_id: int) -> None:
+    def delete_by_formulation(self, question_formulation: str, test_id: int) -> None:
         """
         Delete question with formulation 'question_formulation' and 'test_id' test_id
 
@@ -151,6 +151,52 @@ class QuestionsStorage(MongoDB):
             'test_id': test_id,
             'formulation': question_formulation
         })
+
+    def delete_by_id(self, question_id: str, test_id: int) -> None:
+        """
+        Delete question with id 'question_formulation' and 'test_id' test_id
+
+        :param question_id: ObjectID as <str>
+        :param test_id: <int>
+        :return: None
+        """
+        question = self._col.find_one({
+            '_id': ObjectId(question_id),
+        })
+        test = Test.objects.get(id=test_id)
+        if question['type'] == QuestionType.WITH_IMAGES:
+            path = Path(f'{settings.MEDIA_ROOT}/{test.subject.name}/{test.name}/{question["_id"]}')
+            shutil.rmtree(path)
+        self._col.delete_one({
+            '_id': ObjectId(question_id)
+        })
+
+    def update_formulation(self, question_id: str, formulation: str) -> None:
+        """
+        Update question formulation
+
+        :param question_id: ObjectID as <str>
+        :param formulation: <str>
+        :return: None
+        """
+        self._col.find_one_and_update(
+            {'_id': ObjectId(question_id)},
+            {'$set': {'formulation': formulation}}
+        )
+
+    def update(self, question_id: str, formulation: str, options: list) -> None:
+        """
+        Update question formulation and options
+
+        :param question_id: ObjectID as <str>
+        :param formulation: <str>
+        :param options: <list> of dicts
+        :return: None
+        """
+        self._col.find_one_and_update(
+            {'_id': ObjectId(question_id)},
+            {'$set': {'formulation': formulation, 'options': options}}
+        )
 
     def delete_many(self, test_id: int) -> int:
         """

@@ -41,6 +41,7 @@ docker run -p <HOST_PORT>:80 \
   -e MONGO_HOST=<MONGO_HOST> \
   -e MONGO_PORT=<MONGO_PORT> \
   -e MONGO_DBNAME=<MONGO_DBNAME> \
+  -e AUTH_URL=<AUTH_URL> \
   -e URL_PREFIX=<URL_PREFIX> \
   -e DEMONSTRATION_VARIANT=<y> \
   --name testing-app quizer
@@ -49,6 +50,7 @@ Container envs:
 - MONGO_HOST - MongoDB host, default - "localhost"
 - MONGO_PORT - MongoDB port, default - 27017
 - MONGO_DBNAME - MongoDB database name for app, default - "quizer"
+- AUTH_URL - auth url for getting public key using JWT, default - "http://sms.gitwork.ru/auth/public_key/"
 - URL_PREFIX - prefix for all paths in app (for example, "quizer"), default - ""
 - DEMONSTRATION_VARIANT - if set, adds some data for demonstration purposes:
   - user 'user' with password 'password', who belongs to group 'student'

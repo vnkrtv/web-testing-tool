@@ -8,6 +8,7 @@ from bson import ObjectId
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.http import HttpRequest
+from django.conf import settings
 
 from .models import Test, Subject, QuestionType
 from .mongo import get_conn, QuestionsStorage
@@ -81,7 +82,7 @@ def get_auth_data(request: HttpRequest) -> tuple:
     """
     user_jwt = request.COOKIES.get('user_jwt', '')
     key_id = jwt.get_unverified_header(user_jwt).get('kid')
-    public_key = requests.get(f'http://sms.gitwork.ru/auth/public_key/{key_id}').text
+    public_key = requests.get(settings.AUTH_URL + key_id).text
     decoded_jwt = jwt.decode(user_jwt, public_key, algorithms='RS256')
     username = decoded_jwt.get('username', '')
     group = decoded_jwt.get('group', '')
@@ -142,12 +143,11 @@ def parse_question_form(request: HttpRequest, test: Test) -> dict:
     return question
 
 
-def parse_edit_question_form(request: HttpRequest, test: Test) -> dict:
+def parse_edit_question_form(request: HttpRequest) -> dict:
     """
     Parse request with editing question params to dict with updated params
 
     :param request: <HttpRequest>
-    :param test: <Test>
     :return: updated question's params
     """
     updated_params = {

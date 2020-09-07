@@ -26,16 +26,26 @@ if [[ ! -z "${DEMONSTRATION_VARIANT}" ]]; then
   echo 'from main.models import Test; t = Test(id=2, author_id=1, name="First pair - getting to know git", duration=300, subject_id=2, tasks_num=5, description="Work with local gitlab"); t.save()' | python manage.py shell
 fi
 
+SETTINGS="$(echo "$(cat ./quizer/settings.py)")"
+
+if [[ ! -z "${AUTH_URL}" ]]; then
+  AUTH_URL="${AUTH_URL}"
+else
+  AUTH_URL=http://sms.gitwork.ru/auth/public_key/
+fi
+
+SETTINGS="${SETTINGS/<AUTH_URL>/${AUTH_URL}}"
+
 if [[ ! -z "${URL_PREFIX}" ]]; then
   URLS="$(echo "$(cat ./quizer/urls.py)")"
   URLS="${URLS/\'admin\/\'/\'${URL_PREFIX}\/admin/\'}"
   URLS="${URLS//\'\'/\'${URL_PREFIX}\/\'}"
   echo "${URLS}" > ./quizer/urls.py
 
-  SETTINGS="$(echo "$(cat ./quizer/settings.py)")"
   SETTINGS="${SETTINGS//\'\/static\/\'/\'\/static\/${URL_PREFIX}\/\'}"
   SETTINGS="${SETTINGS//\'\/media\/\'/\'\/media\/${URL_PREFIX}\/\'}"
-  echo "${SETTINGS}" > ./quizer/settings.py
 fi
+
+echo "${SETTINGS}" > ./quizer/settings.py
 
 gunicorn quizer.wsgi:application --bind 0.0.0.0:80

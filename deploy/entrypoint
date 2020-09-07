@@ -10,7 +10,7 @@ fi
 
 python manage.py makemigrations
 python manage.py migrate
-echo yes | python manage.py collectstatic --clear
+echo yes | python manage.py collectstatic
 
 echo 'from django.contrib.auth.models import Group; l = Group(id=1, name="lecturer"); l.save()' | python manage.py shell
 echo 'from django.contrib.auth.models import Group; s = Group(id=2, name="student"); s.save()' | python manage.py shell

@@ -13,5 +13,4 @@ COPY quizer /usr/share/python3/quizer
 COPY deploy/settings /usr/share/python3/quizer/quizer/settings.py
 
 COPY deploy/entrypoint /entrypoint
-RUN alias python=/usr/share/python3/bin/python
 ENTRYPOINT ["/entrypoint"]

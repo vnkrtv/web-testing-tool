@@ -1,4 +1,4 @@
-# pylint: disable=too-few-public-methods, no-member, missing-function-docstring, missing-class-docstring
+# pylint: disable=too-few-public-methods, no-member, missing-function-docstring, missing-class-docstring, line-too-long
 """
 App models' forms:
 - BaseForm - set 'form-control' class for all fields

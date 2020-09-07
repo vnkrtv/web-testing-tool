@@ -343,7 +343,6 @@ class TestsResultsStorage(MongoDB):
         :param lecturer_id: <int>, lecturer who ran test
         :return:
         """
-        date = (datetime.now() + timedelta(hours=3)).timetuple()
         self._col.insert_one({
             'test_id': test_id,
             'subject_id': subject_id,

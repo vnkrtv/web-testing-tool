@@ -11,6 +11,7 @@
 		"MONGO_HOST": "quizer_db",
 		"MONGO_PORT": 27017,
 		"MONGO_DNNAME": "quizer",
-		"URL_PREFIX": "quizer"
+		"URL_PREFIX": "quizer",
+		"AUTH_URL": "http://gateway/auth/"
 	}
 }

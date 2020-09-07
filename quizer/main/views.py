@@ -502,7 +502,7 @@ class TestsView(View):
         """Editing question for test"""
         test_id = int(request.POST['test_id'])
         test = Test.objects.get(id=test_id)
-        updated_params = utils.parse_edit_question_form(request, test)
+        updated_params = utils.parse_edit_question_form(request)
 
         storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())
         if request.POST['with_images'] == 'on':

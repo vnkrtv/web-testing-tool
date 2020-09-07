@@ -2,7 +2,6 @@
 """
 Some utils for views
 """
-import logging
 import jwt
 import requests
 from bson import ObjectId
@@ -13,9 +12,6 @@ from django.http import HttpRequest
 from .models import Test, Subject, QuestionType
 from .mongo import get_conn, QuestionsStorage
 from .forms import SubjectForm
-
-
-logger = logging.getLogger('quizer.main.utils')
 
 
 class InvalidFileFormatError(Exception):
@@ -84,13 +80,9 @@ def get_auth_data(request: HttpRequest) -> tuple:
     :return: tuple(username: str, group: str)
     """
     user_jwt = request.COOKIES.get('user_jwt', '')
-    logger.error('get_auth_data - get user_jwt cookie: %s' % user_jwt)
     key_id = jwt.get_unverified_header(user_jwt).get('kid')
-    logger.error('get_auth_data - get key_id: %s' % key_id)
     public_key = requests.get(f'http://sms.gitwork.ru/auth/public_key/{key_id}').text
-    logger.error('get_auth_data - get public key: %s' % public_key)
     decoded_jwt = jwt.decode(user_jwt, public_key, algorithms='RS256')
-    logger.error('get_auth_data - decode JWT: %s' % decoded_jwt)
     username = decoded_jwt.get('username', '')
     group = decoded_jwt.get('group', '')
     return username, group

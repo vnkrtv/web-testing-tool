@@ -29,7 +29,7 @@
             			{% endif %}
             		</label>
             		{% if question.type == 'image' %}
-		        		<img src="{% media_url % }{{ option.option }}" alt="Server pribolel" height="341" style="width: auto;">
+		        		<img src="{{ option.option.url }}" alt="Server pribolel" height="341" style="width: auto;">
             		{% else %}
                     	{{ option.option }}          		    
             		{% endif %}           	    

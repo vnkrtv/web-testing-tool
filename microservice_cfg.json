@@ -3,6 +3,7 @@
 	"service_fullname": "Система тестирования",
 	"default_urn": "/quizer/",
 	"static": "/usr/share/python3/quizer/static",
+	"media": "/user/share/python3/quizer/media",
 	"update_token": "f75316a4-fa3a-4cc4-80c5-782e01b5499e",
 	"scope": "student",
 	"test_command": "/usr/share/python3/venv/bin/python /usr/share/python3/quizer/manage.py test main ",

@@ -111,3 +111,9 @@ STATICFILES_FINDERS = [
 ]
 
 AUTH_URL = '<AUTH_URL>'
+
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ]
+}

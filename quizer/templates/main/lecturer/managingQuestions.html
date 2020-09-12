@@ -98,11 +98,8 @@
 <script src="{% static 'main/js/modalWindow.js' %}"></script>
 <script src="{% static 'main/js/table.js' %}"></script>
 <script type="text/javascript">
-	const questions = JSON.parse('{{ questions }}'.replace(/&quot;/gi, '"')
-	    .replace(/&#39;/gi, '"')
-	    .replace(/True/gi, 'true')
-	    .replace(/False/gi, 'false')
-	    .replace(/None/gi, 'null'));
+	const questions = JSON.parse('{% deserialize_questions questions %}'.replace(/&quot;/gi, '"')
+	    .replace(/&#39;/gi, '"'));
 </script>
 
 {% endblock %}

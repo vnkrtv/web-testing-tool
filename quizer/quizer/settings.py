@@ -37,6 +37,10 @@ ALLOWED_HOSTS = [
 
 INSTALLED_APPS = [
     'main.apps.MainConfig',
+    'api.apps.ApiConfig',
+
+    'rest_framework',
+
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -142,3 +146,9 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
 AUTH_URL = 'http://sms.gitwork.ru/auth/public_key/'
+
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ]
+}

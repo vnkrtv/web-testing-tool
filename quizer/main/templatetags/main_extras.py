@@ -15,6 +15,7 @@ def get_question_type(question_type):
     }
     return types_dict.get(question_type, '')
 
+
 @register.simple_tag
 def deserialize_subjects(subjects):
     return json.dumps([{'name': subject.name, 'id': subject.id} for subject in subjects])
@@ -28,6 +29,11 @@ def deserialize_lecturers(lecturers):
 @register.simple_tag
 def deserialize_tests(tests):
     return json.dumps([{'name': test.name, 'id': test.id, 'subject_id': test.subject.id} for test in tests])
+
+
+@register.simple_tag
+def deserialize_questions(questions):
+    return json.dumps(questions)
 
 
 @register.simple_tag

@@ -1,16 +1,19 @@
+import json
+
 from rest_framework.generics import get_object_or_404
-from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from main.models import Subject, Test
+from main import mongo
 from .serializers import SubjectSerializer, TestSerializer
 from .permissions import IsLecturer
 
 
 class SubjectView(APIView):
 
-    permission_classes = [IsAuthenticated, IsAdminUser]
+    permission_classes = [IsAuthenticated, IsLecturer]
 
     def get(self, _):
         subjects = Subject.objects.all()
@@ -88,3 +91,18 @@ class TestView(APIView):
             'success': "Тест '%s' по предмету '%s' был успешно удален." %
                        (test_name, subject_name)
         }, status=204)
+
+
+class QuestionView(APIView):
+    permission_classes = [IsAuthenticated, IsLecturer]
+
+    def get(self, _, test_id):
+        test = get_object_or_404(Test.objects.all(), pk=test_id)
+        storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())
+        test_questions = storage.get_many(test_id=test.id)
+        for question in test_questions:
+            question['id'] = str(question.pop('_id'))
+        return Response({
+            'questions': test_questions
+        })
+

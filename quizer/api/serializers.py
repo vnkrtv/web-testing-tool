@@ -17,6 +17,12 @@ class SubjectSerializer(serializers.Serializer):
         instance.save()
         return instance
 
+    class Meta:
+        model = Subject
+        read_only_fields = (
+            'id',
+        )
+
 
 class TestSerializer(serializers.Serializer):
     id = serializers.IntegerField()
@@ -37,3 +43,11 @@ class TestSerializer(serializers.Serializer):
         instance.duration = validated_data.get('duration', instance.duration)
         instance.save()
         return instance
+
+    class Meta:
+        model = Subject
+        read_only_fields = (
+            'id',
+            'subject_id',
+            'author_id'
+        )

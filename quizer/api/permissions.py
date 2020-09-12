@@ -1,7 +1,7 @@
 from rest_framework import permissions
 
 
-class LecturerAccessPermission(permissions.BasePermission):
+class IsLecturer(permissions.BasePermission):
     message = "Allow access only for users belong to 'lecturer' group"
     allowed_group = 'lecturer'
 

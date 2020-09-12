@@ -25,10 +25,12 @@ class Test(models.Model):
     subject = models.ForeignKey(
         Subject,
         verbose_name='Предмет',
+        related_name='tests',
         on_delete=models.CASCADE)
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         verbose_name='Составитель',
+        related_name='tests',
         on_delete=models.CASCADE,
         default=DEFAULT_AUTHOR_ID)
     name = models.CharField('Тема теста', max_length=200)

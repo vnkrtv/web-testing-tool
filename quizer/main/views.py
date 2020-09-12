@@ -22,7 +22,7 @@ from .forms import SubjectForm, TestForm
 @unauthenticated_user
 @allowed_users(allowed_roles=['lecturer'])
 def questions(request, test_id: int):
-    test = Test.objects.get(id=test_id)
+    test = Test.objects.filter(id=test_id).first()
     if not test:
         return redirect(reverse('main:available_tests'))
     storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())

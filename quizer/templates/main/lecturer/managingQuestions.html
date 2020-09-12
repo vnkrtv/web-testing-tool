@@ -97,9 +97,13 @@
 <script src="{% static 'main/js/managingQuestions.js' %}"></script>
 <script src="{% static 'main/js/modalWindow.js' %}"></script>
 <script src="{% static 'main/js/table.js' %}"></script>
+<script src="{% static 'main/js/jquery-3.5.1.js' %}"></script>
 <script type="text/javascript">
-	const questions = JSON.parse('{% deserialize_questions questions %}'.replace(/&quot;/gi, '"')
-	    .replace(/&#39;/gi, '"'));
+	let questions = [];
+	$.get('/api/test/{{ test.id }}/questions'
+		).done(function(response) {
+			questions = response['questions']
+	});
 </script>
 
 {% endblock %}

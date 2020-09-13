@@ -132,3 +132,13 @@ class QuestionView(APIView):
             'questions': test_questions
         })
 
+
+class TestsResultView(APIView):
+    permission_classes = [IsAuthenticated, IsLecturer]
+
+    def get(self, _):
+        storage = mongo.TestsResultsStorage.connect(db=mongo.get_conn())
+        results = storage.get_all_tests_results()
+        return Response({
+            'results': results
+        })

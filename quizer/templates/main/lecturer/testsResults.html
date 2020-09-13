@@ -16,7 +16,7 @@
 					<label class="my-1 mr-2">Предмет
 		      			<select class="custom-select my-1 mr-sm-2" id="subject" required="required">
 					  	{% for subject in subjects %}
-					  		<option value="{{ subject }}">{{ subject }}</option>
+					  		<option value="{{ subject.id }}">{{ subject }}</option>
 					  	{% endfor %}
 					    </select>
 		      		</label>
@@ -27,7 +27,7 @@
 		      		<label class="my-1 mr-2">Преподаватель
 		      			<select class="custom-select my-1 mr-sm-2" id="lecturer" required="required">
 					  	{% for lecturer in lecturers %}
-					  		<option value="{{ lecturer }}">{{ lecturer }}</option>
+					  		<option value="{{ lecturer.id }}">{{ lecturer }}</option>
 					  	{% endfor %}
 					    </select>
 		      		</label>
@@ -57,8 +57,9 @@
  	</div>
 <script src="{% static 'main/js/table.js' %}"></script>
 <script src="{% static 'main/js/testsResults.js' %}"></script>
+<script src="{% static 'main/js/jquery-3.5.1.js' %}"></script>
 <script type="text/javascript">
-	main('{{ results }}', '{% deserialize_subjects subjects %}', '{% deserialize_tests tests %}', '{% deserialize_lecturers lecturers %}', "{% url 'main:tests_results' %}");
+	main("{% url 'api:get_tests_results' %}", "{% url 'api:get_tests' 'all' %}", "{% url 'main:tests_results' %}");
 </script>
 
 {% endblock %}

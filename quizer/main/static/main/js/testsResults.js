@@ -1,6 +1,6 @@
 function getTestOption(test) {
     const option = document.createElement('option');
-    option.value = test.name;
+    option.value = test.id;
     option.innerHTML = test.name;
     return option
 }
@@ -36,66 +36,51 @@ function getTrElement(counter, result, testsResultUrl) {
     return tr;
 }
 
-function main(resultsJson, subjectsJson, testsJson, lecturersJson, testsResultUrl) {
-    const results = JSON.parse(resultsJson
-        .replace(/&quot;/gi, '"')
-        .replace(/True/gi, 'true')
-        .replace(/False/gi, 'false')
-        .replace(/None/gi, 'null'));
-    let subjectsArray = JSON.parse(subjectsJson.replace(/&quot;/gi, '"'));
-    let subjectsMap = new Map();
-    for (let subject of subjectsArray) {
-        subjectsMap[subject.name.toString()] = subject.id;
-    }
-
-    let lecturersArray = JSON.parse(lecturersJson.replace(/&quot;/gi, '"'));
-    let lecturersMap = new Map();
-    for (let lecturer of lecturersArray) {
-        lecturersMap[lecturer.name.toString()] = lecturer.id;
-    }
-
-    let testsArray = JSON.parse(testsJson.replace(/&quot;/gi, '"'));
-    let testsMap = new Map();
-    for (let test of testsArray) {
-        testsMap[test.name.toString()] = test.id;
-    }
-
+function main(resultsUrl, testsUrl, testsResultUrl) {
     const tableBody = document.getElementById("table_body");
-
     const subjectSelect = document.getElementById("subject");
     const lecturerSelect = document.getElementById("lecturer");
     const testSelect = document.getElementById("test");
 
+    let results = [];
+    let tests = [];
     let counter = 1;
-    for (const test of testsArray) {
-        if (test.subject_id == subjectsMap[subjectSelect.options[subjectSelect.selectedIndex].text]) {
-            testSelect.appendChild(getTestOption(test));
-        }
-    }
-    for (const result of results) {
-        if (result.subject_id == subjectsMap[subjectSelect.options[subjectSelect.selectedIndex].text]) {
-            if (result.launched_lecturer_id == lecturersMap[lecturerSelect.options[lecturerSelect.selectedIndex].text]) {
-                if (result.test_id == testsMap[testSelect.options[testSelect.selectedIndex].text]) {
-                    tableBody.appendChild(getTrElement(counter, result, testsResultUrl));
-                    counter += 1;
+
+    $.get(resultsUrl).done(function(response) {
+        results = response['results'];
+        $.get(testsUrl).done(function(response) {
+            tests = response['tests'];
+            for (const test of tests) {
+                if (test.subject_id == subjectSelect.options[subjectSelect.selectedIndex].value) {
+                    testSelect.appendChild(getTestOption(test));
                 }
             }
-        }
-    }
+            for (const result of results) {
+                if (result.subject_id == subjectSelect.options[subjectSelect.selectedIndex].value) {
+                    if (result.launched_lecturer_id == lecturerSelect.options[lecturerSelect.selectedIndex].value) {
+                        if (result.test_id == testSelect.options[testSelect.selectedIndex].value) {
+                            tableBody.appendChild(getTrElement(counter, result, testsResultUrl));
+                            counter += 1;
+                        }
+                    }
+                }
+            }
+        });
+	});
 
     subjectSelect.onkeyup = subjectSelect.onchange = () =>  {
         tableBody.innerHTML = '';
         testSelect.innerHTML = '';
         counter = 1;
-        for (const test of testsArray) {
-            if (test.subject_id == subjectsMap[subjectSelect.options[subjectSelect.selectedIndex].text]) {
+        for (const test of tests) {
+            if (test.subject_id == subjectSelect.options[subjectSelect.selectedIndex].value) {
                 testSelect.appendChild(getTestOption(test));
             }
         }
         for (const result of results) {
-            if (result.subject_id == subjectsMap[subjectSelect.options[subjectSelect.selectedIndex].text]) {
-                if (result.launched_lecturer_id == lecturersMap[lecturerSelect.options[lecturerSelect.selectedIndex].text]) {
-                    if (result.test_id == testsMap[testSelect.options[testSelect.selectedIndex].text]) {
+            if (result.subject_id == subjectSelect.options[subjectSelect.selectedIndex].value) {
+                if (result.launched_lecturer_id == lecturerSelect.options[lecturerSelect.selectedIndex].value) {
+                    if (result.test_id == testSelect.options[testSelect.selectedIndex].value) {
                         tableBody.appendChild(getTrElement(counter, result, testsResultUrl));
                         counter += 1;
                     }
@@ -108,9 +93,9 @@ function main(resultsJson, subjectsJson, testsJson, lecturersJson, testsResultUr
         tableBody.innerHTML = '';
         counter = 1;
         for (const result of results) {
-            if (result.subject_id == subjectsMap[subjectSelect.options[subjectSelect.selectedIndex].text]) {
-                if (result.launched_lecturer_id == lecturersMap[lecturerSelect.options[lecturerSelect.selectedIndex].text]) {
-                    if (result.test_id == testsMap[testSelect.options[testSelect.selectedIndex].text]) {
+            if (result.subject_id == subjectSelect.options[subjectSelect.selectedIndex].value) {
+                if (result.launched_lecturer_id == lecturerSelect.options[lecturerSelect.selectedIndex].value) {
+                    if (result.test_id == testSelect.options[testSelect.selectedIndex].value) {
                         tableBody.appendChild(getTrElement(counter, result, testsResultUrl));
                         counter += 1;
                     }
@@ -123,9 +108,9 @@ function main(resultsJson, subjectsJson, testsJson, lecturersJson, testsResultUr
         tableBody.innerHTML = '';
         counter = 1;
         for (const result of results) {
-            if (result.subject_id == subjectsMap[subjectSelect.options[subjectSelect.selectedIndex].text]) {
-                if (result.launched_lecturer_id == lecturersMap[lecturerSelect.options[lecturerSelect.selectedIndex].text]) {
-                    if (result.test_id == testsMap[testSelect.options[testSelect.selectedIndex].text]) {
+            if (result.subject_id == subjectSelect.options[subjectSelect.selectedIndex].value) {
+                if (result.launched_lecturer_id == lecturerSelect.options[lecturerSelect.selectedIndex].value) {
+                    if (result.test_id == testSelect.options[testSelect.selectedIndex].value) {
                         tableBody.appendChild(getTrElement(counter, result, testsResultUrl));
                         counter += 1;
                     }

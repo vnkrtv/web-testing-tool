@@ -1,6 +1,5 @@
 # pylint: disable=invalid-name
 """Custom template tags"""
-import json
 from django import template
 from django.conf import settings
 
@@ -14,26 +13,6 @@ def get_question_type(question_type):
         'image': 'Изображения'
     }
     return types_dict.get(question_type, '')
-
-
-@register.simple_tag
-def deserialize_subjects(subjects):
-    return json.dumps([{'name': subject.name, 'id': subject.id} for subject in subjects])
-
-
-@register.simple_tag
-def deserialize_lecturers(lecturers):
-    return json.dumps([{'name': lecturer.username, 'id': lecturer.id} for lecturer in lecturers])
-
-
-@register.simple_tag
-def deserialize_tests(tests):
-    return json.dumps([{'name': test.name, 'id': test.id, 'subject_id': test.subject.id} for test in tests])
-
-
-@register.simple_tag
-def deserialize_questions(questions):
-    return json.dumps(questions)
 
 
 @register.simple_tag

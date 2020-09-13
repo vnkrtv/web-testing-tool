@@ -38,7 +38,7 @@ SETTINGS="${SETTINGS/<AUTH_URL>/${AUTH_URL}}"
 
 if [[ ! -z "${URL_PREFIX}" ]]; then
   URLS="$(echo "$(cat ./quizer/urls.py)")"
-  URLS="${URLS/\'admin\/\'/\'${URL_PREFIX}\/admin/\'}"
+  URLS="${URLS/\'api\/\'/\'${URL_PREFIX}\/api/\'}"
   URLS="${URLS//\'\'/\'${URL_PREFIX}\/\'}"
   echo "${URLS}" > ./quizer/urls.py
 

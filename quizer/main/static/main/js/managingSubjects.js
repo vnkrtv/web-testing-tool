@@ -18,20 +18,23 @@ function selectFolder(e) {
 
 }
 
-function fillEditModal(subjectID, subjectName, subjectDescription) {
+function fillEditModal(subjectID) {
     const idInput = document.getElementById('edit-subject-id');
     idInput.value = subjectID;
 
+    const subjectNameH3 = document.getElementById(`subject-name-${subjectID}`)
     const nameInput = document.getElementById('edit-name');
-    nameInput.value = subjectName;
+    nameInput.value = subjectNameH3.innerText;
 
+    const subjectDescriptionP = document.getElementById(`subject-description-${subjectID}`)
     const descriptionInput = document.getElementById('edit-description');
-    descriptionInput.value = subjectDescription;
+    descriptionInput.value = subjectDescriptionP.innerText;
 }
 
-function fillDeleteModal(subjectID, subjectName) {
+function fillDeleteModal(subjectID) {
+    const subjectNameH3 = document.getElementById(`subject-name-${subjectID}`)
     const deleteP = document.getElementById('delete-p');
-    deleteP.innerHTML = `Вы действительно хотите удалить предмет '${subjectName}'?<br>
+    deleteP.innerHTML = `Вы действительно хотите удалить предмет '${subjectNameH3.innerText}'?<br>
     Тогда все связанные с ним тесты и вопросы будут удалены.`;
 
     const deleteSubjectInput = document.getElementById('delete-subject-id');

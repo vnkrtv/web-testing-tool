@@ -99,6 +99,7 @@
 <script src="{% static 'main/js/table.js' %}"></script>
 <script src="{% static 'main/js/jquery-3.5.1.js' %}"></script>
 <script type="text/javascript">
+	const mediaUrl = '{% media_url %}';
 	let questions = [];
 	$.get("{% url 'api:get_questions' test.id %}"
 		).done(function(response) {

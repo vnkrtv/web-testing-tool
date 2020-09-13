@@ -62,18 +62,13 @@ function getQuestionOptionWithImages(i, value, isTrue) {
     optionLabel.htmlFor = `option_${i}`;
     optionLabel.innerHTML = `Вариант ${i + 1}`;
 
-    const optionInput = document.createElement('input');
-    optionInput.className = "form-control-file"
-    optionInput.type = 'file';
-    optionInput.id = `option_${i}`;
-    optionInput.name = `option_${i}`;
-    optionInput.required = 'required';
-    optionInput.accept="image/*";
-    optionInput.value = value;
-    optionInput.disabled = 'disabled';
+    const optionRef = document.createElement('a');
+    optionRef.className = "form-control-file";
+    optionRef.href = mediaUrl + value;
+    optionRef.innerHTML = 'Посмотреть';
 
     fileContainer.appendChild(optionLabel);
-    fileContainer.appendChild(optionInput);
+    fileContainer.appendChild(optionRef);
 
     const radioContainer = document.createElement('div');
     radioContainer.className = 'custom-control custom-checkbox my-1 mr-sm-2';
@@ -85,6 +80,7 @@ function getQuestionOptionWithImages(i, value, isTrue) {
     isTrueInput.name = `is_true`;
     isTrueInput.value = `${i}`;
     isTrueInput.checked = (isTrue === true) ? 'checked' : '';
+    isTrueInput.disabled = 'disabled';
 
     const isTrueLabel = document.createElement('label');
     isTrueLabel.className = 'custom-control-label'
@@ -165,18 +161,13 @@ function getQuestionOptionWithMultiselectAndImages(i, value, isTrue) {
     option_label.htmlFor = `option_${i}`;
     option_label.innerHTML = `Вариант ${i + 1}`;
 
-    const optionInput = document.createElement('input');
-    optionInput.className = "form-control-file"
-    optionInput.type = 'file';
-    optionInput.id = `option_${i}`;
-    optionInput.name = `option_${i}`;
-    optionInput.required = 'required';
-    optionInput.accept="image/*";
-    optionInput.value = value;
-    optionInput.disabled = 'disabled';
+    const optionRef = document.createElement('a');
+    optionRef.className = "form-control-file";
+    optionRef.href = mediaUrl + value;
+    optionRef.innerHTML = 'Посмотреть';
 
     fileContainer.appendChild(option_label);
-    fileContainer.appendChild(optionInput);
+    fileContainer.appendChild(optionRef);
 
 
     const checkboxContainer = document.createElement('div');
@@ -188,6 +179,7 @@ function getQuestionOptionWithMultiselectAndImages(i, value, isTrue) {
     isTrueInput.id = `is_true_${i}`;
     isTrueInput.name = `is_true_${i}`;
     isTrueInput.checked = (isTrue === true) ? 'checked' : '';
+    isTrueInput.disabled = 'disabled';
 
     const isTrueLabel = document.createElement('label');
     isTrueLabel.className = 'custom-control-label'
@@ -227,7 +219,7 @@ function fillQuestionModal(i) {
     const optionsDiv = document.getElementById('options-div');
     optionsDiv.innerHTML = '';
     for (let t = 0; t < question.options.length; t++) {
-        if (question.type === '') {
+        if (question.type == '') {
             if (question.multiselect) {
                 optionsDiv.appendChild(getQuestionOptionWithMultiselect(
                         t, question.options[t].option, question.options[t].is_true))
@@ -235,7 +227,7 @@ function fillQuestionModal(i) {
                 optionsDiv.appendChild(getQuestionOption(
                         t, question.options[t].option, question.options[t].is_true))
             }
-        } else if (question.type === 'image') {
+        } else if (question.type == 'image') {
             if (question.multiselect) {
                 optionsDiv.appendChild(getQuestionOptionWithMultiselectAndImages(
                         t, question.options[t].option, question.options[t].is_true))
@@ -249,12 +241,13 @@ function fillQuestionModal(i) {
     qstnIDInput.value = question.id;
 
     const delQstnBtn = document.getElementById('delete-question-button');
-    delQstnBtn.setAttribute('onclick', `fillDeleteQuestionModal('${question.id}', '${question.formulation}', ${question.test_id})`);
+    delQstnBtn.setAttribute('onclick', `fillDeleteQuestionModal('${question.id}', ${question.test_id})`);
 }
 
-function fillDeleteQuestionModal(qstnID, qstnFormulation, testID) {
+function fillDeleteQuestionModal(qstnID, testID) {
+    const qstnFormulationInput = document.getElementById('question-formulation');
     const deleteP = document.getElementById('delete-p');
-    deleteP.innerHTML = `Вы действительно хотите удалить вопрос '${qstnFormulation}'?`;
+    deleteP.innerHTML = `Вы действительно хотите удалить вопрос '${qstnFormulationInput.value}'?`;
 
     const testIDInput = document.getElementById('delete-question-test-id');
     testIDInput.value = testID;

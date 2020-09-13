@@ -24,17 +24,17 @@ function fillEditModal(subjectID) {
 
     const subjectNameH3 = document.getElementById(`subject-name-${subjectID}`)
     const nameInput = document.getElementById('edit-name');
-    nameInput.value = subjectNameH3.innerText;
+    nameInput.value = subjectNameH3.innerHTML;
 
     const subjectDescriptionP = document.getElementById(`subject-description-${subjectID}`)
     const descriptionInput = document.getElementById('edit-description');
-    descriptionInput.value = subjectDescriptionP.innerText;
+    descriptionInput.value = subjectDescriptionP.innerHTML;
 }
 
 function fillDeleteModal(subjectID) {
     const subjectNameH3 = document.getElementById(`subject-name-${subjectID}`)
     const deleteP = document.getElementById('delete-p');
-    deleteP.innerHTML = `Вы действительно хотите удалить предмет '${subjectNameH3.innerText}'?<br>
+    deleteP.innerHTML = `Вы действительно хотите удалить предмет '${subjectNameH3.innerHTML}'?<br>
     Тогда все связанные с ним тесты и вопросы будут удалены.`;
 
     const deleteSubjectInput = document.getElementById('delete-subject-id');

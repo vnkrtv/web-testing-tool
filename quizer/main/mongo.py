@@ -166,7 +166,7 @@ class QuestionsStorage(MongoDB):
         test = Test.objects.get(id=test_id)
         if question['type'] == QuestionType.WITH_IMAGES:
             path = Path(f'{settings.MEDIA_ROOT}/{test.subject.name}/{test.name}/{question["_id"]}')
-            shutil.rmtree(path)
+            shutil.rmtree(path, ignore_errors=True)
         self._col.delete_one({
             '_id': ObjectId(question_id)
         })

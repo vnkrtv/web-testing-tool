@@ -7,10 +7,12 @@ function getDivElement(test, staticPath, questionsRef) {
     const label = document.createElement('label');
     label.htmlFor = "test_name";
 
-    const test_name_h3 = document.createElement('h3');
-    test_name_h3.innerHTML = `${test.name}`;
+    const testNameH3 = document.createElement('h3');
+    testNameH3.id = `test-name-${test.id}`;
+    testNameH3.innerHTML = `${test.name}`;
 
     const descriptionP = document.createElement('p');
+    descriptionP.id = `test-description-${test.id}`;
     descriptionP.innerHTML = `${test.description}`;
 
     const infoP = document.createElement('p');
@@ -34,8 +36,7 @@ function getDivElement(test, staticPath, questionsRef) {
     editTestBtn.className = "btn btn-primary js-open-modal";
     editTestBtn.innerHTML = `<img src='${staticPath}main/images/edit.svg'> Редактировать`;
     editTestBtn.setAttribute('data-modal', 'edit-modal');
-    editTestBtn.setAttribute('onclick',
-        `fillEditModal(${test.id}, "${test.name}", "${test.description}", "${test.tasks_num}", "${test.duration}")`);
+    editTestBtn.setAttribute('onclick', `fillEditModal(${test.id})`);
 
     const qstnsRef = document.createElement('a');
     qstnsRef.className = "btn btn-success";
@@ -60,7 +61,17 @@ function getDivElement(test, staticPath, questionsRef) {
     delTestBtn.innerHTML = `<img src='${staticPath}main/images/delete.svg'> Удалить тест`;
     delTestBtn.setAttribute('data-modal', 'delete-modal');
     delTestBtn.setAttribute('onclick',
-        `fillDeleteModal(${test.id}, "${test.name}")`);
+        `fillDeleteModal(${test.id})`);
+
+    const tasksNumInput = document.createElement('input');
+    tasksNumInput.id = `test-tasks-num-${test.id}`;
+    tasksNumInput.type = 'hidden';
+    tasksNumInput.value = test.tasks_num;
+
+    const durationInput = document.createElement('input');
+    durationInput.id = `test-duration-${test.id}`;
+    durationInput.type = 'hidden';
+    durationInput.value = test.duration;
 
     btnCont1.appendChild(editTestBtn);
     btnCont2.appendChild(qstnsRef);
@@ -70,7 +81,7 @@ function getDivElement(test, staticPath, questionsRef) {
 
     btnCont5.appendChild(delTestBtn);
 
-    label.appendChild(test_name_h3);
+    label.appendChild(testNameH3);
     label.appendChild(descriptionP);
     label.appendChild(infoP);
     label.appendChild(btnCont1);
@@ -81,30 +92,37 @@ function getDivElement(test, staticPath, questionsRef) {
 
     container.appendChild(hr);
     container.appendChild(label);
+    container.appendChild(tasksNumInput);
+    container.appendChild(durationInput);
 
     return container;
 }
 
-function fillEditModal(testID, testName, testDescription, testTasksNum, testDuration) {
+function fillEditModal(testID) {
     const idInput = document.getElementById('edit-test-id');
     idInput.value = testID;
 
+    const nameH3 = document.getElementById(`test-name-${testID}`);
     const nameInput = document.getElementById('edit-test-name');
-    nameInput.value = testName;
+    nameInput.value = nameH3.innerHTML;
 
+    const descriptionP = document.getElementById(`test-description-${testID}`);
     const descriptionInput = document.getElementById('edit-test-description');
-    descriptionInput.value = testDescription;
+    descriptionInput.value = descriptionP.innerHTML;
 
+    const tasksNumHiddenInput = document.getElementById(`test-tasks-num-${testID}`);
     const tasksNumInput = document.getElementById('edit-test-tasks-num');
-    tasksNumInput.value = testTasksNum;
+    tasksNumInput.value = tasksNumHiddenInput.value;
 
+    const durationHiddenInput = document.getElementById(`test-duration-${testID}`);
     const durationInput = document.getElementById('edit-test-duration');
-    durationInput.value = testDuration;
+    durationInput.value = durationHiddenInput.value;
 }
 
-function fillDeleteModal(testID, testName) {
+function fillDeleteModal(testID) {
+    const nameH3 = document.getElementById(`test-name-${testID}`);
     const deleteP = document.getElementById('delete-p');
-    deleteP.innerHTML = `Вы действительно хотите удалить тест '${testName}'?<br>
+    deleteP.innerHTML = `Вы действительно хотите удалить тест '${nameH3.innerHTML}'?<br>
  		                 Тогда все связанные с ним вопросы будут удалены.`;
 
     const deleteTestInput = document.getElementById('delete-test-id');

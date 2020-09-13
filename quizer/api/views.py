@@ -1,5 +1,7 @@
 import json
 
+from django.contrib.auth.models import User
+
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -54,11 +56,35 @@ class TestView(APIView):
 
     permission_classes = [IsAuthenticated, IsLecturer]
 
-    def get(self, _):
-        tests = Test.objects.all()
-        serializer = TestSerializer(tests, many=True)
+    def get(self, _, state):
+        storage = mongo.TestsResultsStorage.connect(db=mongo.get_conn())
+        running_tests = storage.get_running_tests()
+        if state == 'running':
+            tests = []
+            for running_test in running_tests:
+                test = Test.objects.get(id=running_test['test_id']).to_dict()
+                launched_lecturer = User.objects.get(id=running_test['launched_lecturer_id'])
+                tests.append({
+                    **test,
+                    'launched_lecturer': {
+                        'id': launched_lecturer.id,
+                        'username': launched_lecturer.username
+                    }
+                })
+        elif state == 'not_running':
+            running_tests_ids = [test['test_id'] for test in running_tests]
+            tests = [t.to_dict() for t in Test.objects.exclude(id__in=running_tests_ids)]
+            storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())
+            for test in tests:
+                test['questions_num'] = len(storage.get_many(test_id=test['id']))
+        elif state == 'all':
+            tests = Test.objects.all()
+            serializer = TestSerializer(tests, many=True)
+            tests = serializer.data
+        else:
+            tests = []
         return Response({
-            'tests': serializer.data
+            'tests': tests
         })
 
     def post(self, request):

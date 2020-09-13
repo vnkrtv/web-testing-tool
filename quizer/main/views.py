@@ -4,7 +4,9 @@ import random
 import traceback
 import json
 from datetime import datetime, timedelta
+
 from jwt import DecodeError
+
 from django.contrib.auth.models import User
 from django.contrib.auth import login, logout, authenticate
 from django.shortcuts import render, redirect, reverse
@@ -12,6 +14,7 @@ from django.utils.decorators import method_decorator
 from django.http import JsonResponse, HttpResponse
 from django.conf import settings
 from django.views import View
+
 from . import mongo
 from . import utils
 from .decorators import unauthenticated_user, allowed_users, post_method
@@ -85,9 +88,8 @@ class AvailableTestsView(View):
         """
         storage = mongo.TestsResultsStorage.connect(db=mongo.get_conn())
         running_tests = storage.get_running_tests()
-        running_tests_ids = [test['test_id'] for test in running_tests]
         if request.user.groups.filter(name='lecturer'):
-            return self.lecturer_available_tests(request, running_tests_ids)
+            return self.lecturer_available_tests(request)
         return self.student_available_tests(request, running_tests)
 
     @method_decorator(decorators)
@@ -103,15 +105,12 @@ class AvailableTestsView(View):
             self.context = {}
         return self.get(request)
 
-    def lecturer_available_tests(self, request, running_tests_ids: list):
+    def lecturer_available_tests(self, request):
         """Tests available for launching by lecturers"""
-        tests = Test.objects.all()
-        not_running_tests = [t for t in tests if t.id not in running_tests_ids]
         self.context = {
             **self.context,
             'title': self.title,
-            'subjects': list(Subject.objects.all()),
-            'tests': json.dumps([t.to_dict() for t in not_running_tests]),
+            'subjects': Subject.objects.all()
         }
         return render(request, self.lecturer_template, self.context)
 
@@ -343,15 +342,10 @@ class TestsView(View):
     @method_decorator(decorators)
     def get(self, request):
         """Displays page with all tests"""
-        storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())
-        tests = [t.to_dict() for t in Test.objects.all()]
-        for test in tests:
-            test['questions_num'] = len(storage.get_many(test_id=test['id']))
         self.context = {
             **self.context,
             'title': self.title,
-            'subjects': list(Subject.objects.all()),
-            'tests': json.dumps(tests),
+            'subjects': Subject.objects.all(),
             'form': TestForm()
         }
         return render(request, self.template, self.context)

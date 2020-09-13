@@ -23,7 +23,7 @@
 				<label class="my-1 mr-2">Предмет
 	      			<select class="custom-select my-1 mr-sm-2" id="subject" name="subject" required="required">
 				  	{% for subject in subjects %}
-				  		<option value="{{ subject }}">{{ subject }}</option>
+				  		<option value="{{ subject.id }}">{{ subject }}</option>
 				  	{% endfor %}
 				    </select>
 	      		</label>
@@ -57,8 +57,9 @@
 
 <script src="{% static 'main/js/modalWindow.js' %}"></script>
 <script src="{% static 'main/js/availableTests.js' %}"></script>
+<script src="{% static 'main/js/jquery-3.5.1.js' %}"></script>
 <script type="text/javascript">
-	main('{{ tests }}', '{% static_url %}', "{% url 'main:available_tests' %}", '{% csrf_token %}');
+	main("{% url 'api:get_tests' 'not_running' %}", '{% static_url %}', "{% url 'main:available_tests' %}", '{% csrf_token %}');
 </script>
 
 {% endblock %}

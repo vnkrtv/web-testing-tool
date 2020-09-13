@@ -1,4 +1,4 @@
-function getDivElement(i, tests, staticPath, questionsRef) {
+function getDivElement(test, staticPath, questionsRef) {
     const container = document.createElement('div');
 
     const hr = document.createElement('hr');
@@ -8,16 +8,16 @@ function getDivElement(i, tests, staticPath, questionsRef) {
     label.htmlFor = "test_name";
 
     const test_name_h3 = document.createElement('h3');
-    test_name_h3.innerHTML = `${tests[i].name}`;
+    test_name_h3.innerHTML = `${test.name}`;
 
     const descriptionP = document.createElement('p');
-    descriptionP.innerHTML = `${tests[i].description}`;
+    descriptionP.innerHTML = `${test.description}`;
 
     const infoP = document.createElement('p');
-    infoP.innerHTML = `<img src='${staticPath}main/images/subject.svg'> Предмет: ${tests[i].subject.name }<br>
-    <img src='${staticPath}main/images/research.svg'> Количество заданий в тесте: ${tests[i].tasks_num}<br>
-    <img src='${staticPath}main/images/clock.svg'> Время на выполнение: ${tests[i].duration} с<br>
-    <img src='${staticPath}main/images/database.svg'> Вопросов к тесту: ${tests[i].questions_num}`;
+    infoP.innerHTML = `<img src='${staticPath}main/images/subject.svg'> Предмет: ${test.subject.name}<br>
+    <img src='${staticPath}main/images/research.svg'> Количество заданий в тесте: ${test.tasks_num}<br>
+    <img src='${staticPath}main/images/clock.svg'> Время на выполнение: ${test.duration} с<br>
+    <img src='${staticPath}main/images/database.svg'> Вопросов к тесту: ${test.questions_num}`;
 
     const btnCont1 = document.createElement('div');
     btnCont1.className = "btn-group mr-3";
@@ -35,32 +35,32 @@ function getDivElement(i, tests, staticPath, questionsRef) {
     editTestBtn.innerHTML = `<img src='${staticPath}main/images/edit.svg'> Редактировать`;
     editTestBtn.setAttribute('data-modal', 'edit-modal');
     editTestBtn.setAttribute('onclick',
-        `fillEditModal(${tests[i].id}, "${tests[i].name}", "${tests[i].description}", "${tests[i].tasks_num}", "${tests[i].duration}")`);
+        `fillEditModal(${test.id}, "${test.name}", "${test.description}", "${test.tasks_num}", "${test.duration}")`);
 
     const qstnsRef = document.createElement('a');
     qstnsRef.className = "btn btn-success";
     qstnsRef.innerHTML = `<img src='${staticPath}main/images/white_database.svg'> Вопросы к тесту`;
-    qstnsRef.href = questionsRef.replace(/test_id/gi, `${tests[i].id}`)
+    qstnsRef.href = questionsRef.replace(/test_id/gi, `${test.id}`)
     console.log(questionsRef);
 
     const addQstnBtn = document.createElement('button');
     addQstnBtn.className = "btn btn-success js-open-modal";
     addQstnBtn.innerHTML = `<img src='${staticPath}main/images/add.svg'> Добавить вопрос`;
     addQstnBtn.setAttribute('data-modal', 'add-question-modal');
-    addQstnBtn.setAttribute('onclick', `fillAddQuestionModal(${tests[i].id})`);
+    addQstnBtn.setAttribute('onclick', `fillAddQuestionModal(${test.id})`);
 
     const loadQstnBtn = document.createElement('button');
     loadQstnBtn.className = "btn btn-success js-open-modal";
     loadQstnBtn.innerHTML = `<img src='${staticPath}main/images/download.svg'> Загрузить вопросы`;
     loadQstnBtn.setAttribute('data-modal', 'load-questions-modal');
-    loadQstnBtn.setAttribute('onclick', `fillLoadQuestionsModal(${tests[i].id})`);
+    loadQstnBtn.setAttribute('onclick', `fillLoadQuestionsModal(${test.id})`);
 
     const delTestBtn = document.createElement('button');
     delTestBtn.className = "btn btn-danger js-open-modal";
     delTestBtn.innerHTML = `<img src='${staticPath}main/images/delete.svg'> Удалить тест`;
     delTestBtn.setAttribute('data-modal', 'delete-modal');
     delTestBtn.setAttribute('onclick',
-        `fillDeleteModal(${tests[i].id}, "${tests[i].name}")`);
+        `fillDeleteModal(${test.id}, "${test.name}")`);
 
     btnCont1.appendChild(editTestBtn);
     btnCont2.appendChild(qstnsRef);
@@ -121,27 +121,28 @@ function fillLoadQuestionsModal(testID) {
     testIDInput.value = testID;
 }
 
-function main(testsJson, staticPath, questionsRef) {
-    const tests = JSON.parse(testsJson.replace(/&quot;/gi, '"'));
-    const testsCount = parseInt(tests.length);
+function main(testsUrl, staticPath, questionsRef) {
     const testsContainer = document.getElementById("tests_container");
-
     const subject = document.getElementById("subject");
     const nameFilter = document.getElementById("name_filter");
 
-    for (let i = 0; i < testsCount; ++i) {
-        if (tests[i].subject.name == subject.options[0].text) {
-            testsContainer.appendChild(getDivElement(i, tests, staticPath, questionsRef));
+    let tests = [];
+	$.get(testsUrl).done(function(response) {
+        tests = response['tests'];
+        for (let test of tests) {
+            if (test.subject.id == subject.options[subject.selectedIndex].value) {
+                testsContainer.appendChild(getDivElement(test, staticPath, questionsRef));
+            }
         }
-    }
-    activateModalWindows();
+        activateModalWindows();
+	});
 
     subject.onkeyup = subject.onchange = () =>  {
         testsContainer.innerHTML = '';
-        for (let i = 0; i < testsCount; ++i) {
-            if (tests[i].name.includes(nameFilter.value)) {
-                if (tests[i].subject.name == subject.options[subject.selectedIndex].text) {
-                    testsContainer.appendChild(getDivElement(i, tests, staticPath, questionsRef));
+        for (let test of tests) {
+            if (test.name.includes(nameFilter.value)) {
+                if (test.subject.id == subject.options[subject.selectedIndex].value) {
+                    testsContainer.appendChild(getDivElement(test, staticPath, questionsRef));
                 }
             }
         }
@@ -150,10 +151,10 @@ function main(testsJson, staticPath, questionsRef) {
 
     nameFilter.onkeyup = nameFilter.onchange = () =>  {
         testsContainer.innerHTML = '';
-        for (let i = 0; i < testsCount; ++i) {
-            if (tests[i].name.includes(nameFilter.value)) {
-                if (tests[i].subject.name == subject.options[subject.selectedIndex].text) {
-                    testsContainer.appendChild(getDivElement(i, tests, staticPath, questionsRef));
+        for (let test of tests) {
+            if (test.name.includes(nameFilter.value)) {
+                if (test.subject.id == subject.options[subject.selectedIndex].value) {
+                    testsContainer.appendChild(getDivElement(test, staticPath, questionsRef));
                 }
             }
         }

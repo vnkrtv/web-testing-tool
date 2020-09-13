@@ -100,9 +100,9 @@
 <script src="{% static 'main/js/jquery-3.5.1.js' %}"></script>
 <script type="text/javascript">
 	let questions = [];
-	$.get('/api/test/{{ test.id }}/questions'
+	$.get("{% url 'api:get_questions' test.id %}"
 		).done(function(response) {
-			questions = response['questions']
+			questions = response['questions'];
 	});
 </script>
 

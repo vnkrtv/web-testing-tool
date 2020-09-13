@@ -1,4 +1,4 @@
-function getForm(i, tests, staticPath, url, tokenTag) {
+function getForm(test, staticPath, url, tokenTag) {
     const form = document.createElement('form');
     form.action = url;
     form.method = 'post';
@@ -13,15 +13,15 @@ function getForm(i, tests, staticPath, url, tokenTag) {
     label.htmlFor = "test_name";
 
     const testNameH3 = document.createElement('h3');
-    testNameH3.innerHTML = `${tests[i].name}`;
+    testNameH3.innerHTML = `${test.name}`;
 
     const description_p = document.createElement('p');
-    description_p.innerHTML = `${tests[i].description}`;
+    description_p.innerHTML = `${test.description}`;
 
     const infoP = document.createElement('p');
-    infoP.innerHTML = `<img src='${staticPath}main/images/subject.svg'> Предмет: ${tests[i].subject.name }<br>
-    <img src='${staticPath}main/images/research.svg'> Количество заданий в тесте: ${tests[i].tasks_num}<br>
-    <img src='${staticPath}main/images/clock.svg'> Время на выполнение: ${tests[i].duration} с`;
+    infoP.innerHTML = `<img src='${staticPath}main/images/subject.svg'> Предмет: ${test.subject.name}<br>
+    <img src='${staticPath}main/images/research.svg'> Количество заданий в тесте: ${test.tasks_num}<br>
+    <img src='${staticPath}main/images/clock.svg'> Время на выполнение: ${test.duration} с`;
 
     const btnCont1 = document.createElement('div');
     btnCont1.className = "btn-group mr-1";
@@ -35,7 +35,7 @@ function getForm(i, tests, staticPath, url, tokenTag) {
     launchBtn.className = "btn btn-primary";
     launchBtn.innerHTML = `<img src='${staticPath}main/images/play.svg'> Запустить`;
     launchBtn.name =  "lecturer-running-test-id";
-    launchBtn.value = tests[i].id;
+    launchBtn.value = test.id;
 
     const runTestBtn = document.createElement('button');
     runTestBtn.className = "btn btn-primary";
@@ -48,7 +48,7 @@ function getForm(i, tests, staticPath, url, tokenTag) {
     const hiddenTestID = document.createElement('input');
     hiddenTestID.type = 'hidden';
     hiddenTestID.name = 'test_id';
-    hiddenTestID.value = tests[i].id;
+    hiddenTestID.value = test.id;
 
     label.appendChild(testNameH3);
     label.appendChild(description_p);
@@ -65,27 +65,28 @@ function getForm(i, tests, staticPath, url, tokenTag) {
     return form;
 }
 
-function main(testsJson, staticPath, url, tokenTag) {
-    const tests = JSON.parse(testsJson.replace(/&quot;/gi, '"'));
-    const testsCount = parseInt(tests.length);
+function main(testsUrl, staticPath, url, tokenTag) {
     const testsContainer = document.getElementById("tests_container");
-
     const subject = document.getElementById("subject");
     const nameFilter = document.getElementById("name_filter");
 
-    for (let i = 0; i < testsCount; ++i) {
-        if (tests[i].subject.name === subject.options[0].text) {
-            testsContainer.appendChild(getForm(i, tests, staticPath, url, tokenTag));
+    let tests = [];
+	$.get(testsUrl).done(function(response) {
+        tests = response['tests'];
+        for (let test of tests) {
+            if (test.subject.id == subject.options[subject.selectedIndex].value) {
+                testsContainer.appendChild(getForm(test, staticPath, url, tokenTag));
+            }
         }
-    }
-    activateModalWindows();
+        activateModalWindows();
+	});
 
     subject.onkeyup = subject.onchange = () =>  {
         testsContainer.innerHTML = '';
-        for (let i = 0; i < testsCount; ++i) {
-            if (tests[i].name.includes(nameFilter.value)) {
-                if (tests[i].subject.name == subject.options[subject.selectedIndex].text) {
-                    testsContainer.appendChild(getForm(i, tests, staticPath, url, tokenTag));
+        for (let test of tests) {
+            if (test.name.includes(nameFilter.value)) {
+                if (test.subject.id == subject.options[subject.selectedIndex].value) {
+                    testsContainer.appendChild(getForm(test, staticPath, url, tokenTag));
                 }
             }
         }
@@ -93,10 +94,10 @@ function main(testsJson, staticPath, url, tokenTag) {
 
     nameFilter.onkeyup = nameFilter.onchange = () =>  {
         testsContainer.innerHTML = '';
-        for (let i = 0; i < testsCount; ++i) {
-            if (tests[i].name.includes(nameFilter.value)) {
-                if (tests[i].subject.name == subject.options[subject.selectedIndex].text) {
-                    testsContainer.appendChild(getForm(i, tests, staticPath, url, tokenTag));
+        for (let test of tests) {
+            if (test.name.includes(nameFilter.value)) {
+                if (test.subject.id == subject.options[subject.selectedIndex].value) {
+                    testsContainer.appendChild(getForm(test, staticPath, url, tokenTag));
                 }
             }
         }

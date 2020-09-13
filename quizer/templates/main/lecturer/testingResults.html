@@ -38,7 +38,7 @@
 		      <td>{{ result.right_answers_count }}/{{ result.tasks_num }}</td>
 		      <td>{{ result.time }} c</td>
 		      <td>{{ result.date }}</td>
-		      <td><button type="button" class="btn btn-primary btn-sm js-open-modal" data-modal="modal" onclick='fillErrorsModal("row_{{ forloop.counter0 }}", questions)'><img src='{% search_icon %}'> Показать</button></td>
+		      <td><button type="button" class="btn btn-primary btn-sm js-open-modal" data-modal="modal" onclick='fillErrorsModal("row_{{ forloop.counter0 }}", testResults)'><img src='{% search_icon %}'> Показать</button></td>
 	      </tr>
 		{% endfor %}
 	    </tbody>
@@ -59,8 +59,12 @@
 
 <script src="{% static 'main/js/modalWindow.js' %}"></script>
 <script src="{% static 'main/js/table.js' %}"></script>
+<script src="{% static 'main/js/jquery-3.5.1.js' %}"></script>
 <script type="text/javascript">
-	const questions = "{{ questions }}";
+	let testResults = {};
+	$.get("{% url 'api:get_tests_results' test_results_id %}").done(function(response) {
+        testResults = response['results'][0];
+    });
 	activateModalWindows();
 </script>
 

@@ -45,9 +45,9 @@
     </div>
 </form>
 <script src="{% static 'main/js/runTest.js' %}"></script>
+<script src="{% static 'main/js/jquery-3.5.1.js' %}"></script>
 <script type="text/javascript">
-	const timeLeft = {{ test_duration }};
-	runTest(timeLeft, "{% url 'main:get_left_time' %}", "{{ csrf_token }}");
+	runTest({{ test_duration }}, "{% url 'main:get_left_time' %}", "{{ csrf_token }}");
 </script>
 
 {% endblock %}

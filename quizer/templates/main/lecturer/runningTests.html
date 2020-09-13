@@ -43,7 +43,7 @@
 		<form action="{% url 'main:stop_running_test' %}" method="post">
 		{% csrf_token %}
 			<input type="hidden" name="test_id" id="test_name" value="{{ test.id }}">
-			<button class="btn btn-danger"><img src='/static/main/images/stop.svg'> Оcтановить</button>
+			<button class="btn btn-danger"><img src='{% stop_icon %}'> Оcтановить</button>
 		</form>
 	</label>
 	{% endfor %}

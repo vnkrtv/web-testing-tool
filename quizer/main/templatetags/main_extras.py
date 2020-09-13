@@ -151,3 +151,9 @@ def close_icon():
 def database_icon():
     """Database icon source"""
     return settings.STATIC_URL + 'main/images/database.svg'
+
+
+@register.simple_tag
+def stop_icon():
+    """Stop icon source"""
+    return settings.STATIC_URL + 'main/images/stop.svg'

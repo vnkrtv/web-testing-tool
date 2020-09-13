@@ -118,13 +118,13 @@ function hideTable(input_id, table_id) {
     }
 }
 
-function fillErrorsModal(row_id, questions_list) {
+function fillErrorsModal(rowID, testResults) {
     const container = document.getElementById('errors-container');
     container.innerHTML = "";
-    const result_id = parseInt(row_id.split("_")[1]);
-    const questions = JSON.parse(questions_list.replace(/&quot;/g, '"'))[result_id]
+    const resultID = parseInt(rowID.split("_")[1]);
+    const questions = testResults.results[resultID]['questions'];
 
-    for (let i = 0; i < questions.length; i++) {
+    for (let i in questions) {
         const li = document.createElement("li");
         if (questions[i]["is_true"]) {
             li.className = "list-group-item list-group-item-success";

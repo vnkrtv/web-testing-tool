@@ -59,7 +59,7 @@
 <script src="{% static 'main/js/testsResults.js' %}"></script>
 <script src="{% static 'main/js/jquery-3.5.1.js' %}"></script>
 <script type="text/javascript">
-	main("{% url 'api:get_tests_results' %}", "{% url 'api:get_tests' 'all' %}", "{% url 'main:tests_results' %}");
+	main("{% url 'api:get_tests_results' 'all' %}", "{% url 'api:get_tests' 'all' %}", "{% url 'main:tests_results' %}");
 </script>
 
 {% endblock %}

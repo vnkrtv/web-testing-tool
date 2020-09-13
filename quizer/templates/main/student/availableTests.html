@@ -19,10 +19,10 @@
 					<p><img src='{% user_icon %}'> Запустил: {{ test.launched_lecturer.username }}<br>
 					<img src='{% research_icon %}'> Количество заданий в тесте: {{ test.tasks_num }}<br>
 					<img src='{% clock_icon %}'> Время на выполнение: {{ test.duration }} с</p>
-					<form action="{% url 'main:available_tests' %}" method="post">
+					<form action="{% url 'main:student_run_test' %}" method="post">
 	    			{% csrf_token %}
 	    				<input type="hidden" name="test_id" value="{{ test.id }}">
-						<button class="btn btn-primary" name='run-test'><img src='{% play_icon %}'> Приступить</button>
+						<button class="btn btn-primary"><img src='{% play_icon %}'> Приступить</button>
 					</form>
 				</label>
 	 		</div>

@@ -10,5 +10,5 @@ urlpatterns = [
     path('tests/<str:state>', TestView.as_view(), name='get_tests'),
     path('tests/<int:pk>', TestView.as_view()),
     path('test/<int:test_id>/questions', QuestionView.as_view(), name='get_questions'),
-    path('tests_results/', TestsResultView.as_view(), name='get_tests_results'),
+    path('tests_results/<str:state>', TestsResultView.as_view(), name='get_tests_results'),
 ]

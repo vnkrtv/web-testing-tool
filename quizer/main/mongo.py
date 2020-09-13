@@ -6,7 +6,7 @@ import shutil
 from pathlib import Path
 from datetime import datetime, timedelta
 import pymongo
-from bson import ObjectId
+from bson import ObjectId, errors
 from django.conf import settings
 from .models import Test, QuestionType
 
@@ -286,7 +286,7 @@ class RunningTestsAnswersStorage(MongoDB):
         })
         if not right_answers:
             return None
-        delta = datetime.now() - right_answers['start_date']
+        delta = datetime.now() + timedelta(hours=3) - right_answers['start_date']
         return right_answers['test_duration'] - delta.total_seconds()
 
     def delete(self, user_id: int) -> None:
@@ -306,13 +306,13 @@ class RunningTestsAnswersStorage(MongoDB):
 
         :param user_id: <int>
         """
-        docs = self._col.find({
+        docs = list(self._col.find({
             'user_id': user_id,
-        })
+        }))
         self._col.delete_many({
             'user_id': user_id,
         })
-        return list(docs) if docs else []
+        return docs
 
 
 class TestsResultsStorage(MongoDB):
@@ -478,9 +478,12 @@ class TestsResultsStorage(MongoDB):
         :param _id: <str>, result id
         :return: <dict>, test results
         """
-        test_results = self._col.find_one({
-            '_id': ObjectId(_id)
-        })
+        try:
+            test_results = self._col.find_one({
+                '_id': ObjectId(_id)
+            })
+        except errors.InvalidId:
+            test_results = {}
         if test_results:
             for student_result in test_results['results']:
                 student_result['date'] = student_result['date'].strftime("%H:%M:%S  %d.%m.%y")

@@ -483,25 +483,26 @@ class TestsView(View):
     def edit_question(self, request):
         """Editing question for test"""
         test_id = int(request.POST['test_id'])
+        formulation = request.POST['formulation']
         test = Test.objects.get(id=test_id)
-        updated_params = utils.parse_edit_question_form(request)
 
         storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())
         if request.POST['with_images'] == 'on':
             storage.update_formulation(
                 question_id=request.POST['question_id'],
-                formulation=updated_params['formulation']
+                formulation=formulation
             )
         else:
+            updated_params = utils.parse_edit_question_form(request)
             storage.update(
                 question_id=request.POST['question_id'],
-                formulation=updated_params['formulation'],
+                formulation=formulation,
                 options=updated_params['options']
             )
         message = "Вопрос '%s' к тесту '%s' успешно отредактирован."
         self.context = {
             'modal_title': 'Вопрос отредактирован',
-            'modal_message': message % (updated_params['formulation'], test.name)
+            'modal_message': message % (formulation, test.name)
         }
 
 

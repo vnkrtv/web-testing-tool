@@ -167,12 +167,10 @@ def parse_edit_question_form(request: HttpRequest) -> dict:
         right_options_nums = [key.split('_')[2] for key in request.POST if 'is_true_' in key]
     else:
         right_options_nums = [request.POST['is_true']]
-    options = {}
-    if request.POST['with_images'] == '':
-        options = {
-            key.split('_')[1]: request.POST[key]
-            for key in request.POST if 'option_' in key
-        }
+    options = {
+        key.split('_')[1]: request.POST[key]
+        for key in request.POST if 'option_' in key
+    }
     for option_num in options:
         updated_params['options'].append({
             'option': options[option_num],

@@ -1,13 +1,12 @@
 # pylint: disable=import-error, line-too-long, relative-beyond-top-level
 """Quizer backend"""
 import random
-import traceback
 from datetime import datetime, timedelta
 
 from jwt import DecodeError
 
 from django.contrib.auth.models import User
-from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth import login, logout
 from django.shortcuts import render, redirect, reverse
 from django.utils.decorators import method_decorator
 from django.http import JsonResponse, HttpResponse
@@ -44,34 +43,37 @@ def login_page(request):
     logout(request)
     try:
         username, group = utils.get_auth_data(request)
+        print(username, group)
     except DecodeError:
-        return HttpResponse('JWT decode error: %s' % traceback.format_exc().replace('File', '<br><br>File'))
-    try:
-        user = User.objects.get(username=username)
-
-        if user is None:
-            group2id = {
-                'dev': 1,
-                'admin': 1,
-                'teacher': 1,
-                'student': 2
-            }
-            if group in ['student', 'teacher']:
-                user = User(username=username, password='')
-            elif group in ['dev', 'admin']:
-                user = User.objects.create_superuser(username=username, email='', password='')
-            else:
-                return HttpResponse('Incorrect group.')
-            user.save()
-            user.groups.add(group2id[group])
-        login(request, user)
-        mongo.set_conn(
-            host=settings.DATABASES['default']['HOST'],
-            port=settings.DATABASES['default']['PORT'],
-            db_name=settings.DATABASES['default']['NAME'])
-        return redirect(reverse('main:available_tests'))
-    except Exception:
-        return HttpResponse('Error: %s' % traceback.format_exc().replace('File', '<br><br>File'))
+        return HttpResponse("JWT decode error: chet polomalos'")
+    group2id = {
+        'dev': 1,
+        'admin': 1,
+        'teacher': 1,
+        'student': 2
+    }
+    user = User.objects.get(username=username)
+    if user is None:
+        if group in ['student', 'teacher']:
+            user = User(username=username, password='')
+        elif group in ['dev', 'admin']:
+            user = User.objects.create_superuser(username=username, email='', password='')
+        else:
+            return HttpResponse('Incorrect group.')
+        user.save()
+        user.groups.add(group2id[group])
+    id2group = {
+        1: 'lecturer',
+        2: 'student'
+    }
+    if not user.groups.filter(name=id2group[group2id[group]]):
+        return HttpResponse("User with username '%s' already exist." % user.username)
+    login(request, user)
+    mongo.set_conn(
+        host=settings.DATABASES['default']['HOST'],
+        port=settings.DATABASES['default']['PORT'],
+        db_name=settings.DATABASES['default']['NAME'])
+    return redirect(reverse('main:available_tests'))
 
 
 class AvailableTestsView(View):
@@ -210,6 +212,7 @@ class AvailableTestsView(View):
                 'id': str(question['_id'])
             }
         storage = mongo.RunningTestsAnswersStorage.connect(db=mongo.get_conn())
+        storage.cleanup(user_id=request.user.id)
         storage.add(
             right_answers=right_answers,
             test_id=test.id,

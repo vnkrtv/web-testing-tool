@@ -20,7 +20,7 @@
 	 	<li class="list-group-item">{{ forloop.counter }}. {{ question.formulation }}
 	 		<ul class="list-group list-group-flush">
             	{% for option in question.options %}
-        		<li class="list-group-item">
+        		<li class="list-group-item list-group-item-action" onclick='clickOption("{{ forloop.parentloop.counter }}_{{ option.option }}")'>
         			<label for='{{ forloop.parentloop.counter }}_{{ forloop.counter }}'>
             			{% if question.multiselect %}
                     		<input type="checkbox" id='{{ forloop.parentloop.counter }}_{{ option.option }}' name='{{ forloop.parentloop.counter }}_{{ option.option }}'>
@@ -47,6 +47,10 @@
 <script src="{% static 'main/js/runTest.js' %}"></script>
 <script src="{% static 'main/js/jquery-3.5.1.js' %}"></script>
 <script type="text/javascript">
+	function clickOption(option_id) {
+		const elem = document.getElementById(option_id);
+		elem.checked = elem.checked == null || elem.checked === false;
+	}
 	runTest({{ test_duration }}, "{% url 'main:get_left_time' %}", "{{ csrf_token }}");
 </script>
 

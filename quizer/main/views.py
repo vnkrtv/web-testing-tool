@@ -47,10 +47,7 @@ def login_page(request):
     except DecodeError:
         return HttpResponse('JWT decode error: %s' % traceback.format_exc().replace('File', '<br><br>File'))
     try:
-        if username == 'user':
-            user = User.objects.get(username='user')
-        else:
-            user = authenticate(username=username, password='')
+        user = User.objects.get(username=username)
 
         if user is None:
             group2id = {

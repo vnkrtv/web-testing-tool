@@ -48,29 +48,30 @@ def login_page(request):
         return HttpResponse('JWT decode error: %s' % traceback.format_exc().replace('File', '<br><br>File'))
     try:
         user = authenticate(username=username, password='')
+
+        if user is None:
+            group2id = {
+                'dev': 1,
+                'admin': 1,
+                'teacher': 1,
+                'student': 2
+            }
+            if group in ['student', 'teacher']:
+                user = User(username=username, password='')
+            elif group in ['dev', 'admin']:
+                user = User.objects.create_superuser(username=username, email='', password='')
+            else:
+                return HttpResponse('Incorrect group.')
+            user.save()
+            user.groups.add(group2id[group])
+        login(request, user)
+        mongo.set_conn(
+            host=settings.DATABASES['default']['HOST'],
+            port=settings.DATABASES['default']['PORT'],
+            db_name=settings.DATABASES['default']['NAME'])
+        return redirect(reverse('main:available_tests'))
     except Exception:
         return HttpResponse('Error: %s' % traceback.format_exc().replace('File', '<br><br>File'))
-    if user is None:
-        group2id = {
-            'dev': 1,
-            'admin': 1,
-            'teacher': 1,
-            'student': 2
-        }
-        if group in ['student', 'teacher']:
-            user = User(username=username, password='')
-        elif group in ['dev', 'admin']:
-            user = User.objects.create_superuser(username=username, email='', password='')
-        else:
-            return HttpResponse('Incorrect group.')
-        user.save()
-        user.groups.add(group2id[group])
-    login(request, user)
-    mongo.set_conn(
-        host=settings.DATABASES['default']['HOST'],
-        port=settings.DATABASES['default']['PORT'],
-        db_name=settings.DATABASES['default']['NAME'])
-    return redirect(reverse('main:available_tests'))
 
 
 class AvailableTestsView(View):

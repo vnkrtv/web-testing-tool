@@ -46,7 +46,10 @@ def login_page(request):
         username, group = utils.get_auth_data(request)
     except DecodeError:
         return HttpResponse('JWT decode error: %s' % traceback.format_exc().replace('File', '<br><br>File'))
-    user = authenticate(username=username, password='')
+    try:
+        user = authenticate(username=username, password='')
+    except Exception:
+        return HttpResponse('Error: %s' % traceback.format_exc().replace('File', '<br><br>File'))
     if user is None:
         group2id = {
             'dev': 1,

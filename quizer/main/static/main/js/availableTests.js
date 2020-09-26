@@ -84,7 +84,7 @@ function main(testsUrl, staticPath, url, tokenTag) {
     subject.onkeyup = subject.onchange = () =>  {
         testsContainer.innerHTML = '';
         for (let test of tests) {
-            if (test.name.includes(nameFilter.value)) {
+            if (test.name.toLowerCase().includes(nameFilter.value.toLowerCase())) {
                 if (test.subject.id == subject.options[subject.selectedIndex].value) {
                     testsContainer.appendChild(getForm(test, staticPath, url, tokenTag));
                 }
@@ -95,7 +95,7 @@ function main(testsUrl, staticPath, url, tokenTag) {
     nameFilter.onkeyup = nameFilter.onchange = () =>  {
         testsContainer.innerHTML = '';
         for (let test of tests) {
-            if (test.name.includes(nameFilter.value)) {
+            if (test.name.toLowerCase().includes(nameFilter.value.toLowerCase())) {
                 if (test.subject.id == subject.options[subject.selectedIndex].value) {
                     testsContainer.appendChild(getForm(test, staticPath, url, tokenTag));
                 }

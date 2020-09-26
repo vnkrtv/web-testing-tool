@@ -158,7 +158,7 @@ function main(testsUrl, staticPath, questionsRef) {
     subject.onkeyup = subject.onchange = () =>  {
         testsContainer.innerHTML = '';
         for (let test of tests) {
-            if (test.name.includes(nameFilter.value)) {
+            if (test.name.toLowerCase().includes(nameFilter.value.toLowerCase())) {
                 if (test.subject.id == subject.options[subject.selectedIndex].value) {
                     testsContainer.appendChild(getDivElement(test, staticPath, questionsRef));
                 }
@@ -170,7 +170,7 @@ function main(testsUrl, staticPath, questionsRef) {
     nameFilter.onkeyup = nameFilter.onchange = () =>  {
         testsContainer.innerHTML = '';
         for (let test of tests) {
-            if (test.name.includes(nameFilter.value)) {
+            if (test.name.toLowerCase().includes(nameFilter.value.toLowerCase())) {
                 if (test.subject.id == subject.options[subject.selectedIndex].value) {
                     testsContainer.appendChild(getDivElement(test, staticPath, questionsRef));
                 }

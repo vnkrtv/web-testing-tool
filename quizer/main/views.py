@@ -217,9 +217,18 @@ class AvailableTestsView(View):
             test_id=test.id,
             user_id=request.user.id,
             test_duration=test.duration)
+
+        if len(test_questions) < 25:
+            group_size = len(test_questions)
+        else:
+            group_size = 25
+        questions_list = list(zip(*[iter(test_questions)] * group_size))
+        questions_list += [test_questions[len(questions_list) * group_size:]]
+        questions_list = [(questions_group, len(questions_group) * i) for i, questions_group in enumerate(questions_list)]
         self.context = {
             'title': 'Тест',
             'questions': test_questions,
+            'questions_list': questions_list,
             'test_duration': test.duration,
             'test_name': test.name,
             'right_answers': right_answers,

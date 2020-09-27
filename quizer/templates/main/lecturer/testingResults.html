@@ -38,7 +38,7 @@
 		      <td>{{ result.right_answers_count }}/{{ result.tasks_num }}</td>
 		      <td>{{ result.time }} c</td>
 		      <td>{{ result.date }}</td>
-		      <td><button type="button" class="btn btn-primary btn-sm js-open-modal" data-modal="modal" onclick='fillErrorsModal("row_{{ forloop.counter0 }}", testResults)'><img src='{% search_icon %}'> Показать</button></td>
+		      <td><button type="button" class="btn btn-primary btn-sm js-open-modal" data-modal="modal" onclick='fillErrorsModal("row_{{ forloop.counter0 }}", testResults, questionsMap)'><img src='{% search_icon %}'> Показать</button></td>
 	      </tr>
 		{% endfor %}
 	    </tbody>
@@ -50,7 +50,7 @@
    <img class="modal__cross js-modal-close" src="{% close_icon %}">
    <h4>Результат</h4>
    <hr class="my hr4">  
-   <ul id='errors-container' class="list-group list-group-flush"></ul>
+   <ul id='errors-container' class="list-group"></ul>
    <div class="modal-footer">
    		<button type="button" class="btn btn-primary js-modal-close"><img class="js-modal-close" src="{% cancel_icon %}"> Закрыть</button>
    </div>
@@ -61,9 +61,17 @@
 <script src="{% static 'main/js/table.js' %}"></script>
 <script src="{% static 'main/js/jquery-3.5.1.js' %}"></script>
 <script type="text/javascript">
-	let testResults = {};
+	let testResults = [];
+	let questions = [];
+	let questionsMap = new Map();
 	$.get("{% url 'api:get_tests_results' test_results_id %}").done(function(response) {
         testResults = response['results'][0];
+    });
+    $.get("{% url 'api:get_questions' test.id %}").done(function(response) {
+        questions = response['questions'];
+        questions.forEach(function(question) {
+			questionsMap.set(question.id, question)
+		});
     });
 	activateModalWindows();
 </script>

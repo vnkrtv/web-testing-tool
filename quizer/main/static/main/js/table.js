@@ -118,23 +118,54 @@ function hideTable(input_id, table_id) {
     }
 }
 
-function fillErrorsModal(rowID, testResults) {
+function fillErrorsModal(rowID, testResults, questionsMap) {
     const container = document.getElementById('errors-container');
     container.innerHTML = "";
     const resultID = parseInt(rowID.split("_")[1]);
     const questions = testResults.results[resultID]['questions'];
 
     for (let i in questions) {
-        const li = document.createElement("li");
-        if (questions[i]["is_true"]) {
-            li.className = "list-group-item list-group-item-success";
-            li.innerHTML = `${i}. Верно`;
-        } else {
-            li.className = "list-group-item list-group-item-danger";
-            li.innerHTML = `${i}. Ошибка<br>
-            Выбрано: ${questions[i]["selected_answers"]}<br>
-            Верно: ${questions[i]["right_answers"]}`;
+        const questionLi = document.createElement("li");
+        let question = questionsMap.get(questions[i].id);
+        questionLi.className = "list-group-item question";
+        questionLi.innerText = `${1 + parseInt(i)}. ${question.formulation}`;
+
+        const ul = document.createElement("ul");
+        ul.className = "list-group list-group-flush ul-hover";
+        questionLi.appendChild(ul);
+        console.log(questions[i]);
+        for (let option of question.options) {
+            const optionLi = document.createElement("li");
+            optionLi.className = "list-group-item";
+            if (question.type === '') {
+                optionLi.innerText = option.option;
+                console.log(option);
+                console.log(questions[i].selected_answers);
+                console.log(questions[i].selected_answers.indexOf(option.option) !== -1);
+                if (option.is_true) {
+                    if (questions[i].selected_answers.indexOf(option.option) !== -1) {
+                        optionLi.classList.add('list-group-item-success')
+                    } else {
+                        optionLi.classList.add('list-group-item-secondary');
+                    }
+                    // optionLi.classList.add('list-group-item-success');
+                } else {
+                    if (questions[i].selected_answers.indexOf(option.option) !== -1) {
+                        optionLi.classList.add('list-group-item-danger')
+                    }
+                }
+            } else if (question.type === 'image') {
+
+            } else {
+
+            }
+            if (questions[i].is_true) {
+                questionLi.classList.add('list-group-item-success');
+            } else {
+                questionLi.classList.add('list-group-item-danger');
+            }
+            ul.appendChild(optionLi);
         }
-        container.appendChild(li);
+        container.appendChild(questionLi);
     }
 }

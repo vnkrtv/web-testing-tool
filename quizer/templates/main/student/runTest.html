@@ -1,4 +1,3 @@
-
 {% extends "main/studentWrapper.html" %}
 
 {% block content %}
@@ -8,50 +7,85 @@
 {% load static %}
 
 <form action="{% url 'main:test_result' %}" method="post">
-	<div class="jumbotron">
-	<div id="time-div" style="font-size: 175%;"></div>
-	<label for='time'>
-		<input id="time" type="hidden" name='time' value="{{ test_duration }}">
-	</label>
-	<br>
-	<ul class="list-group">
-		{% csrf_token %}
-    	{% for question in questions %}
-	 	<li class="list-group-item">{{ forloop.counter }}. {{ question.formulation }}
-	 		<ul class="list-group list-group-flush">
-            	{% for option in question.options %}
-        		<li class="list-group-item list-group-item-action" onclick='clickOption("{{ forloop.parentloop.counter }}_{{ option.option }}")'>
-        			<label for='{{ forloop.parentloop.counter }}_{{ forloop.counter }}'>
-            			{% if question.multiselect %}
-                    		<input type="checkbox" id='{{ forloop.parentloop.counter }}_{{ option.option }}' name='{{ forloop.parentloop.counter }}_{{ option.option }}'>
-            			{% else %}
-                    		<input type="radio" id='{{ forloop.parentloop.counter }}_{{ option.option }}' name='{{ forloop.parentloop.counter }}' value="{{ option.option }}">
-            			{% endif %}
-            		</label>
-            		{% if question.type == 'image' %}
-		        		<img src='{% media_url %}{{ option.option }}' alt="Server pribolel" height="341" style="width: auto;">
-            		{% else %}
-                    	{{ option.option }}          		    
-            		{% endif %}           	    
+    <div class="jumbotron" id='top'>
+    <div class="list-group-item" style="position: sticky; top: 0; z-index: 228;">
+        <div id="time-div" style="font-size: 175%;"></div>
+        <div class="list-group list-group-horizontal">
+        {% for question in questions %}
+            {% if forloop.first %}
+                <a data-scroll href="#top" id="ref_{{ forloop.counter }}" class="list-group-item list-group-item-action text-center">{{ forloop.counter }}</a>
+            {% else %}
+                <a data-scroll href="#{{ forloop.counter0 }}" id="ref_{{ forloop.counter }}" class="list-group-item list-group-item-action text-center">{{ forloop.counter }}</a>
+            {% endif %}
+        {% endfor %}
+        </div>
+    </div>
+    <label for='time'>
+        <input id="time" type="hidden" name='time' value="{{ test_duration }}">
+    </label>
+    <br>
+    <ul class="list-group">
+        {% csrf_token %}
+        {% for question in questions %}
+        <li class="list-group-item question" id='{{ forloop.counter }}'>{{ forloop.counter }}. {{ question.formulation }}
+            <ul class="list-group list-group-flush ul-hover">
+                {% for option in question.options %}
+                <li class="list-group-item list-group-item-action" onclick='clickOption("{{ forloop.parentloop.counter }}_{{ forloop.counter }}")'>
+                    {% if question.multiselect %}
+                        <input type="checkbox" id='{{ forloop.parentloop.counter }}_{{ forloop.counter }}' name='{{ forloop.parentloop.counter }}_{{ option.option }}' onclick='clickOption("{{ forloop.parentloop.counter }}_{{ forloop.counter }}")'>
+                    {% else %}
+                        <input type="radio" id='{{ forloop.parentloop.counter }}_{{ forloop.counter }}' name='{{ forloop.parentloop.counter }}' value="{{ option.option }}" onclick='clickOption("{{ forloop.parentloop.counter }}_{{ forloop.counter }}")'>
+                    {% endif %}
+                    <label for='{{ forloop.parentloop.counter }}_{{ forloop.counter }}'></label>
+                    {% if question.type == 'image' %}
+                        <img src='{% media_url %}{{ option.option }}' alt="Server pribolel" height="341" style="width: auto;">
+                    {% else %}
+                        {{ option.option }}                     
+                    {% endif %}                 
                 </li>
-            	{% endfor %}
-			</ul>
-	    </li>
-	    <br>
- 		{% endfor %}
+                {% endfor %}
+            </ul>
+        </li>
+        <br>
+        {% endfor %}
     </ul>
     <br>
-    <button class="btn btn-primary" id="stop-button" name="test-passed"><img src='{% finish_icon %}'> Закончить тест</button>
+    <button class="btn btn-primary" id="stop-button" name="lecturer-passed-test"><img src='{% finish_icon %}'> Закончить тест</button>
     </div>
 </form>
 <script src="{% static 'main/js/runTest.js' %}"></script>
 <script src="{% static 'main/js/jquery-3.5.1.js' %}"></script>
+<script src="{% static 'main/js/smooth-scroll.js' %}"></script>
 <script type="text/javascript">
-	function clickOption(option_id) {
-		const elem = document.getElementById(option_id);
-		elem.checked = elem.checked == null || elem.checked === false;
-	}
-	runTest({{ test_duration }}, "{% url 'main:get_left_time' %}", "{{ csrf_token }}");
+    function clickOption(optionID) {
+        if (this.questionsMap === undefined) {
+            this.questionsMap = new Map();
+            for (let i = 0; i < document.querySelectorAll("li.question").length; i++) {
+                this.questionsMap.set(i, new Set());
+            }
+        }
+        const questionID = parseInt(optionID.toString().split('_')[0]);
+        const option = document.getElementById(optionID);
+        option.checked = option.checked == null || option.checked === false;
+        console.log(optionID);
+        if (option.checked) {
+            if (option.type === 'radio') {
+                this.questionsMap.get(questionID).clear();
+            }
+            this.questionsMap.get(questionID).add(optionID);
+        } else {
+            this.questionsMap.get(questionID).delete(optionID);
+        }
+        const questionRef = document.getElementById('ref_' + questionID);
+        console.log(this.questionsMap);
+        if (this.questionsMap.get(questionID).size === 0) {
+            questionRef.classList.remove('list-group-item-info');
+        } else {
+            questionRef.classList.add('list-group-item-info');
+        }
+    }
+    let scroll = new SmoothScroll('a[href*="#"]');
+    runTest({{ test_duration }}, "{% url 'main:get_left_time' %}", "{{ csrf_token }}");
 </script>
 
 {% endblock %}

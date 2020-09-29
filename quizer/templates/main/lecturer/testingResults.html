@@ -38,7 +38,7 @@
 		      <td>{{ result.right_answers_count }}/{{ result.tasks_num }}</td>
 		      <td>{{ result.time }} c</td>
 		      <td>{{ result.date }}</td>
-		      <td><button type="button" class="btn btn-primary btn-sm js-open-modal" data-modal="modal" onclick='fillErrorsModal("row_{{ forloop.counter0 }}", testResults, questionsMap)'><img src='{% search_icon %}'> Показать</button></td>
+		      <td><button type="button" class="btn btn-primary btn-sm js-open-modal" data-modal="modal" onclick='fillErrorsModal("row_{{ forloop.counter0 }}", testResults, questionsMap, "{% media_url %}")'><img src='{% search_icon %}'> Показать</button></td>
 	      </tr>
 		{% endfor %}
 	    </tbody>

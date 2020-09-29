@@ -118,7 +118,7 @@ function hideTable(input_id, table_id) {
     }
 }
 
-function fillErrorsModal(rowID, testResults, questionsMap) {
+function fillErrorsModal(rowID, testResults, questionsMap, mediaUrl) {
     const container = document.getElementById('errors-container');
     container.innerHTML = "";
     const resultID = parseInt(rowID.split("_")[1]);
@@ -127,8 +127,9 @@ function fillErrorsModal(rowID, testResults, questionsMap) {
     for (let i in questions) {
         const questionLi = document.createElement("li");
         let question = questionsMap.get(questions[i].id);
-        questionLi.className = "list-group-item question";
+        questionLi.className = "list-group-item borderless question";
         questionLi.innerText = `${1 + parseInt(i)}. ${question.formulation}`;
+        questionLi.style = 'border: 2px solid #FFF; border-radius: 5px;';
 
         const ul = document.createElement("ul");
         ul.className = "list-group list-group-flush ul-hover";
@@ -136,35 +137,38 @@ function fillErrorsModal(rowID, testResults, questionsMap) {
         console.log(questions[i]);
         for (let option of question.options) {
             const optionLi = document.createElement("li");
-            optionLi.className = "list-group-item";
+            optionLi.className = "list-group-item list-group-item-action";
+            optionLi.style = 'border: 2px solid #FFF; border-radius: 5px;';
             if (question.type === '') {
                 optionLi.innerText = option.option;
-                console.log(option);
-                console.log(questions[i].selected_answers);
-                console.log(questions[i].selected_answers.indexOf(option.option) !== -1);
-                if (option.is_true) {
-                    if (questions[i].selected_answers.indexOf(option.option) !== -1) {
-                        optionLi.classList.add('list-group-item-success')
-                    } else {
-                        optionLi.classList.add('list-group-item-secondary');
-                    }
-                    // optionLi.classList.add('list-group-item-success');
-                } else {
-                    if (questions[i].selected_answers.indexOf(option.option) !== -1) {
-                        optionLi.classList.add('list-group-item-danger')
-                    }
-                }
             } else if (question.type === 'image') {
-
-            } else {
-
+                const imgOption = document.createElement('img');
+                imgOption.setAttribute('alt', 'Server pribolel');
+                imgOption.setAttribute('height', '341');
+                imgOption.setAttribute('style', "width: auto;");
+                imgOption.setAttribute('src', mediaUrl + option.option);
+                optionLi.appendChild(imgOption);
             }
-            if (questions[i].is_true) {
-                questionLi.classList.add('list-group-item-success');
+            if (option.is_true) {
+                if (questions[i].selected_answers.indexOf(option.option) !== -1) {
+                    optionLi.classList.add('list-group-item-success');
+                    optionLi.title = 'Выбран правильный ответ';
+                } else {
+                    optionLi.classList.add('list-group-item-secondary');
+                    optionLi.title = 'Правильный ответ не выбран';
+                }
             } else {
-                questionLi.classList.add('list-group-item-danger');
+                if (questions[i].selected_answers.indexOf(option.option) !== -1) {
+                    optionLi.classList.add('list-group-item-danger');
+                    optionLi.title = 'Выбран неправильный ответ';
+                }
             }
             ul.appendChild(optionLi);
+        }
+        if (questions[i].is_true) {
+            questionLi.classList.add('list-group-item-success');
+        } else {
+            questionLi.classList.add('list-group-item-danger');
         }
         container.appendChild(questionLi);
     }

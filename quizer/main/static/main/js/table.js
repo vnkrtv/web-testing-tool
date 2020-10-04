@@ -1,6 +1,6 @@
-function tableSearch(input_id, table_id) {
-    const phrase = document.getElementById(input_id);
-    const table = document.getElementById(table_id);
+function tableSearch(searchInputID, tableID) {
+    const phrase = document.getElementById(searchInputID);
+    const table = document.getElementById(tableID);
     const regPhrase = new RegExp(phrase.value.toLowerCase(), 'i');
     let flag = false;
     for (let i = 1; i < table.rows.length; i++) {
@@ -17,26 +17,26 @@ function tableSearch(input_id, table_id) {
     }
 }
 
-function sortTableByNums(table_id, column_num, has_child) {
-    const table = document.getElementById(table_id);
-    let rows, i, x, y, shouldSwitch;
+function sortTableByNums(tableID, columnNum, hasChild) {
+    const table = document.getElementById(tableID);
+    let shouldSwitch;
     let switchCount = 0;
     let switching = true;
     let dir = "asc";
 
     while (switching) {
         switching = false;
-        rows = table.rows;
+        let rows = table.rows;
 
-        for (i = 1; i < (rows.length - 1); i++) {
+        for (let i = 1; i < (rows.length - 1); i++) {
             shouldSwitch = false;
 
-            x = rows[i].getElementsByTagName("TD")[column_num];
-            if (has_child) {
+            let x = rows[i].getElementsByTagName("TD")[columnNum];
+            if (hasChild) {
                 x = x.firstChild;
             }
-            y = rows[i + 1].getElementsByTagName("TD")[column_num];
-            if (has_child) {
+            let y = rows[i + 1].getElementsByTagName("TD")[columnNum];
+            if (hasChild) {
                 y = y.firstChild;
             }
             if (dir === "asc") {
@@ -64,22 +64,22 @@ function sortTableByNums(table_id, column_num, has_child) {
     }
 }
 
-function sortTable(table_id, column_num) {
-    const table = document.getElementById(table_id);
-    let rows, i, x, y, shouldSwitch;
+function sortTable(tableID, columnNum) {
+    const table = document.getElementById(tableID);
+    let shouldSwitch;
     let switchCount = 0;
     let switching = true;
     let dir = "asc";
 
     while (switching) {
         switching = false;
-        rows = table.rows;
+        let rows = table.rows;
 
-        for (i = 1; i < (rows.length - 1); i++) {
+        for (let i = 1; i < (rows.length - 1); i++) {
             shouldSwitch = false;
 
-            x = rows[i].getElementsByTagName("TD")[column_num];
-            y = rows[i + 1].getElementsByTagName("TD")[column_num];
+            let x = rows[i].getElementsByTagName("TD")[columnNum];
+            let y = rows[i + 1].getElementsByTagName("TD")[columnNum];
             if (dir === "asc") {
                 if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
                   shouldSwitch = true;
@@ -105,17 +105,11 @@ function sortTable(table_id, column_num) {
     }
 }
 
-function hideTable(input_id, table_id) {
-    if (document.getElementById(input_id).style.display === "") {
-        document.getElementById(input_id).style.display = "none";
-    } else {
-        document.getElementById(input_id).style.display = "";
-    }
-    if (document.getElementById(table_id).style.display === "") {
-        document.getElementById(table_id).style.display = "none";
-    } else {
-        document.getElementById(table_id).style.display = "";
-    }
+function hideTable(searchInputID, tableID) {
+    const searchInput = document.getElementById(searchInputID);
+    const table = document.getElementById(tableID);
+    searchInput.style.display = (searchInput.style.display === "") ? "none" : "";
+    table.style.display = (table.style.display === "") ? "none" : "";
 }
 
 function fillErrorsModal(rowID, testResults, questionsMap, mediaUrl) {

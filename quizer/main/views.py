@@ -51,8 +51,9 @@ def login_page(request):
         'teacher': 1,
         'student': 2
     }
-    user = User.objects.get(username=username)
-    if user is None:
+    try:
+        user = User.objects.get(username=username)
+    except User.DoesNotExist:
         if group in ['student', 'teacher']:
             user = User(username=username, password='')
         elif group in ['dev', 'admin']:

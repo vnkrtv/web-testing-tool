@@ -20,6 +20,8 @@ class SubjectView(APIView):
     def get(self, _):
         subjects = Subject.objects.all()
         serializer = SubjectSerializer(subjects, many=True)
+        for subject in serializer.data:
+            subject['tests_count'] = Test.objects.filter(subject=subject['id']).count()
         return Response({
             'subjects': serializer.data
         })

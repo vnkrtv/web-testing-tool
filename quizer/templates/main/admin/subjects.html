@@ -16,11 +16,12 @@
     <div class="btn-group mr-2">
         <button class="btn btn-success js-open-modal" data-modal="load-modal" onclick='clearForms()'><img src='{% download_icon %}'> Загрузить предмет</button>
     </div>
+    <div id="subjects-container">
     {% for subject, tests_count in subjects %}
       <hr class="my-4">
       <h3 id="subject-name-{{ subject.id }}">{{ subject.name }}</h3>
       <p id="subject-description-{{ subject.id }}">{{ subject.description }}</p>
-      <p><img src='{% database_icon %}'> Тестов к предмету: {{ tests_count }}<br>
+      <p><img src='{% database_icon %}'> Тестов к предмету: {{ tests_count }}</p>
       <div class="btn-group mr-2">
           <button class="btn btn-primary js-open-modal" data-modal="edit-modal" onclick='fillEditModal("{{ subject.id }}")'><img src="{% edit_icon %}"> Редактировать</button>
       </div>
@@ -28,6 +29,7 @@
           <button class="btn btn-danger js-open-modal" data-modal="delete-modal" onclick='fillDeleteModal("{{ subject.id }}")'><img src="{% delete_icon %}"> Удалить</button>
       </div>
     {% endfor %}
+    </div>
 </div>
 
 <div class="modal-window" data-modal="add-modal">
@@ -153,10 +155,81 @@
     <div class="overlay js-overlay-modal"></div>
 {% endif %}
 
+<script src="{% static 'main/js/jquery-3.5.1.js' %}"></script>
 <script src="{% static 'main/js/modalWindow.js' %}"></script>
 <script src="{% static 'main/js/managingSubjects.js' %}"></script>
 <script type="text/javascript">
-  activateModalWindows();  
+    function renderSubjects(subjectsAPIUrl, dbIconUrl, editIconUrl, delIconUrl) {
+        $.get(subjectsAPIUrl).done(function(response) {
+            const subjects = response['subjects'];
+            const subjectsDiv = document.getElementById("subjects-container");
+            subjectsDiv.innerHTML = "";
+            for (const subject of subjects) {
+                const container = document.createElement("div");
+                const hr = document.createElement("hr");
+                hr.className = "my-h4";
+                container.appendChild(hr);
+
+                const nameH3 = document.createElement("h3");
+                nameH3.id = "subject-name-" + subject.id;
+                nameH3.innerText = subject.name;
+                container.appendChild(nameH3);
+
+                const descriptionP = document.createElement("p");
+                descriptionP.id = "subject-description-" + subject.id;
+                descriptionP.innerText = subject.description;
+                container.appendChild(descriptionP);
+
+                const dbImg = document.createElement("img");
+                dbImg.setAttribute("src", dbIconUrl);
+
+                const testsP = document.createElement("p");
+                testsP.appendChild(dbImg);
+                testsP.append(` Тестов к предмету: ${subject.tests_count}`);
+                container.appendChild(testsP);
+
+                const editDiv = document.createElement("div");
+                editDiv.className = "btn-group mr-2";
+
+                const editButton = document.createElement("button");
+                editButton.className = "btn btn-primary js-open-modal";
+                editButton.setAttribute("data-modal", "edit-modal");
+                editButton.setAttribute("onclick", `fillEditModal("${subject.id}")`);
+
+                const editImg = document.createElement("img");
+                editImg.setAttribute("src", editIconUrl);
+                editButton.appendChild(editImg);
+                editButton.append(" Редактировать");
+
+                editDiv.appendChild(editButton);
+                container.appendChild(editDiv);
+
+
+                const delDiv = document.createElement("div");
+                delDiv.className = "btn-group mr-2";
+
+                const delButton = document.createElement("button");
+                delButton.className = "btn btn-danger js-open-modal";
+                delButton.setAttribute("data-modal", "delete-modal");
+                delButton.setAttribute("onclick", `fillDeleteModal("${subject.id}")`);
+
+                const delImg = document.createElement("img");
+                delImg.setAttribute("src", delIconUrl);
+                delButton.appendChild(delImg);
+                delButton.append(" Удалить");
+
+                delDiv.appendChild(delButton);
+                container.appendChild(delDiv);
+
+                subjectsDiv.appendChild(container);
+            }
+            activateModalWindows();
+        });
+    }
+    const subjectsAPIUrl = "{% url 'api:get_subjects' %}";
+    const dbIconUrl = "{% database_icon %}";
+    const editIconUrl = "{% edit_icon %}";
+    const delIconUrl = "{% delete_icon %}";
 </script>
 
 {% endblock %}

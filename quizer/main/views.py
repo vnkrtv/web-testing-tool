@@ -248,92 +248,15 @@ class SubjectsView(View):
     def get(self, request):
         """Displays page with all subjects"""
         self.context = {
-            **self.context,
             'title': self.title,
-            'form': SubjectForm(),
-            'subjects': [
-                (subject, Test.objects.filter(subject__id=subject.id).count())
-                for subject in Subject.objects.all()
-            ]
+            'form': SubjectForm()
         }
         return render(request, self.template, self.context)
 
     @method_decorator(decorators)
     def post(self, request):
-        """Configuring subjects"""
-        form = SubjectForm(request.POST)
-        if 'add' in request.POST:
-            self.add_subject(form)
-        elif 'edit' in request.POST:
-            self.edit_subject(request)
-        elif 'delete' in request.POST:
-            self.delete_subject(request)
-        elif 'load' in request.POST:
-            self.load_subject(request, form)
-        else:
-            self.context = {}
+        """Displays page with all subjects"""
         return self.get(request)
-
-    def add_subject(self, form: SubjectForm) -> None:
-        """Adding new study subject"""
-        if form.is_valid():
-            subject = Subject(
-                name=form.cleaned_data.get('name'),
-                description=form.cleaned_data.get('description'))
-            subject.save()
-            self.context = {
-                'modal_title': 'Новый предмет',
-                'modal_message': "Предмет '%s' успешно добавлен." % subject.name
-            }
-        else:
-            self.context = {
-                'modal_title': 'Ошибка',
-                'modal_message': 'Форма добавления некорректно заполнена.'
-            }
-
-    def load_subject(self, request, form: SubjectForm):
-        """Loading new subject with tests"""
-        if form.is_valid():
-            self.context = {
-                'modal_title': 'Новый предмет',
-                'modal_message': utils.add_subject_with_tests(request, form)
-            }
-        else:
-            self.context = {
-                'modal_title': 'Ошибка',
-                'modal_message': 'Форма загрузки некорректно заполнена.'
-            }
-
-    def edit_subject(self, request):
-        """Editing study subject"""
-        name = request.POST['name']
-        subject_id = int(request.POST['subject_id'])
-        Subject.objects.filter(id=subject_id).update(**dict(
-            name=name,
-            description=request.POST['description']))
-        self.context = {
-            'modal_title': 'Предмет отредактирован',
-            'modal_message': f"Предмет '{name}' успешно изменен."
-        }
-
-    def delete_subject(self, request):
-        """Deleting study subjects with all tests and questions"""
-        subject_id = int(request.POST['subject_id'])
-        subject = Subject.objects.get(id=subject_id)
-        subject_name = subject.name
-        tests = Test.objects.filter(subject__id=subject.id)
-        tests_count = tests.count()
-        deleted_questions_count = 0
-        for test in tests:
-            storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())
-            deleted_questions_count += storage.delete_many(test_id=test.id)
-        subject.delete()
-        result = "Учебный предмет '%s', %d тестов к нему, а также все " + \
-                 "вопросы к тестам в количестве %d были успешно удалены."
-        self.context = {
-            'modal_title': 'Предмет удален',
-            'modal_message': result % (subject_name, tests_count, deleted_questions_count)
-        }
 
 
 class TestsView(View):

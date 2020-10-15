@@ -4,7 +4,7 @@ from main.models import Subject, Test
 
 
 class SubjectSerializer(serializers.Serializer):
-    id = serializers.IntegerField()
+    id = serializers.ReadOnlyField()
     name = serializers.CharField(max_length=50)
     description = serializers.CharField()
 

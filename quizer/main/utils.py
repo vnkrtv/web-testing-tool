@@ -301,21 +301,20 @@ def parse_questions_file(file_name: str) -> list:
     return parse_questions(content)
 
 
-def add_subject_with_tests(request: HttpRequest, form: SubjectForm) -> str:
+def add_subject_with_tests(request: HttpRequest) -> str:
     """
     Get information about new subject and test for it from HttpRequest object
 
-    :param form: <SubjectForm>
     :param request: <HttpRequest>
     :return: str with results of loading
     """
     storage = QuestionsStorage.connect(db=get_conn())
 
-    short_name = form.cleaned_data.get('name')
+    short_name = request.POST['name']
     name = SubjectParser.get_name(short_name)
     subject = Subject(
         name=name,
-        description=form.cleaned_data.get('description'))
+        description=request.POST['description'])
     subject.save()
     tests_count = 0
     questions_count = 0
@@ -325,6 +324,7 @@ def add_subject_with_tests(request: HttpRequest, form: SubjectForm) -> str:
         duration = SubjectParser.get_test_duration(short_name)
         tasks_num = SubjectParser.get_questions_count(short_name)
         test = Test(
+            subject=subject,
             name=test_name,
             duration=duration,
             tasks_num=tasks_num)

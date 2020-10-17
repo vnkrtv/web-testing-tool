@@ -22,7 +22,7 @@ from .forms import SubjectForm, TestForm
 
 @unauthenticated_user
 @allowed_users(allowed_roles=['lecturer'])
-def questions(request, test_id: int):
+def manage_questions(request, test_id: int):
     test = Test.objects.filter(id=test_id).first()
     if not test:
         return redirect(reverse('main:available_tests'))
@@ -33,7 +33,7 @@ def questions(request, test_id: int):
     context = {
         'title': 'Вопросы',
         'test': test,
-        'questions': test_questions
+        'manage_questions': test_questions
     }
     return render(request, 'main/lecturer/managingQuestions.html', context)
 
@@ -74,6 +74,65 @@ def login_page(request):
         port=settings.DATABASES['default']['PORT'],
         db_name=settings.DATABASES['default']['NAME'])
     return redirect(reverse('main:available_tests'))
+
+
+@unauthenticated_user
+@allowed_users(allowed_roles=['lecturer'])
+def lecturer_run_test(request, test_id):
+    """Running available test in test mode for lecturer"""
+    try:
+        test = Test.objects.get(id=test_id)
+    except Test.DoesNotExist or ValueError:
+        return redirect(reverse('main:available_tests'))
+
+    storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())
+    test_questions = storage.get_many(test_id=test.id)
+    if len(test_questions) < test.tasks_num:
+        context = {
+            'title': 'Доступные тесты',
+            'subjects': Subject.objects.all(),
+            'error': {
+                'title': 'Ошибка',
+                'message': "Тест '%s' не запущен, так как вопросов в базе меньше %d."
+                           % (test.name, test.tasks_num)
+            }
+        }
+        return render(request, 'main/lecturer/availableTests.html', context)
+
+    test_questions = random.sample(test_questions, k=test.tasks_num)
+    for question in test_questions:
+        random.shuffle(question['options'])
+
+    right_answers = {}
+    for i, question in enumerate(test_questions):
+        right_answers[str(i + 1)] = {
+            'right_answers': [option for option in question['options'] if option['is_true']],
+            'id': str(question['_id'])
+        }
+    storage = mongo.RunningTestsAnswersStorage.connect(db=mongo.get_conn())
+    storage.cleanup(user_id=request.user.id)
+    storage.add(
+        right_answers=right_answers,
+        test_id=test.id,
+        user_id=request.user.id,
+        test_duration=test.duration)
+
+    if len(test_questions) < 25:
+        group_size = len(test_questions)
+    else:
+        group_size = 25
+    questions_list = list(zip(*[iter(test_questions)] * group_size))
+    questions_list += [test_questions[len(questions_list) * group_size:]]
+    questions_list = [(questions_group, len(questions_group) * i) for i, questions_group in enumerate(questions_list)]
+    context = {
+        'title': 'Тест',
+        'questions': test_questions,
+        'questions_list': questions_list,
+        'test_duration': test.duration,
+        'test_name': test.name,
+        'right_answers': right_answers,
+    }
+    return render(request, 'main/lecturer/runTest.html', context)
 
 
 class AvailableTestsView(View):
@@ -187,71 +246,21 @@ class AvailableTestsView(View):
         }
         return render(request, self.lecturer_template, self.context)
 
-    def run_test(self, request):
-        """Running available test"""
-        test = Test.objects.get(id=int(request.POST['test_id']))
-
-        storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())
-        test_questions = storage.get_many(test_id=test.id)
-        if len(test_questions) < test.tasks_num:
-            self.context = {
-                'modal_title': 'Ошибка',
-                'modal_message': "Тест '%s' не запущен, так как вопросов в базе меньше %d."
-                                 % (test.name, test.tasks_num)
-            }
-            return self.get(request)
-
-        test_questions = random.sample(test_questions, k=test.tasks_num)
-        for question in test_questions:
-            random.shuffle(question['options'])
-
-        right_answers = {}
-        for i, question in enumerate(test_questions):
-            right_answers[str(i + 1)] = {
-                'right_answers': [option for option in question['options'] if option['is_true']],
-                'id': str(question['_id'])
-            }
-        storage = mongo.RunningTestsAnswersStorage.connect(db=mongo.get_conn())
-        storage.cleanup(user_id=request.user.id)
-        storage.add(
-            right_answers=right_answers,
-            test_id=test.id,
-            user_id=request.user.id,
-            test_duration=test.duration)
-
-        if len(test_questions) < 25:
-            group_size = len(test_questions)
-        else:
-            group_size = 25
-        questions_list = list(zip(*[iter(test_questions)] * group_size))
-        questions_list += [test_questions[len(questions_list) * group_size:]]
-        questions_list = [(questions_group, len(questions_group) * i) for i, questions_group in enumerate(questions_list)]
-        self.context = {
-            'title': 'Тест',
-            'questions': test_questions,
-            'questions_list': questions_list,
-            'test_duration': test.duration,
-            'test_name': test.name,
-            'right_answers': right_answers,
-        }
-        return render(request, 'main/lecturer/runTest.html', self.context)
-
 
 class SubjectsView(View):
     """Configuring study subject view"""
     template = 'main/admin/subjects.html'
     title = 'Учебные предметы'
-    context = {}
     decorators = [unauthenticated_user, allowed_users(allowed_roles=['admin'])]
 
     @method_decorator(decorators)
     def get(self, request):
         """Displays page with all subjects"""
-        self.context = {
+        context = {
             'title': self.title,
             'form': SubjectForm()
         }
-        return render(request, self.template, self.context)
+        return render(request, self.template, context)
 
     @method_decorator(decorators)
     def post(self, request):
@@ -350,7 +359,7 @@ class TestsView(View):
         }
 
     def delete_test(self, request):
-        """Deleting test with all questions"""
+        """Deleting test with all manage_questions"""
         test = Test.objects.get(id=request.POST['test_id'])
         storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())
         deleted_questions_count = storage.delete_many(test_id=test.id)
@@ -608,7 +617,7 @@ def student_run_test(request):
             test_id=test.id)
     context = {
         'title': 'Тест',
-        'questions': test_questions,
+        'manage_questions': test_questions,
         'test_duration': test.duration,
         'test_name': test.name,
         'right_answers': right_answers,

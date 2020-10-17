@@ -48,16 +48,8 @@ function deleteSubject(editSubjectAPIUrl, getSubjectsAPIUrl, csrfToken) {
     };
     $.post(
         editSubjectAPIUrl.replace(/subject_id/gi, subjectID), params).done((response) => {
-            console.log(response['success']);
             renderSubjects(getSubjectsAPIUrl, dbIconUrl, editIconUrl, delIconUrl, csrfToken);
-            const overlay = document.getElementById("overlay");
-            overlay.classList.add("active");
-            const infoModal = document.getElementById("info-modal");
-            infoModal.classList.add("active");
-            const infoModalH4 = document.getElementById("info-modal-title");
-            infoModalH4.innerText = "Предмет удален";
-            const infoModalP = document.getElementById("info-modal-p");
-            infoModalP.innerText = response['success'];
+            renderInfoModalWindow("Предмет удален", response['success']);
         });
 }
 
@@ -74,7 +66,6 @@ function loadSubject(editSubjectAPIUrl, getSubjectsAPIUrl, csrfToken) {
     formData.append('files_names', filesNamesInput.value);
     formData.append('csrfmiddlewaretoken', csrfToken);
     for (let file of filesInput.files) {
-        console.log(file);
         formData.append('tests', file);
     }
 
@@ -86,14 +77,7 @@ function loadSubject(editSubjectAPIUrl, getSubjectsAPIUrl, csrfToken) {
         processData: false,
         success: (response) => {
             renderSubjects(getSubjectsAPIUrl, dbIconUrl, editIconUrl, delIconUrl, csrfToken);
-            const overlay = document.getElementById("overlay");
-            overlay.classList.add("active");
-            const infoModal = document.getElementById("info-modal");
-            infoModal.classList.add("active");
-            const infoModalH4 = document.getElementById("info-modal-title");
-            infoModalH4.innerText = "Новый предмет";
-            const infoModalP = document.getElementById("info-modal-p");
-            infoModalP.innerText = response['success'];
+            renderInfoModalWindow("Новый предмет", response['success']);
         }});
 }
 
@@ -109,14 +93,7 @@ function editSubject(editSubjectAPIUrl, getSubjectsAPIUrl, csrfToken) {
     $.post(
         editSubjectAPIUrl.replace(/subject_id/gi, idInput.value), params).done((response) => {
             renderSubjects(getSubjectsAPIUrl, dbIconUrl, editIconUrl, delIconUrl, csrfToken);
-            const overlay = document.getElementById("overlay");
-            overlay.classList.add("active");
-            const infoModal = document.getElementById("info-modal");
-            infoModal.classList.add("active");
-            const infoModalH4 = document.getElementById("info-modal-title");
-            infoModalH4.innerText = "Предмет отредактирован";
-            const infoModalP = document.getElementById("info-modal-p");
-            infoModalP.innerText = response['success'];
+            renderInfoModalWindow("Предмет отредактирован", response['success']);
         });
 }
 
@@ -131,14 +108,7 @@ function addSubject(editSubjectAPIUrl, getSubjectsAPIUrl, csrfToken) {
     $.post(
         editSubjectAPIUrl.replace(/subject_id/gi, 'new'), params).done((response) => {
             renderSubjects(getSubjectsAPIUrl, dbIconUrl, editIconUrl, delIconUrl, csrfToken);
-            const overlay = document.getElementById("overlay");
-            overlay.classList.add("active");
-            const infoModal = document.getElementById("info-modal");
-            infoModal.classList.add("active");
-            const infoModalH4 = document.getElementById("info-modal-title");
-            infoModalH4.innerText = "Новый предмет";
-            const infoModalP = document.getElementById("info-modal-p");
-            infoModalP.innerText = response['success'];
+            renderInfoModalWindow("Новый предмет", response['success']);
         });
 }
 

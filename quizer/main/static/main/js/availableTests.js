@@ -1,9 +1,4 @@
-function getForm(test, staticPath, url, tokenTag) {
-    const form = document.createElement('form');
-    form.action = url;
-    form.method = 'post';
-    form.innerHTML = tokenTag;
-
+function getTestContainer(test, testsUrl, staticPath, launchTestAPIUrl, runTestForLecturerUrl) {
     const container = document.createElement('div');
 
     const hr = document.createElement('hr');
@@ -34,70 +29,63 @@ function getForm(test, staticPath, url, tokenTag) {
     const launchBtn = document.createElement('button');
     launchBtn.className = "btn btn-primary";
     launchBtn.innerHTML = `<img src='${staticPath}main/images/play.svg'> Запустить`;
-    launchBtn.name =  "lecturer-running-test-id";
-    launchBtn.value = test.id;
+    launchBtn.setAttribute("onclick", `launchTest(${test.id}, "${testsUrl}", "${staticPath}", "${launchTestAPIUrl}", "${runTestForLecturerUrl}")`);
 
-    const runTestBtn = document.createElement('button');
+
+    const runTestBtn = document.createElement('a');
     runTestBtn.className = "btn btn-primary";
     runTestBtn.innerHTML = `<img src='${staticPath}main/images/play.svg'> Пройти`;
-    runTestBtn.name =  "run-test";
+    runTestBtn.setAttribute("href", runTestForLecturerUrl.replace(/test_id/gi, test.id));
 
     btnCont1.appendChild(launchBtn);
     btnCont2.appendChild(runTestBtn);
-
-    const hiddenTestID = document.createElement('input');
-    hiddenTestID.type = 'hidden';
-    hiddenTestID.name = 'test_id';
-    hiddenTestID.value = test.id;
 
     label.appendChild(testNameH3);
     label.appendChild(description_p);
     label.appendChild(infoP);
     label.appendChild(btnCont1);
     label.appendChild(btnCont2);
-    label.appendChild(hiddenTestID);
 
     container.appendChild(hr);
     container.appendChild(label);
 
-    form.appendChild(container);
-
-    return form;
+    return container;
 }
 
-function main(testsUrl, staticPath, url, tokenTag) {
+function launchTest(testID, testsUrl, staticPath, launchTestAPIUrl, runTestForLecturerUrl) {
+    $.get(launchTestAPIUrl.replace(/test_id/gi, testID)).done((response) => {
+        if (response.ok) {
+            renderInfoModalWindow("Тест запущен", response.message);
+            renderAvailableTests(testsUrl, staticPath, launchTestAPIUrl, runTestForLecturerUrl)
+        } else {
+            renderInfoModalWindow("Ошибка", response.message);
+        }
+    });
+}
+
+function renderAvailableTests(testsUrl, staticPath, launchTestAPIUrl, runTestForLecturerUrl) {
     const testsContainer = document.getElementById("tests_container");
     const subject = document.getElementById("subject");
     const nameFilter = document.getElementById("name_filter");
 
     let tests = [];
-	$.get(testsUrl).done(function(response) {
-        tests = response['tests'];
+	$.get(testsUrl).done((response) => {
+        tests = response.tests;
+        testsContainer.innerHTML = '';
         for (let test of tests) {
             if (test.subject.id == subject.options[subject.selectedIndex].value) {
-                testsContainer.appendChild(getForm(test, staticPath, url, tokenTag));
+                testsContainer.appendChild(getTestContainer(test, testsUrl, staticPath, launchTestAPIUrl, runTestForLecturerUrl));
             }
         }
         activateModalWindows();
 	});
 
-    subject.onkeyup = subject.onchange = () =>  {
+    subject.onkeyup = subject.onchange = nameFilter.onkeyup = nameFilter.onchange = () =>  {
         testsContainer.innerHTML = '';
         for (let test of tests) {
             if (test.name.toLowerCase().includes(nameFilter.value.toLowerCase())) {
                 if (test.subject.id == subject.options[subject.selectedIndex].value) {
-                    testsContainer.appendChild(getForm(test, staticPath, url, tokenTag));
-                }
-            }
-        }
-    };
-
-    nameFilter.onkeyup = nameFilter.onchange = () =>  {
-        testsContainer.innerHTML = '';
-        for (let test of tests) {
-            if (test.name.toLowerCase().includes(nameFilter.value.toLowerCase())) {
-                if (test.subject.id == subject.options[subject.selectedIndex].value) {
-                    testsContainer.appendChild(getForm(test, staticPath, url, tokenTag));
+                    testsContainer.appendChild(getTestContainer(test, testsUrl, staticPath, launchTestAPIUrl, runTestForLecturerUrl, token));
                 }
             }
         }

@@ -56,6 +56,17 @@ function activateModalWindows() {
     });
 }
 
+function renderInfoModalWindow(infoTitle, infoText) {
+    const overlay = document.getElementById("overlay");
+    overlay.classList.add("active");
+    const infoModal = document.getElementById("info-modal");
+    infoModal.classList.add("active");
+    const infoModalH4 = document.getElementById("info-modal-title");
+    infoModalH4.innerText = infoTitle;
+    const infoModalP = document.getElementById("info-modal-p");
+    infoModalP.innerText = infoText;
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     activateModalWindows();
 }); // end ready

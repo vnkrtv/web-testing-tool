@@ -14,7 +14,6 @@ from .permissions import IsLecturer
 
 
 class SubjectView(APIView):
-
     permission_classes = [IsAuthenticated, IsLecturer]
 
     def get(self, _):
@@ -41,7 +40,7 @@ class SubjectView(APIView):
             subject.delete()
 
             message = "Учебный предмет '%s', %d тестов к нему, а также все " + \
-                 "вопросы к тестам в количестве %d были успешно удалены."
+                      "вопросы к тестам в количестве %d были успешно удалены."
             return Response({
                 'success': message % (subject_name, tests_count, deleted_questions_count)
             })
@@ -70,7 +69,6 @@ class SubjectView(APIView):
 
 
 class TestView(APIView):
-
     permission_classes = [IsAuthenticated, IsLecturer]
 
     def get(self, _, state):
@@ -136,6 +134,32 @@ class TestView(APIView):
         }, status=204)
 
 
+class LaunchTestView(APIView):
+    permission_classes = [IsAuthenticated, IsLecturer]
+
+    def get(self, request, pk):
+        test = get_object_or_404(Test.objects.all(), pk=pk)
+        storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())
+        questions = storage.get_many(test_id=test.id)
+        if len(questions) < test.tasks_num:
+            return Response({
+                'ok': False,
+                'message': "Тест %s не запущен, так как вопросов в базе меньше %d."
+                           % (test.name, test.tasks_num)
+            })
+        else:
+            storage = mongo.TestsResultsStorage.connect(db=mongo.get_conn())
+            storage.add_running_test(
+                test_id=test.id,
+                lecturer_id=request.user.id,
+                subject_id=test.subject.id)
+            message = "Тест '%s' запущен. Состояние его прохождения можно отследить во вкладке 'Запущенные тесты'."
+            return Response({
+                'ok': True,
+                'message': message % test.name
+            })
+
+
 class QuestionView(APIView):
     permission_classes = [IsAuthenticated, IsLecturer]
 
@@ -146,7 +170,7 @@ class QuestionView(APIView):
         for question in test_questions:
             question['id'] = str(question.pop('_id'))
         return Response({
-            'questions': test_questions
+            'manage_questions': test_questions
         })
 
 

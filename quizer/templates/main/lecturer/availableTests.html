@@ -40,26 +40,26 @@
 	<div id='tests_container'></div>		
 </div>
 
-{% if modal_title %}
-    <div class="modal-window active" data-modal="info-modal">
-       <img class="modal__cross js-modal-close" src="{% close_icon %}">
-       <h4>{{ modal_title }}</h4>
-       <hr class="my hr4">
-       <p>{{ modal_message }}</p>
-       <div class="modal-footer">
-          <button class="btn btn-primary js-modal-close"><img src='{% cancel_icon %}'> Закрыть</button>
-       </div>
-    </div>
-    <div class="overlay js-overlay-modal active"></div>
-{% else %}
-    <div class="overlay js-overlay-modal"></div>
-{% endif %}
+<div id="info-modal" class="modal-window" data-modal="info-modal">
+   <img class="modal__cross js-modal-close" src="{% close_icon %}">
+   <h4 id="info-modal-title"></h4>
+   <hr class="my hr4">
+   <p id="info-modal-p"></p>
+   <div class="modal-footer">
+      <button class="btn btn-primary js-modal-close"><img src='{% cancel_icon %}'> Закрыть</button>
+   </div>
+</div>
+<div id="overlay" class="overlay js-overlay-modal"></div>
+
 
 <script src="{% static 'main/js/modalWindow.js' %}"></script>
 <script src="{% static 'main/js/availableTests.js' %}"></script>
 <script src="{% static 'main/js/jquery-3.5.1.js' %}"></script>
 <script type="text/javascript">
-	main("{% url 'api:get_tests' 'not_running' %}", '{% static_url %}', "{% url 'main:available_tests' %}", '{% csrf_token %}');
+	renderAvailableTests("{% url 'api:get_tests' 'not_running' %}", '{% static_url %}', "{% url 'api:launch_test' 'test_id' %}", "{% url 'main:lecturer_run_test' 'test_id' %}");
+	{% if error %}
+	    renderInfoModalWindow("{{ error.title }}", "{{ error.message }}");	
+	{% endif %}
 </script>
 
 {% endblock %}

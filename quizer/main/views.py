@@ -88,16 +88,7 @@ def lecturer_run_test(request, test_id):
     storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())
     test_questions = storage.get_many(test_id=test.id)
     if len(test_questions) < test.tasks_num:
-        context = {
-            'title': 'Доступные тесты',
-            'subjects': Subject.objects.all(),
-            'error': {
-                'title': 'Ошибка',
-                'message': "Тест '%s' не запущен, так как вопросов в базе меньше %d."
-                           % (test.name, test.tasks_num)
-            }
-        }
-        return render(request, 'main/lecturer/availableTests.html', context)
+        return redirect(reverse('main:available_tests'))
 
     test_questions = random.sample(test_questions, k=test.tasks_num)
     for question in test_questions:
@@ -159,12 +150,8 @@ class AvailableTestsView(View):
     @method_decorator(decorators)
     def post(self, request):
         """Configuring running tests"""
-        if 'lecturer-running-test-id' in request.POST:
-            self.lecturer_launch_test(request)
-        elif 'lecturer-passed-test' in request.POST:
+        if 'lecturer-passed-test' in request.POST:
             self.lecturer_passed_test_result(request)
-        elif 'run-test' in request.POST:
-            return self.run_test(request)
         else:
             self.context = {}
         return self.get(request)
@@ -199,28 +186,6 @@ class AvailableTestsView(View):
         }
         return render(request, self.student_template, self.context)
 
-    def lecturer_launch_test(self, request):
-        """Launching test for students"""
-        test = Test.objects.get(id=int(request.POST['lecturer-running-test-id']))
-        storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())
-        questions = storage.get_many(test_id=test.id)
-        if len(questions) < test.tasks_num:
-            self.context = {
-                'modal_title': 'Ошибка',
-                'modal_message': "Тест '%s' не запущен, так как вопросов в базе меньше %d."
-                                 % (test.name, test.tasks_num)
-            }
-        else:
-            storage = mongo.TestsResultsStorage.connect(db=mongo.get_conn())
-            storage.add_running_test(
-                test_id=test.id,
-                lecturer_id=request.user.id,
-                subject_id=test.subject.id)
-            self.context = {
-                'modal_title': "Тест '%s' запущен" % test.name,
-                'modal_message': "Состояние его прохождения можно отследить во вкладке 'Запущенные тесты'."
-            }
-
     def lecturer_passed_test_result(self, request):
         """Test results"""
         storage = mongo.RunningTestsAnswersStorage.connect(db=mongo.get_conn())
@@ -241,8 +206,10 @@ class AvailableTestsView(View):
 
         self.context = {
             'title': 'Доступные тесты',
-            'modal_title': 'Результат',
-            'modal_message': 'Число правильных ответов: %d/%d' % (result['right_answers_count'], result['tasks_num'])
+            'info': {
+                'title': 'Результат',
+                'message': 'Число правильных ответов: %d/%d' % (result['right_answers_count'], result['tasks_num'])
+            }
         }
         return render(request, self.lecturer_template, self.context)
 

@@ -56,9 +56,9 @@
 <script src="{% static 'main/js/availableTests.js' %}"></script>
 <script src="{% static 'main/js/jquery-3.5.1.js' %}"></script>
 <script type="text/javascript">
-	renderAvailableTests("{% url 'api:get_tests' 'not_running' %}", '{% static_url %}', "{% url 'api:launch_test' 'test_id' %}", "{% url 'main:lecturer_run_test' 'test_id' %}");
-	{% if error %}
-	    renderInfoModalWindow("{{ error.title }}", "{{ error.message }}");	
+	renderAvailableTests("{% url 'api:get_tests' 'not_running' %}", '{% static_url %}', "{% url 'api:launch_test' 'test_id' %}", "{% url 'main:lecturer_run_test' 'test_id' %}", "{% url 'api:get_questions' 'test_id' %}");
+	{% if info %}
+	    renderInfoModalWindow("{{ info.title }}", "{{ info.message }}");	
 	{% endif %}
 </script>
 

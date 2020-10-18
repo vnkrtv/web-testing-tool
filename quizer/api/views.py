@@ -1,5 +1,3 @@
-import json
-
 from django.contrib.auth.models import User
 
 from rest_framework.generics import get_object_or_404
@@ -170,7 +168,7 @@ class QuestionView(APIView):
         for question in test_questions:
             question['id'] = str(question.pop('_id'))
         return Response({
-            'manage_questions': test_questions
+            'questions': test_questions
         })
 
 

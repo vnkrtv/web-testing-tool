@@ -65,7 +65,7 @@
 	    lecturerSelect.selectedIndex = i;
 	  }
 	}
-	main("{% url 'api:get_tests_results' 'all' %}", "{% url 'api:get_tests' 'all' %}", "{% url 'main:tests_results' %}");
+	main("{% url 'api:get_tests_results' 'all' %}", "{% url 'api:tests_api' 'all' %}", "{% url 'main:tests_results' %}");
 </script>
 
 {% endblock %}

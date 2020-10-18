@@ -195,54 +195,16 @@ function getQuestionOptionWithMultiselectAndImages(i) {
     return container;
 }
 
-function addQuestion() {
+function renderAddQuestionModal() {
     const questions = document.getElementById('add-question-questions-div');
 
     const tasksNum = document.getElementById('add-question-tasks-num');
     const multiselect = document.getElementById('add-question-multiselect');
     const withImages = document.getElementById('add-question-with-images');
 
-    tasksNum.onkeyup = tasksNum.onchange = () => {
-        const count = +(tasksNum.value);
-        questions.innerHTML = '';
-        for (let i = 0; i < count; ++i) {
-            if (multiselect.checked) {
-                if (withImages.checked) {
-                    questions.appendChild(getQuestionOptionWithMultiselectAndImages(i));
-                } else {
-                    questions.appendChild(getQuestionOptionWithMultiselect(i));
-                }
-            } else {
-                if (withImages.checked) {
-                    questions.appendChild(getQuestionOptionWithImages(i))
-                } else {
-                    questions.appendChild(getQuestionOption(i));
-                }
-            }
-        }
-    };
-
-    multiselect.onkeyup = multiselect.onchange = () => {
-        const count = +(tasksNum.value);
-        questions.innerHTML = '';
-        for (let i = 0; i < count; ++i) {
-            if (multiselect.checked) {
-                if (withImages.checked) {
-                    questions.appendChild(getQuestionOptionWithMultiselectAndImages(i));
-                } else {
-                    questions.appendChild(getQuestionOptionWithMultiselect(i));
-                }
-            } else {
-                if (withImages.checked) {
-                    questions.appendChild(getQuestionOptionWithImages(i))
-                } else {
-                    questions.appendChild(getQuestionOption(i));
-                }
-            }
-        }
-    };
-
-    withImages.onkeyup = withImages.onchange = () => {
+    tasksNum.onkeyup = tasksNum.onchange
+        = multiselect.onkeyup = multiselect.onchange
+        = withImages.onkeyup = withImages.onchange = () => {
         const count = +(tasksNum.value);
         questions.innerHTML = '';
         for (let i = 0; i < count; ++i) {

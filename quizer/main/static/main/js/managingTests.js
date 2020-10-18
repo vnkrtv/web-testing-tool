@@ -1,4 +1,4 @@
-function getDivElement(test, staticPath, questionsRef) {
+function getDivElement(test, testsUrl, questionsRef, staticPath, csrfToken) {
     const container = document.createElement('div');
 
     const hr = document.createElement('hr');
@@ -41,8 +41,7 @@ function getDivElement(test, staticPath, questionsRef) {
     const qstnsRef = document.createElement('a');
     qstnsRef.className = "btn btn-success";
     qstnsRef.innerHTML = `<img src='${staticPath}main/images/white_database.svg'> Вопросы к тесту`;
-    qstnsRef.href = questionsRef.replace(/test_id/gi, `${test.id}`)
-    console.log(questionsRef);
+    qstnsRef.href = questionsRef.replace(/test_id/gi, `${test.id}`);
 
     const addQstnBtn = document.createElement('button');
     addQstnBtn.className = "btn btn-success js-open-modal";
@@ -139,35 +138,79 @@ function fillLoadQuestionsModal(testID) {
     testIDInput.value = testID;
 }
 
-function main(testsUrl, staticPath, questionsRef) {
+function editTest(testsAPIUrl, questionsAPIUrl, staticUrl, csrfToken) {
+    const idInput = document.getElementById("edit-test-id");
+    const nameInput = document.getElementById("edit-test-name");
+    const descriptionInput = document.getElementById("edit-test-description");
+    const tasksNumInput = document.getElementById("edit-test-tasks-num");
+    const durationInput = document.getElementById("edit-test-duration");
+    const params = {
+        csrfmiddlewaretoken: csrfToken,
+        name: nameInput.value,
+        description: descriptionInput.value,
+        tasks_num: tasksNumInput.value,
+        duration: durationInput.value
+    };
+    $.post(testsAPIUrl.replace(/not_running/gi, idInput.value), params)
+        .done((response) => {
+            renderTests(testsAPIUrl, questionsAPIUrl, staticUrl, csrfToken);
+            renderInfoModalWindow("Тест отредактирован", response['success']);
+        });
+}
+
+function addTest(testsAPIUrl, questionsAPIUrl, staticUrl, csrfToken, userID) {
+    const nameInput = document.getElementById("id_name");
+    const descriptionInput = document.getElementById("id_description");
+    const tasksNumInput = document.getElementById("id_tasks_num");
+    const durationInput = document.getElementById("id_duration");
+    const subjectSelect = document.getElementById("id_subject");
+    const params = {
+        csrfmiddlewaretoken: csrfToken,
+        name: nameInput.value,
+        description: descriptionInput.value,
+        tasks_num: tasksNumInput.value,
+        duration: durationInput.value,
+        subject: subjectSelect.options[subjectSelect.selectedIndex].value,
+        author: userID
+    };
+    $.post(testsAPIUrl.replace(/not_running/gi, 'new'), params)
+        .done((response) => {
+            renderTests(testsAPIUrl, questionsAPIUrl, staticUrl, csrfToken);
+            renderInfoModalWindow("Новый тест", response['success']);
+        });
+}
+
+function deleteTest(testsAPIUrl, questionsAPIUrl, staticUrl, csrfToken, userID) {
+    const testID = document.getElementById("delete-test-id").value;
+    const params = {
+        csrfmiddlewaretoken: csrfToken
+    };
+    $.post(testsAPIUrl.replace(/not_running/gi, testID), params)
+        .done((response) => {
+            renderTests(testsAPIUrl, questionsAPIUrl, staticUrl, csrfToken);
+            renderInfoModalWindow("Тест удален", response['success']);
+        });
+}
+
+function renderTests(testsUrl, questionsRef, staticPath, csrfToken) {
     const testsContainer = document.getElementById("tests_container");
     const subject = document.getElementById("subject");
     const nameFilter = document.getElementById("name_filter");
 
     let tests = [];
-	$.get(testsUrl).done(function(response) {
-        tests = response['tests'];
-        for (let test of tests) {
-            if (test.subject.id == subject.options[subject.selectedIndex].value) {
-                testsContainer.appendChild(getDivElement(test, staticPath, questionsRef));
-            }
-        }
-        activateModalWindows();
-	});
-
-    subject.onkeyup = subject.onchange = () =>  {
-        testsContainer.innerHTML = '';
-        for (let test of tests) {
-            if (test.name.toLowerCase().includes(nameFilter.value.toLowerCase())) {
+	$.get(testsUrl)
+        .done(function(response) {
+            tests = response['tests'];
+            testsContainer.innerHTML = '';
+            for (let test of tests) {
                 if (test.subject.id == subject.options[subject.selectedIndex].value) {
-                    testsContainer.appendChild(getDivElement(test, staticPath, questionsRef));
+                    testsContainer.appendChild(getDivElement(test, testsUrl, questionsRef, staticPath, csrfToken));
                 }
             }
-        }
-        activateModalWindows();
-    };
+            activateModalWindows();
+	    });
 
-    nameFilter.onkeyup = nameFilter.onchange = () =>  {
+    subject.onkeyup = subject.onchange = nameFilter.onkeyup = nameFilter.onchange = () =>  {
         testsContainer.innerHTML = '';
         for (let test of tests) {
             if (test.name.toLowerCase().includes(nameFilter.value.toLowerCase())) {

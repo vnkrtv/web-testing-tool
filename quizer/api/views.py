@@ -44,14 +44,12 @@ class SubjectView(APIView):
             })
         elif pk == 'new':  # POST
             serializer = SubjectSerializer(data=request.data)
-            print(serializer)
             if serializer.is_valid(raise_exception=True):
                 new_subject = serializer.save()
             return Response({
                 'success': "Предмет '%s' успешно добавлен." % new_subject.name
             })
         elif pk == 'load':  # POST
-            print(request.POST)
             message = utils.add_subject_with_tests(request)
             return Response({
                 'success': message
@@ -100,36 +98,40 @@ class TestView(APIView):
             'tests': tests
         })
 
-    def post(self, request):
-        test = request.data.get('test')
-        serializer = TestSerializer(data=test)
-        if serializer.is_valid(raise_exception=True):
-            new_test = serializer.save()
-        return Response({
-            'success': "Тест '%s' по предмету '%s' успешно добавлен." %
-                       (new_test.name, new_test.subject.name)
-        })
+    def post(self, request, state):
+        request_dict = dict(request.POST)
+        if len(request_dict) == 1:  # DELETE, only csrftoken passed
+            test = get_object_or_404(Test.objects.all(), pk=state)
 
-    def put(self, request, pk):
-        updated_test = get_object_or_404(Test.objects.all(), pk=pk)
-        data = request.data.get('test')
-        serializer = TestSerializer(instance=updated_test, data=data, partial=True)
-        if serializer.is_valid(raise_exception=True):
-            updated_test = serializer.save()
-        return Response({
-            'success': "Тест '%s' по предмету '%s' был успешно отредактирован." %
-                       (updated_test.name, updated_test.subject.name)
-        })
+            test_name = test.name
+            subject_name = test.subject.name
 
-    def delete(self, _, pk):
-        test = get_object_or_404(Subject.objects.all(), pk=pk)
-        test_name = test.name
-        subject_name = test.subject.name
-        test.delete()
-        return Response({
-            'success': "Тест '%s' по предмету '%s' был успешно удален." %
-                       (test_name, subject_name)
-        }, status=204)
+            storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())
+            deleted_questions_count = storage.delete_many(test_id=test.id)
+            test.delete()
+
+            message = "Тест '%s' по предмету '%s', а также все " + \
+                      "вопросы к нему в количестве %d были успешно удалены."
+            return Response({
+                'success': message % (test_name, subject_name, deleted_questions_count)
+            })
+        elif state == 'new':  # POST
+            serializer = TestSerializer(data=request.data)
+            if serializer.is_valid(raise_exception=True):
+                new_test = serializer.save()
+            return Response({
+                'success': "Тест '%s' по предмету '%s' успешно добавлен." %
+                           (new_test.name, new_test.subject.name)
+            })
+        else:  # PUT
+            updated_test = get_object_or_404(Test.objects.all(), pk=state)
+            serializer = TestSerializer(instance=updated_test, data=request.data, partial=True)
+            if serializer.is_valid(raise_exception=True):
+                updated_test = serializer.save()
+            return Response({
+                'success': "Тест '%s' по предмету '%s' был успешно отредактирован." %
+                           (updated_test.name, updated_test.subject.name)
+            })
 
 
 class LaunchTestView(APIView):
@@ -170,6 +172,54 @@ class QuestionView(APIView):
         return Response({
             'questions': test_questions
         })
+
+    def post(self, request, test_id, question_id):
+        test = get_object_or_404(Test.objects.all(), pk=test_id)
+        storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())
+
+        request_dict = dict(request.POST)
+        if len(request_dict) == 1:  # DELETE, only csrftoken passed
+            question = storage.get_one(
+                question_id=question_id,
+                test_id=int(test_id))
+            storage.delete_by_id(
+                question_id=question_id,
+                test_id=int(test_id))
+            message = "Вопрос '%s' по тесту '%s' был успешно удален."
+            return Response({
+                'success': message % (question['formulation'], test.name)
+            })
+        elif question_id == 'new':  # POST
+            question = utils.parse_question_form(
+                request=request,
+                test=test)
+            storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())
+            storage.add_one(
+                question=question,
+                test_id=test.id)
+            message = "Вопрос '%s' к тесту '%s' успешно добавлен."
+            return Response({
+                'success': message % (question['formulation'], test.name)
+            })
+        elif question_id == 'load':  # POST
+            questions_list = utils.get_questions_list(request)
+            storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())
+            for question in questions_list:
+                storage.add_one(
+                    question=question,
+                    test_id=test.id)
+            message = "Вопросы к тесту '%s' в количестве %d успешно добавлены."
+            return Response({
+                'success': message % (test.name, len(questions_list))
+            })
+        else:  # PUT
+            storage.update_formulation(
+                question_id=question_id,
+                formulation=request_dict['formulation'])
+            message = "Вопрос '%s' по тесту '%s' был успешно отредактирован."
+            return Response({
+                'success': message % (request_dict['formulation'], test.name)
+            })
 
 
 class TestsResultView(APIView):

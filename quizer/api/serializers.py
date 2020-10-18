@@ -1,3 +1,5 @@
+from django.contrib.auth.models import User
+
 from rest_framework import serializers
 
 from main.models import Subject, Test
@@ -25,16 +27,24 @@ class SubjectSerializer(serializers.Serializer):
 
 
 class TestSerializer(serializers.Serializer):
-    id = serializers.IntegerField()
-    subject_id = serializers.IntegerField()
-    author_id = serializers.IntegerField()
+    id = serializers.ReadOnlyField()
+    subject = serializers.IntegerField()
+    author = serializers.IntegerField()
     name = serializers.CharField(max_length=200)
     description = serializers.CharField()
     tasks_num = serializers.IntegerField()
     duration = serializers.IntegerField()
 
     def create(self, validated_data):
-        return Test.objects.create(**validated_data)
+        subject = Subject.objects.get(id=validated_data.get('subject'))
+        author = User.objects.get(id=validated_data.get('author'))
+        return Test.objects.create(
+            name=validated_data.get('name'),
+            description=validated_data.get('description'),
+            tasks_num=validated_data.get('tasks_num'),
+            duration=validated_data.get('duration'),
+            subject=subject,
+            author=author)
 
     def update(self, instance, validated_data):
         instance.name = validated_data.get('name', instance.name)

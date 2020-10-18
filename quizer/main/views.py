@@ -33,7 +33,7 @@ def manage_questions(request, test_id: int):
     context = {
         'title': 'Вопросы',
         'test': test,
-        'manage_questions': test_questions
+        'questions': test_questions
     }
     return render(request, 'main/lecturer/managingQuestions.html', context)
 

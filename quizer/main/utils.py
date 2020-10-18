@@ -12,7 +12,6 @@ from django.conf import settings
 
 from .models import Test, Subject, QuestionType
 from .mongo import get_conn, QuestionsStorage
-from .forms import SubjectForm
 
 
 class InvalidFileFormatError(Exception):
@@ -336,8 +335,9 @@ def add_subject_with_tests(request: HttpRequest) -> str:
                 storage.add_one(question=question, test_id=test.id)
             questions_count += len(questions_list)
         except UnicodeDecodeError:
-            logger.error('UnicodeDecodeError - ошибка при обработке файла с вопросами к тесту %s' % test_name)
+            print('UnicodeDecodeError - ошибка при обработке файла с вопросами к тесту %s' % test_name)
         except InvalidFileFormatError:
-            logger.error('InvalidFileFormatError - ошибка при обработке файла с вопросами к тесту %s' % test_name)
+            print\
+                ('InvalidFileFormatError - ошибка при обработке файла с вопросами к тесту %s' % test_name)
     message = "Предмет '%s', %d тестов и %d вопросов к ним успешно добавлены."
     return message % (subject.name, tests_count, questions_count)

@@ -105,18 +105,25 @@ class QuestionsStorage(MongoDB):
         question['test_id'] = test_id
         self._col.insert_one(question)
 
-    def get_one(self, question_formulation: str, test_id: int) -> list:
+    def get_one(self, test_id: int, question_formulation: str = '', question_id: str = '') -> dict:
         """
-        Get question with formulation 'question_formulation' and 'test_id' test_id
+        Get question by formulation or id and 'test_id' test_id
 
         :param question_formulation: <str>
         :param test_id: <int>
-        :return: <list>, list of questions
+        :param question_id: ObjectID as <str>
+        :return: <dict>, question
         """
-        question = self._col.find_one({
-            'formulation': question_formulation,
-            'test_id': test_id
-        })
+        if question_formulation:
+            question = self._col.find_one({
+                'formulation': question_formulation,
+                'test_id': test_id
+            })
+        else:
+            question = self._col.find_one({
+                '_id': question_id,
+                'test_id': test_id
+            })
         return question
 
     def get_many(self, test_id: int) -> list:

@@ -46,34 +46,36 @@ function main(resultsUrl, testsUrl, testsResultUrl) {
     let tests = [];
     let counter = 1;
 
-    $.get(resultsUrl).done(function(response) {
-        results = response['results'];
-        $.get(testsUrl).done(function(response) {
-            tests = response['tests'];
-            for (const test of tests) {
-                if (test.subject_id == subjectSelect.options[subjectSelect.selectedIndex].value) {
-                    testSelect.appendChild(getTestOption(test));
-                }
-            }
-            for (const result of results) {
-                if (result.subject_id == subjectSelect.options[subjectSelect.selectedIndex].value) {
-                    if (result.launched_lecturer_id == lecturerSelect.options[lecturerSelect.selectedIndex].value) {
-                        if (result.test_id == testSelect.options[testSelect.selectedIndex].value) {
-                            tableBody.appendChild(getTrElement(counter, result, testsResultUrl));
-                            counter += 1;
+    $.get(resultsUrl)
+        .done(function(response) {
+            results = response['results'];
+            $.get(testsUrl)
+                .done(function(response) {
+                    tests = response['tests'];
+                    for (const test of tests) {
+                        if (test.subject.id == subjectSelect.options[subjectSelect.selectedIndex].value) {
+                            testSelect.appendChild(getTestOption(test));
                         }
                     }
-                }
-            }
+                    for (const result of results) {
+                        if (result.subject_id == subjectSelect.options[subjectSelect.selectedIndex].value) {
+                            if (result.launched_lecturer_id == lecturerSelect.options[lecturerSelect.selectedIndex].value) {
+                                if (result.test_id == testSelect.options[testSelect.selectedIndex].value) {
+                                    tableBody.appendChild(getTrElement(counter, result, testsResultUrl));
+                                    counter += 1;
+                                }
+                            }
+                        }
+                    }
+                });
         });
-	});
 
     subjectSelect.onkeyup = subjectSelect.onchange = () =>  {
         tableBody.innerHTML = '';
         testSelect.innerHTML = '';
         counter = 1;
         for (const test of tests) {
-            if (test.subject_id == subjectSelect.options[subjectSelect.selectedIndex].value) {
+            if (test.subject.id == subjectSelect.options[subjectSelect.selectedIndex].value) {
                 testSelect.appendChild(getTestOption(test));
             }
         }
@@ -89,22 +91,8 @@ function main(resultsUrl, testsUrl, testsResultUrl) {
         }
     };
 
-    lecturerSelect.onkeyup = lecturerSelect.onchange = () =>  {
-        tableBody.innerHTML = '';
-        counter = 1;
-        for (const result of results) {
-            if (result.subject_id == subjectSelect.options[subjectSelect.selectedIndex].value) {
-                if (result.launched_lecturer_id == lecturerSelect.options[lecturerSelect.selectedIndex].value) {
-                    if (result.test_id == testSelect.options[testSelect.selectedIndex].value) {
-                        tableBody.appendChild(getTrElement(counter, result, testsResultUrl));
-                        counter += 1;
-                    }
-                }
-            }
-        }
-    };
-
-    testSelect.onkeyup = testSelect.onchange = () =>  {
+    lecturerSelect.onkeyup = lecturerSelect.onchange
+        = testSelect.onkeyup = testSelect.onchange = () =>  {
         tableBody.innerHTML = '';
         counter = 1;
         for (const result of results) {

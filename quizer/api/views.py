@@ -89,9 +89,7 @@ class TestView(APIView):
             for test in tests:
                 test['questions_num'] = len(storage.get_many(test_id=test['id']))
         elif state == 'all':
-            tests = Test.objects.all()
-            serializer = TestSerializer(tests, many=True)
-            tests = serializer.data
+            tests = [t.to_dict() for t in Test.objects.all()]
         else:
             tests = []
         return Response({

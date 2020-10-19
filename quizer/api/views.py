@@ -176,7 +176,7 @@ class QuestionView(APIView):
         storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())
 
         request_dict = dict(request.POST)
-        if len(request_dict) == 1:  # DELETE, only csrftoken passed
+        if len(request_dict) == 1 and not request.FILES:  # DELETE, only csrftoken passed
             question = storage.get_one(
                 question_id=question_id,
                 test_id=int(test_id))

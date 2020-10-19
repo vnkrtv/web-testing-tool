@@ -256,19 +256,8 @@ class TestsView(View):
     @method_decorator(decorators)
     def post(self, request):
         """Configuring tests"""
-        form = TestForm(request.POST)
-        if 'add' in request.POST:
-            self.add_test(request, form)
-        elif 'load' in request.POST:
-            self.load_test(request, form)
-        elif 'edit' in request.POST:
-            self.edit_test(request)
-        elif 'delete' in request.POST:
-            self.delete_test(request)
-        elif 'add-question' in request.POST:
+        if 'add-question' in request.POST:
             self.add_question(request)
-        elif 'load-questions' in request.POST:
-            self.load_questions(request)
         elif 'delete-question' in request.POST:
             self.delete_question(request)
         elif 'edit-question' in request.POST:
@@ -276,66 +265,6 @@ class TestsView(View):
         else:
             self.context = {}
         return self.get(request)
-
-    def add_test(self, request, form: TestForm) -> None:
-        """Adding new test"""
-        if form.is_valid():
-            subject = form.cleaned_data['subject']
-            test = Test(
-                name=form.cleaned_data['name'],
-                author=request.user,
-                subject=subject,
-                description=form.cleaned_data['description'],
-                tasks_num=form.cleaned_data['tasks_num'],
-                duration=form.cleaned_data['duration'])
-            test.save()
-            self.context = {
-                'modal_title': 'Новый тест',
-                'modal_message': "Тест '%s' по предмету '%s' успешно добавлен." % (test.name, subject)
-            }
-        else:
-            self.context = {
-                'modal_title': 'Ошибка',
-                'modal_message': 'Форма добавления некорректно заполнена.'
-            }
-
-    def load_test(self, request, form: TestForm):
-        """Loading new test from text file"""
-        if form.is_valid():
-            self.context = {
-                'modal_title': 'Новый тест',
-                'modal_message': ''
-            }
-        else:
-            self.context = {
-                'modal_title': 'Ошибка',
-                'modal_message': 'Форма загрузки некорректно заполнена.'
-            }
-
-    def edit_test(self, request):
-        """Editing test"""
-        Test.objects.filter(id=request.POST['test_id']).update(**dict(
-            name=request.POST['name'],
-            author=request.user,
-            description=request.POST['description'],
-            tasks_num=request.POST['tasks_num'],
-            duration=request.POST['duration']))
-        self.context = {
-            'modal_title': 'Тест отредактирован',
-            'modal_message': "Тест '%s' успешно изменен." % request.POST['name']
-        }
-
-    def delete_test(self, request):
-        """Deleting test with all manage_questions"""
-        test = Test.objects.get(id=request.POST['test_id'])
-        storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())
-        deleted_questions_count = storage.delete_many(test_id=test.id)
-        message = "Тест '%s' и %d вопросов к нему были успешно удалены."
-        self.context = {
-            'modal_title': 'Тест удален',
-            'modal_message': message % (test.name, deleted_questions_count)
-        }
-        Test.delete(test)
 
     def add_question(self, request):
         """Adding new question for test"""
@@ -357,27 +286,6 @@ class TestsView(View):
             self.context = {
                 'modal_title': 'Ошибка',
                 'modal_message': 'Форма некорректно заполнена'
-            }
-
-    def load_questions(self, request):
-        """Loading questions from file"""
-        test = Test.objects.get(id=int(request.POST['test_id']))
-        try:
-            questions_list = utils.get_questions_list(request)
-            storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())
-            for question in questions_list:
-                storage.add_one(
-                    question=question,
-                    test_id=test.id)
-            message = "Вопросы к тесту '%s' в количестве %d успешно добавлены."
-            self.context = {
-                'modal_title': 'Вопросы загружены',
-                'modal_message': message % (test.name, len(questions_list))
-            }
-        except utils.InvalidFileFormatError:
-            self.context = {
-                'modal_title': 'Ошибка',
-                'modal_message': 'Файл некорректного формата.'
             }
 
     def delete_question(self, request):

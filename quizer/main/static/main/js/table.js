@@ -20,6 +20,7 @@ function tableSearch(searchInputID, tableID) {
 function sortTableByNums(tableID, columnNum, hasChild) {
     const table = document.getElementById(tableID);
     let shouldSwitch;
+    let i = 0;
     let switchCount = 0;
     let switching = true;
     let dir = "asc";
@@ -28,7 +29,7 @@ function sortTableByNums(tableID, columnNum, hasChild) {
         switching = false;
         let rows = table.rows;
 
-        for (let i = 1; i < (rows.length - 1); i++) {
+        for (i = 1; i < (rows.length - 1); i++) {
             shouldSwitch = false;
 
             let x = rows[i].getElementsByTagName("TD")[columnNum];
@@ -67,6 +68,7 @@ function sortTableByNums(tableID, columnNum, hasChild) {
 function sortTable(tableID, columnNum) {
     const table = document.getElementById(tableID);
     let shouldSwitch;
+    let i = 0;
     let switchCount = 0;
     let switching = true;
     let dir = "asc";
@@ -75,7 +77,7 @@ function sortTable(tableID, columnNum) {
         switching = false;
         let rows = table.rows;
 
-        for (let i = 1; i < (rows.length - 1); i++) {
+        for (i = 1; i < (rows.length - 1); i++) {
             shouldSwitch = false;
 
             let x = rows[i].getElementsByTagName("TD")[columnNum];

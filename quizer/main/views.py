@@ -300,7 +300,7 @@ class TestsView(View):
             test_id=test.id)
         self.context = {
             'modal_title': 'Вопрос удален',
-            'modal_message': "Вопрос к тесту '%s' был успешно удален." % test.name
+            'modal_message': "Вопрос к тесту %s был успешно удален." % test.name
         }
 
     def edit_question(self, request):
@@ -322,7 +322,7 @@ class TestsView(View):
                 formulation=formulation,
                 options=updated_params['options']
             )
-        message = "Вопрос '%s' к тесту '%s' успешно отредактирован."
+        message = "Вопрос %s к тесту %s успешно отредактирован."
         self.context = {
             'modal_title': 'Вопрос отредактирован',
             'modal_message': message % (formulation, test.name)

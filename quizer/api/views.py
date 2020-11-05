@@ -200,16 +200,23 @@ class QuestionView(APIView):
                 'success': message % (question['formulation'], test.name)
             })
         elif question_id == 'load':  # POST
-            questions_list = utils.get_questions_list(request)
-            storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())
-            for question in questions_list:
-                storage.add_one(
-                    question=question,
-                    test_id=test.id)
-            message = "Вопросы к тесту '%s' в количестве %d успешно добавлены."
-            return Response({
-                'success': message % (test.name, len(questions_list))
-            })
+            try:
+                questions_list = utils.get_questions_list(request)
+                storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())
+                for question in questions_list:
+                    storage.add_one(
+                        question=question,
+                        test_id=test.id)
+                message = "Вопросы к тесту '%s' в количестве %d успешно добавлены."
+                response = Response({
+                    'success': message % (test.name, len(questions_list))
+                })
+            except utils.InvalidFileFormatError:
+                message = 'Вопросы не были загружены, так как формат файла неподходящий.'
+                response = Response({
+                    'error': message
+                })
+            return response
         else:  # PUT
             storage.update_formulation(
                 question_id=question_id,

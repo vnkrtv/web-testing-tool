@@ -223,7 +223,11 @@ function loadQuestions(testsAPIUrl, questionsUrl, staticUrl, csrfToken, question
         processData: false,
         success: (response) => {
             renderTests(testsAPIUrl, questionsUrl, staticUrl, csrfToken);
-            renderInfoModalWindow("Вопросы загружены", response['success']);
+            if (response['success'] !== undefined) {
+                renderInfoModalWindow("Вопросы загружены", response['success']);
+            } else {
+                renderInfoModalWindow("Ошибка", response['error']);
+            }
         }});
 }
 

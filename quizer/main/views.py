@@ -475,7 +475,6 @@ def student_run_test(request):
         }
     storage = mongo.RunningTestsAnswersStorage.connect(db=mongo.get_conn())
     docs = storage.cleanup(user_id=request.user.id)
-    print(docs)
     storage.add(
         right_answers=right_answers,
         test_id=test.id,
@@ -490,9 +489,19 @@ def student_run_test(request):
         storage.add_results_to_running_test(
             test_result=result,
             test_id=test.id)
+
+    if len(test_questions) < 25:
+        group_size = len(test_questions)
+    else:
+        group_size = 25
+    questions_list = list(zip(*[iter(test_questions)] * group_size))
+    questions_list += [test_questions[len(questions_list) * group_size:]]
+    questions_list = [(questions_group, len(questions_group) * i) for i, questions_group in enumerate(questions_list)]
+
     context = {
         'title': 'Тест',
-        'manage_questions': test_questions,
+        'questions': test_questions,
+        'questions_list': questions_list,
         'test_duration': test.duration,
         'test_name': test.name,
         'right_answers': right_answers,

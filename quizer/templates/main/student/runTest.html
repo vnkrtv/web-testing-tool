@@ -10,13 +10,17 @@
     <div class="jumbotron" id='top'>
     <div class="list-group-item" style="position: sticky; top: 0; z-index: 228;">
         <div id="time-div" style="font-size: 175%;"></div>
-        <div class="list-group list-group-horizontal">
-        {% for question in questions %}
-            {% if forloop.first %}
-                <a data-scroll href="#top" id="ref_{{ forloop.counter }}" class="list-group-item list-group-item-action text-center">{{ forloop.counter }}</a>
-            {% else %}
-                <a data-scroll href="#{{ forloop.counter0 }}" id="ref_{{ forloop.counter }}" class="list-group-item list-group-item-action text-center">{{ forloop.counter }}</a>
-            {% endif %}
+        <div>            
+        {% for question_group in questions_list %}
+            <div class="list-group list-group-horizontal">
+            {% for question in question_group.0 %}            
+                {% if forloop.counter == 1 and forloop.parentloop.counter == 1 %}
+                    <a data-scroll href="#top" id="ref_{{ forloop.counter | add:question_group.1  }}" class="list-group-item list-group-item-action btn-sm text-center">{{ forloop.counter | add:question_group.1 }}</a>
+                {% else %}
+                    <a data-scroll href="#{{ forloop.counter0 | add:question_group.1  }}" id="ref_{{ forloop.counter | add:question_group.1  }}" class="list-group-item list-group-item-action btn-sm text-center">{{ forloop.counter | add:question_group.1 }}</a>
+                {% endif %}
+                {% endfor %}
+            </div>
         {% endfor %}
         </div>
     </div>

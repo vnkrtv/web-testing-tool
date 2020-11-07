@@ -277,7 +277,7 @@ class TestsView(View):
             storage.add_one(
                 question=question,
                 test_id=test.id)
-            message = "Вопрос '%s' к тесту '%s' успешно добавлен."
+            message = "Вопрос %s к тесту %s успешно добавлен."
             self.context = {
                 'modal_title': 'Вопрос добавлен',
                 'modal_message': message % (question['formulation'], test.name)

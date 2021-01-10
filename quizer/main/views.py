@@ -44,8 +44,7 @@ def login_page(request):
     try:
         username, group = utils.get_auth_data(request)
     except DecodeError:
-        # return HttpResponse("JWT decode error: chet polomalos'")
-        username, group = 'vnkrtv', 'dev'
+        return HttpResponse("JWT decode error: chet polomalos'")
     group2id = {
         'dev': 1,
         'admin': 1,

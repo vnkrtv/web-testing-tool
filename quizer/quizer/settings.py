@@ -38,6 +38,7 @@ ALLOWED_HOSTS = [
 INSTALLED_APPS = [
     'main.apps.MainConfig',
     'api.apps.ApiConfig',
+    'websocket.apps.WebsocketConfig',
 
     'rest_framework',
 

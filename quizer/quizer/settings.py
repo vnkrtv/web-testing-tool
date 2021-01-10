@@ -90,11 +90,11 @@ WSGI_APPLICATION = 'quizer.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'djongo',
-        'NAME': 'data',
+        'NAME': 'quizer',
         'HOST': 'localhost',
         'PORT': 27017,
         'TEST': {
-            'NAME': 'test_data'
+            'NAME': 'test_quizer'
         }
     }
 }

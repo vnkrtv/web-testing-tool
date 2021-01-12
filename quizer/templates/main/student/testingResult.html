@@ -1,8 +1,23 @@
 {% extends "main/studentWrapper.html" %}
 
+{% load static %}
+
 {% block content %}
 <div class='jumbotron'>
     <h3>{{ message_title }}</h3>
     <p>{{ message }}</p>
 </div>
+<script src="{% static 'main/js/availableTests.js' %}"></script>
+<script type="text/javascript">
+	const socketPath = '{% url "main:available_tests" %}';
+    let socket = getRunningTestsWebSocket(socketPath);
+    socket.onopen = (e) => {
+        let action = {
+            action: 'test was passed',
+        }
+        socket.send(JSON.stringify(action));
+        socket.close()
+    };
+
+</script>
 {% endblock %}

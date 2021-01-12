@@ -386,22 +386,8 @@ class PassedTestView(View):
 @allowed_users(allowed_roles=['lecturer'])
 def get_running_tests(request):
     """Displays page with running lecturer's tests"""
-    storage = mongo.TestsResultsStorage.connect(db=mongo.get_conn())
-    running_tests = storage.get_running_tests()
-    tests = []
-    for running_test in running_tests:
-        if running_test['launched_lecturer_id'] == request.user.id:
-            test = Test.objects.get(id=running_test['test_id']).to_dict()
-            test_results = storage.get_running_test_results(
-                test_id=test['id'],
-                lecturer_id=request.user.id)
-            results = test_results['results']
-            results.sort(key=lambda result: result['date'])
-            test['finished_students_results'] = results
-            tests.append(test)
     context = {
         'title': 'Запущенные тесты',
-        'tests': tests
     }
     return render(request, 'main/lecturer/runningTests.html', context)
 

@@ -58,9 +58,7 @@ function launchTest(socket, testID, testsUrl, staticPath, launchTestAPIUrl, runT
             renderAvailableTests(socket, testsUrl, staticPath, launchTestAPIUrl, runTestForLecturerUrl, questionsAPIUrl);
 
             let launchData = {
-                action: 'test was launched',
-                // role: 'lecturer',
-                // testID: testID
+                action: 'test was launched'
             }
             socket.send(JSON.stringify(launchData));
         } else {
@@ -118,7 +116,7 @@ function renderAvailableTests(socket, testsUrl, staticPath, launchTestAPIUrl, ru
     };
 }
 
-function getRunningTestDiv(test, refsDict) {
+function getAvailableTestDiv(test, refsDict) {
     const container = document.createElement('div');
     container.classList.add('jumbotron');
 
@@ -161,7 +159,7 @@ function studentRenderAvailableTests(runningTestsUrl, runningTestsDiv, refsDict)
             if (runningTests.length) {
                 noRunningTestsDiv.style.display = 'none';
                 for (let test of runningTests) {
-                    runningTestsDiv.appendChild(getRunningTestDiv(test, refsDict));
+                    runningTestsDiv.appendChild(getAvailableTestDiv(test, refsDict));
                 }
             } else {
                 noRunningTestsDiv.style.display = '';

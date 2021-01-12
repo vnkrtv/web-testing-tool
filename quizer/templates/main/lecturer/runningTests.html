@@ -8,46 +8,36 @@
 <div class='jumbotron'>
 	<h2>Запущенные тесты</h2><br>
 	<p>Здесь отображаются уже запущенные вами тесты, доступные слушателям.<br>
-	Чтобы остановить тест и перейти к результатам его прохождения, нажмите 'Остановить'.</p>	
-	{% for test in tests %}
-	<hr class="my-4">
-	<label for='test_name'>
-		<h3>{{ test.name }}</h3>
-		<p>{{ test.description }}</p>
-		<p><img src='{% research_icon %}'> Количество заданий в тесте: {{ test.tasks_num }}<br>
-		<img src='{% clock_icon %}'> Время на выполнение: {{ test.duration }} с<br>
-		<span class="pointer" onclick='hideTable("search_{{ forloop.counter }}", "table_{{ forloop.counter }}")' title="Нажмите, чтобы скрыть результаты"><img src='{% team_icon %}'> Выполнило слушателей: {{ test.finished_students_results | length }}</span></p>
-		<input class="form-control" type="text" placeholder="Искать..." id="search_{{ forloop.counter }}" onkeyup='tableSearch("search_{{ forloop.counter }}", "table_{{ forloop.counter }}")'>
-		<table id="table_{{ forloop.counter }}" class="table table-hover">
-		    <thead>
-		      <tr>
-		      	<th>#</th>
-			      <th>Слушатель</th>
-			      <th>Результат</th>
-			      <th>Время прохождения</th>
-			      <th>Время завершения</th>
-		      </tr>
-		  </thead>
-		  <tbody>
-		  	{% for result in test.finished_students_results %}
-			  <tr>
-			      <td scope="row"><strong>{{ forloop.counter }}</strong></td>
-			      <td>{{ result.username }}</td>
-			      <td>{{ result.right_answers_count }}/{{ result.tasks_num }}</td>
-			      <td>{{ result.time }} c</td>
-			      <td>{{ result.date | date:"H:i:s" }}</td>
-		      </tr>
-			{% endfor %}
-		    </tbody>
-		</table>
-		<form action="{% url 'main:stop_running_test' %}" method="post">
-		{% csrf_token %}
-			<input type="hidden" name="test_id" id="test_name" value="{{ test.id }}">
-			<button class="btn btn-danger"><img src='{% stop_icon %}'> Оcтановить</button>
-		</form>
-	</label>
-	{% endfor %}
+	Чтобы остановить тест и перейти к результатам его прохождения, нажмите 'Остановить'.</p>
+	<div id="runningTests"></div>
 </div>
 <script src="{% static 'main/js/table.js' %}"></script>
+<script src="{% static 'main/js/availableTests.js' %}"></script>
+<script src="{% static 'main/js/runningTests.js' %}"></script>
+<script src="{% static 'main/js/jquery-3.5.1.js' %}"></script>
+<script type="text/javascript">
+	const runningTestsAPIUrl = "{% url 'api:get_running_tests' %}"
+	const runningTestsDiv = document.getElementById("runningTests");
+	const refsDict = {
+        formUrl: "{% url 'main:stop_running_test' %}",
+        csrfToken: '{% csrf_token %}',
+        userIcon: '{% user_icon %}',
+        researchIcon: '{% research_icon %}',
+        clockIcon: '{% clock_icon %}',
+        playIcon: '{% play_icon %}',
+        teamIcon: '{% team_icon %}',
+        stopIcon: '{% stop_icon %}'
+    };
+	renderRunningTests(runningTestsAPIUrl, runningTestsDiv, refsDict)
+
+	const socketPath = '{% url "main:available_tests" %}';
+    let socket = getRunningTestsWebSocket(socketPath);
+    socket.onmessage = (e) => {
+        let receivedData = JSON.parse(e.data);
+        if (receivedData.action === 'test was passed') {
+        	renderRunningTests(runningTestsAPIUrl, runningTestsDiv, refsDict);
+		}
+    };
+</script>
 
 {% endblock %}

@@ -73,7 +73,6 @@
 	const socketPath = '{% url "main:available_tests" %}';
     let socket = getRunningTestsWebSocket(socketPath);
     socket.onopen = (e) => {
-        console.log('message', e);
         let action = {
             action: 'test was stopped',
         }

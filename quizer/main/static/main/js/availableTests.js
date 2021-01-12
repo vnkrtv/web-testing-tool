@@ -81,7 +81,7 @@ function getRunningTestsWebSocket(socketPath) {
     let loc = window.location;
     let wsStart = 'ws://'
     if (loc.protocol === 'https:') {
-        wsStart = 'ws://';
+        wsStart = 'wss://';
     }
     let endpoint = wsStart + loc.host + socketPath;
     return new WebSocket(endpoint);

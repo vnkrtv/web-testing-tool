@@ -222,18 +222,18 @@ function fillQuestionModal(i) {
         if (question.type == '') {
             if (question.multiselect) {
                 optionsDiv.appendChild(getQuestionOptionWithMultiselect(
-                        t, question.options[t].option, question.options[t].is_true))
+                    t, question.options[t].option, question.options[t].is_true))
             } else {
                 optionsDiv.appendChild(getQuestionOption(
-                        t, question.options[t].option, question.options[t].is_true))
+                    t, question.options[t].option, question.options[t].is_true))
             }
         } else if (question.type == 'image') {
             if (question.multiselect) {
                 optionsDiv.appendChild(getQuestionOptionWithMultiselectAndImages(
-                        t, question.options[t].option, question.options[t].is_true))
+                    t, question.options[t].option, question.options[t].is_true))
             } else {
                 optionsDiv.appendChild(getQuestionOptionWithImages(
-                        t, question.options[t].option, questions[i].options[t].is_true))
+                    t, question.options[t].option, questions[i].options[t].is_true))
             }
         }
     }
@@ -259,25 +259,30 @@ function fillDeleteQuestionModal(qstnID, testID) {
     overlay.classList.toggle('active');
 }
 
-function renderQuestionsTable(questions, questionsTbody) {
-    questionsTbody.innerHTML = '';
-    const typesDict = {
-        '': 'Обычный',
-        'image': 'Изображения'
-    }
-    for (let i = 0; i < questions.length; i++) {
-        let question = questions[i];
-        const tr = document.createElement('tr');
-        tr.setAttribute('id', `row_${i}`);
-        tr.setAttribute('class', 'js-open-modal');
-        tr.setAttribute('onclick', `fillQuestionModal(${i})`);
-        tr.setAttribute('data-modal', "question-modal");
-        tr.innerHTML = `
-            <td scope="row"><strong>${i + 1}</strong></td>
-            <td>${question.formulation}</td>
-            <td>${question.tasks_num}</td>
-            <td>${question.multiselect ? '+' : '-'}</td>
-            <td>${typesDict[question.type]}</td>`;
-        questionsTbody.appendChild(tr);
-    }
+function renderQuestionsTable(questionsAPIUrl, questionsTbody) {
+    $.get(questionsAPIUrl
+    ).done(function (response) {
+        questions = response['questions'];
+        questionsTbody.innerHTML = '';
+        const typesDict = {
+            '': 'Обычный',
+            'image': 'Изображения'
+        }
+        for (let i = 0; i < questions.length; i++) {
+            let question = questions[i];
+            const tr = document.createElement('tr');
+            tr.setAttribute('id', `row_${i}`);
+            tr.setAttribute('class', 'js-open-modal pointer');
+            tr.setAttribute('onclick', `fillQuestionModal(${i})`);
+            tr.setAttribute('data-modal', "question-modal");
+            tr.innerHTML = `
+                <td scope="row"><strong>${i + 1}</strong></td>
+                <td>${question.formulation}</td>
+                <td>${question.tasks_num}</td>
+                <td>${question.multiselect ? '+' : '-'}</td>
+                <td>${typesDict[question.type]}</td>`;
+            questionsTbody.appendChild(tr);
+        }
+        activateModalWindows();
+    });
 }

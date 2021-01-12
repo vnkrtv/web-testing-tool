@@ -90,13 +90,10 @@
 <script src="{% static 'main/js/jquery-3.5.1.js' %}"></script>
 <script type="text/javascript">
 	const mediaUrl = '{% media_url %}';
+	const questionsAPIUrl = "{% url 'api:get_questions' test.id %}";
 	const questionsTbody = document.getElementById('questionsTbody');
 	let questions = [];
-	$.get("{% url 'api:get_questions' test.id %}"
-		).done(function(response) {
-			questions = response['questions'];
-			renderQuestionsTable(questions, questionsTbody);
-	});
+	renderQuestionsTable(questionsAPIUrl, questionsTbody);
 </script>
 
 {% endblock %}

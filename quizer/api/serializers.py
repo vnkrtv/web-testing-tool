@@ -8,7 +8,7 @@ from main.models import Subject, Test
 class SubjectSerializer(serializers.Serializer):
     id = serializers.ReadOnlyField()
     name = serializers.CharField(max_length=50)
-    description = serializers.CharField()
+    description = serializers.CharField(required=False)
 
     def create(self, validated_data):
         return Subject.objects.create(**validated_data)

@@ -76,6 +76,30 @@ def login_page(request):
     return redirect(reverse('main:available_tests'))
 
 
+async def get_running_tests(socket):
+    """
+    Async view for getting running tests in real time by usage WebSocket
+
+    :param socket: websocket.connection.WebSocket object
+    """
+    await socket.accept()
+    storage = await mongo.TestsResultsStorage.connect(db=mongo.get_conn())
+    running_tests = await storage.get_running_tests()
+    tests = []
+    for running_test in running_tests:
+        test = Test.objects.get(id=running_test['test_id']).to_dict()
+        launched_lecturer = User.objects.get(id=running_test['launched_lecturer_id'])
+        tests.append({
+            **test,
+            'launched_lecturer': {
+                'id': launched_lecturer.id,
+                'username': launched_lecturer.username
+            }
+        })
+    await socket.send_json(tests)
+    await socket.close()
+
+
 @unauthenticated_user
 @allowed_users(allowed_roles=['lecturer'])
 def lecturer_run_test(request, test_id):
@@ -141,11 +165,9 @@ class AvailableTestsView(View):
         For lecturer - displays list of tests that can be run
         For student - displays list of running tests
         """
-        storage = mongo.TestsResultsStorage.connect(db=mongo.get_conn())
-        running_tests = storage.get_running_tests()
         if request.user.groups.filter(name='lecturer'):
             return self.lecturer_available_tests(request)
-        return self.student_available_tests(request, running_tests)
+        return self.student_available_tests(request)
 
     @method_decorator(decorators)
     def post(self, request):
@@ -165,24 +187,10 @@ class AvailableTestsView(View):
         }
         return render(request, self.lecturer_template, self.context)
 
-    def student_available_tests(self, request, running_tests: list):
+    def student_available_tests(self, request):
         """Tests available for running by students"""
-        if len(running_tests) == 0:
-            self.context = {
-                'title': self.title,
-                'message_title': 'Доступные тесты отсутствуют',
-                'message': 'Ни один из тестов пока не запущен.',
-            }
-            return render(request, self.student_template, self.context)
         self.context = {
-            'title': self.title,
-            'tests': [
-                {
-                    'launched_lecturer': User.objects.get(id=test['launched_lecturer_id']),
-                    **Test.objects.get(id=test['test_id']).to_dict()
-                }
-                for test in running_tests
-            ]
+            'title': self.title
         }
         return render(request, self.student_template, self.context)
 
@@ -331,7 +339,7 @@ class TestsView(View):
 
 class PassedTestView(View):
     """View for results of passed tests"""
-    template = 'main/student/availableTests.html'
+    template = 'main/student/testingResult.html'
     context = {}
     decorators = [unauthenticated_user, allowed_users(allowed_roles=['student'])]
 

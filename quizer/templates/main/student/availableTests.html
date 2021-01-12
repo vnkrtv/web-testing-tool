@@ -2,32 +2,63 @@
 
 {% block content %}
 
+{% load static %}
+
 {% load main_extras %}
 
-{% if message_title %}
-    <div class='jumbotron'>
-		<h3>{{ message_title }}</h3>
-		<p>{{ message }}</p>
-	</div>
-{% else %}
-	<div class="column">
-		{% for test in tests %}
-			<div class='jumbotron'>
-				<label for='test_name'>
-					<h3>{{ test.name }}</h3>
-					<p>{{ test.description }}</p>
-					<p><img src='{% user_icon %}'> Запустил: {{ test.launched_lecturer.username }}<br>
-					<img src='{% research_icon %}'> Количество заданий в тесте: {{ test.tasks_num }}<br>
-					<img src='{% clock_icon %}'> Время на выполнение: {{ test.duration }} с</p>
-					<form action="{% url 'main:student_run_test' %}" method="post">
-	    			{% csrf_token %}
-	    				<input type="hidden" name="test_id" value="{{ test.id }}">
-						<button class="btn btn-primary"><img src='{% play_icon %}'> Приступить</button>
-					</form>
-				</label>
-	 		</div>
-		{% endfor %}
-	</div>
-{% endif %}
+<link rel="stylesheet" href="{% static 'main/css/modal-window.css' %}">
 
+<div class='jumbotron' id="noRunningTestsDiv">
+    <h3>Доступные тесты отсутствуют</h3>
+    <p>Ни один из тестов пока не запущен.</p>
+</div>
+<div id="runningTestsDiv" class="column"></div>
+
+<div id="info-modal" class="modal-window" data-modal="info-modal">
+   <img class="modal__cross js-modal-close" src="{% close_icon %}">
+   <h4 id="info-modal-title"></h4>
+   <hr class="my hr4">
+   <p id="info-modal-p"></p>
+   <div class="modal-footer">
+      <button class="btn btn-primary js-modal-close"><img src='{% cancel_icon %}'> Закрыть</button>
+   </div>
+</div>
+<div id="overlay" class="overlay js-overlay-modal"></div>
+
+
+<script src="{% static 'main/js/modalWindow.js' %}"></script>
+<script src="{% static 'main/js/jquery-3.5.1.js' %}"></script>
+<script src="{% static 'main/js/availableTests.js' %}"></script>
+<script type="text/javascript">
+	const runningTestsUrl = "{% url 'api:tests_api' 'running' %}";
+	const socketPath = '{% url "main:available_tests" %}';
+	const runningTestsDiv = document.getElementById('runningTestsDiv');
+    const refsDict = {
+        formUrl: '{% url "main:student_run_test" %}',
+        csrfToken: '{% csrf_token %}',
+        userIcon: '{% user_icon %}',
+        researchIcon: '{% research_icon %}',
+        clockIcon: '{% clock_icon %}',
+        playIcon: '{% play_icon %}'
+    };
+	studentRenderAvailableTests(runningTestsUrl, runningTestsDiv, refsDict);
+
+	let socket = getRunningTestsWebSocket(socketPath);
+    socket.onmessage = (e) => {
+        console.log('message', e);
+        let receivedData = JSON.parse(e.data);
+        if (receivedData.action === 'test was launched' || receivedData.action === 'test was stopped' ) {
+        	studentRenderAvailableTests(runningTestsUrl, runningTestsDiv, refsDict);
+		}
+    };
+    socket.onopen = (e) => {
+        console.log('open', e);
+    };
+    socket.onerror = (e) => {
+        console.log('error', e);
+    };
+    socket.onclose = (e) => {
+        console.log('close', e);
+    };
+</script>
 {% endblock %}

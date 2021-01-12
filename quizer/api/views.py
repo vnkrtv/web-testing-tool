@@ -65,7 +65,7 @@ class SubjectView(APIView):
 
 
 class TestView(APIView):
-    permission_classes = [IsAuthenticated, IsLecturer]
+    permission_classes = [IsAuthenticated]
 
     def get(self, _, state):
         storage = mongo.TestsResultsStorage.connect(db=mongo.get_conn())

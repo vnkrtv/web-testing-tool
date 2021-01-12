@@ -9,71 +9,91 @@
 <link rel="stylesheet" href="{% static 'main/css/modal-window.css' %}">
 
 <div class='jumbotron'>
-	<h2>{{ test.name }} - результаты тестирования</h2>
-	<p><img src='{% clock_icon %}'>
-	{% if end_date %}
-	    Время тестирования: {{ start_date | date:"H:i:s" }} - {{ end_date | date:"H:i:s" }} {{ start_date | date:"d.m.y" }}<br>
-	{% else %}     
-		Дата тестирования: {{ start_date }}<br> 
-	{% endif %}
-	   <img src='{% team_icon %}'> Выполнило слушателей: {{ results | length }}
-	</p>
-	<input class="form-control" type="text" placeholder="Искать..." id="search" onkeyup='tableSearch("search", "table")'>
-	<table id="table" class="table table-hover">
-	    <thead>
-	      <tr>
-	      	<th><img class="pointer" src='{% sort_icon %}' onclick="sortTableByNums('table', 0, true)"></th>
-		      <th><img class="pointer" src='{% sort_icon %}' onclick="sortTable('table', 1)"> Слушатель</th>
-		      <th><img class="pointer" src='{% sort_icon %}' onclick="sortTable('table', 2)"> Результат</th>
-		      <th><img class="pointer" src='{% sort_icon %}' onclick="sortTable('table', 3)"> Время прохождения</th>
-		      <th><img class="pointer" src='{% sort_icon %}' onclick="sortTable('table', 4)"> Время завершения</th>
-		      <th>Детальный результат</th>
-	      </tr>
-	  </thead>
-	  <tbody>
-	  	{% for result in results %}
-		  <tr id="row_{{ forloop.counter0 }}">
-		      <td scope="row"><strong>{{ forloop.counter }}</strong></td>
-		      <td>{{ result.username }}</td>
-		      <td>{{ result.right_answers_count }}/{{ result.tasks_num }}</td>
-		      <td>{{ result.time }} c</td>
-		      <td>{{ result.date }}</td>
-		      <td><button type="button" class="btn btn-primary btn-sm js-open-modal" data-modal="modal" onclick='fillErrorsModal("row_{{ forloop.counter0 }}", testResults, questionsMap, "{% media_url %}")'><img src='{% search_icon %}'> Показать</button></td>
-	      </tr>
-		{% endfor %}
-	    </tbody>
-	</table>
+    <h2>{{ test.name }} - результаты тестирования</h2>
+    <p><img src='{% clock_icon %}'>
+        {% if end_date %}
+        Время тестирования: {{ start_date | date:"H:i:s" }} - {{ end_date | date:"H:i:s" }} {{ start_date | date:"d.m.y" }}<br>
+        {% else %}
+        Дата тестирования: {{ start_date }}<br>
+        {% endif %}
+        <img src='{% team_icon %}'> Выполнило слушателей: {{ results | length }}
+    </p>
+    <input class="form-control" type="text" placeholder="Искать..." id="search"
+           onkeyup='tableSearch("search", "table")'>
+    <table id="table" class="table table-hover">
+        <thead>
+        <tr>
+            <th><img class="pointer" src='{% sort_icon %}' onclick="sortTableByNums('table', 0, true)"></th>
+            <th><img class="pointer" src='{% sort_icon %}' onclick="sortTable('table', 1)"> Слушатель</th>
+            <th><img class="pointer" src='{% sort_icon %}' onclick="sortTable('table', 2)"> Результат</th>
+            <th><img class="pointer" src='{% sort_icon %}' onclick="sortTable('table', 3)"> Время прохождения</th>
+            <th><img class="pointer" src='{% sort_icon %}' onclick="sortTable('table', 4)"> Время завершения</th>
+            <th>Детальный результат</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for result in results %}
+        <tr id="row_{{ forloop.counter0 }}">
+            <td scope="row"><strong>{{ forloop.counter }}</strong></td>
+            <td>{{ result.username }}</td>
+            <td>{{ result.right_answers_count }}/{{ result.tasks_num }}</td>
+            <td>{{ result.time }} c</td>
+            <td>{{ result.date }}</td>
+            <td>
+                <button type="button" class="btn btn-primary btn-sm js-open-modal" data-modal="modal"
+                        onclick='fillErrorsModal("row_{{ forloop.counter0 }}", testResults, questionsMap, "{% media_url %}")'>
+                    <img src='{% search_icon %}'> Показать
+                </button>
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
 </div>
 
 
 <div class="modal-window" data-modal="modal">
-   <img class="modal__cross js-modal-close" src="{% close_icon %}">
-   <h4>Результат</h4>
-   <hr class="my hr4">  
-   <ul id='errors-container' class="list-group"></ul>
-   <div class="modal-footer">
-   		<button type="button" class="btn btn-primary js-modal-close"><img class="js-modal-close" src="{% cancel_icon %}"> Закрыть</button>
-   </div>
+    <img class="modal__cross js-modal-close" src="{% close_icon %}">
+    <h4>Результат</h4>
+    <hr class="my hr4">
+    <ul id='errors-container' class="list-group"></ul>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-primary js-modal-close"><img class="js-modal-close"
+                                                                          src="{% cancel_icon %}"> Закрыть
+        </button>
+    </div>
 </div>
 <div class="overlay js-overlay-modal"></div>
 
 <script src="{% static 'main/js/modalWindow.js' %}"></script>
 <script src="{% static 'main/js/table.js' %}"></script>
+<script src="{% static 'main/js/availableTests.js' %}"></script>
 <script src="{% static 'main/js/jquery-3.5.1.js' %}"></script>
 <script type="text/javascript">
-	let testResults = [];
-	let questions = [];
-	let questionsMap = new Map();
-	$.get("{% url 'api:get_tests_results' test_results_id %}").done(function(response) {
+	const socketPath = '{% url "main:available_tests" %}';
+    let socket = getRunningTestsWebSocket(socketPath);
+    socket.onopen = (e) => {
+        console.log('message', e);
+        let action = {
+            action: 'test was stopped',
+        }
+        socket.send(JSON.stringify(action));
+        socket.close()
+    };
+
+    let testResults = [];
+    let questions = [];
+    let questionsMap = new Map();
+    $.get("{% url 'api:get_tests_results' test_results_id %}").done(function (response) {
         testResults = response['results'][0];
     });
-    $.get("{% url 'api:get_questions' test.id %}").done(function(response) {
+    $.get("{% url 'api:get_questions' test.id %}").done(function (response) {
         questions = response['questions'];
-        questions.forEach(function(question) {
-			questionsMap.set(question.id, question)
-		});
+        questions.forEach(function (question) {
+            questionsMap.set(question.id, question)
+        });
     });
-	activateModalWindows();
+    activateModalWindows();
 </script>
 
 {% endblock %}

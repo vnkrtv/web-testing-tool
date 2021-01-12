@@ -38,9 +38,9 @@ ALLOWED_HOSTS = [
 INSTALLED_APPS = [
     'main.apps.MainConfig',
     'api.apps.ApiConfig',
-    'websocket.apps.WebsocketConfig',
 
     'rest_framework',
+    'channels',
 
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -60,6 +60,13 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'quizer.urls'
+ASGI_APPLICATION = 'quizer.routing.application'
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer'
+    }
+}
 
 TEMPLATES = [
     {
@@ -82,7 +89,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'quizer.wsgi.application'
+# WSGI_APPLICATION = 'quizer.wsgi.application'
 
 
 # Database

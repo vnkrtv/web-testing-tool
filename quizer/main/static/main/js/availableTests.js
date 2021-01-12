@@ -1,4 +1,4 @@
-function getTestContainer(test, testsUrl, staticPath, launchTestAPIUrl, runTestForLecturerUrl, questionsAPIUrl) {
+function getTestContainer(socket, test, testsUrl, staticPath, launchTestAPIUrl, runTestForLecturerUrl, questionsAPIUrl) {
     const container = document.createElement('div');
 
     const hr = document.createElement('hr');
@@ -29,7 +29,7 @@ function getTestContainer(test, testsUrl, staticPath, launchTestAPIUrl, runTestF
     const launchBtn = document.createElement('button');
     launchBtn.className = "btn btn-primary";
     launchBtn.innerHTML = `<img src='${staticPath}main/images/play.svg'> Запустить`;
-    launchBtn.setAttribute("onclick", `launchTest(${test.id}, "${testsUrl}", "${staticPath}", "${launchTestAPIUrl}", "${runTestForLecturerUrl}", "${questionsAPIUrl}")`);
+    launchBtn.setAttribute("onclick", `launchTest(socket, ${test.id}, "${testsUrl}", "${staticPath}", "${launchTestAPIUrl}", "${runTestForLecturerUrl}", "${questionsAPIUrl}")`);
 
     const runTestBtn = document.createElement('button');
     runTestBtn.className = "btn btn-primary";
@@ -51,11 +51,18 @@ function getTestContainer(test, testsUrl, staticPath, launchTestAPIUrl, runTestF
     return container;
 }
 
-function launchTest(testID, testsUrl, staticPath, launchTestAPIUrl, runTestForLecturerUrl, questionsAPIUrl) {
+function launchTest(socket, testID, testsUrl, staticPath, launchTestAPIUrl, runTestForLecturerUrl, questionsAPIUrl) {
     $.get(launchTestAPIUrl.replace(/test_id/gi, testID)).done((response) => {
         if (response.ok) {
             renderInfoModalWindow("Тест запущен", response.message);
-            renderAvailableTests(testsUrl, staticPath, launchTestAPIUrl, runTestForLecturerUrl, questionsAPIUrl)
+            renderAvailableTests(socket, testsUrl, staticPath, launchTestAPIUrl, runTestForLecturerUrl, questionsAPIUrl);
+
+            let launchData = {
+                action: 'test was launched',
+                // role: 'lecturer',
+                // testID: testID
+            }
+            socket.send(JSON.stringify(launchData));
         } else {
             renderInfoModalWindow("Ошибка", response.message);
         }
@@ -72,31 +79,92 @@ function runTest(testID, testTasksCount, runTestForLecturerUrl, questionsAPIUrl)
     });
 }
 
-function renderAvailableTests(testsUrl, staticPath, launchTestAPIUrl, runTestForLecturerUrl, questionsAPIUrl) {
+function getRunningTestsWebSocket(socketPath) {
+    let loc = window.location;
+    let wsStart = 'ws://'
+    if (loc.protocol === 'https:') {
+        wsStart = 'wss://';
+    }
+    let endpoint = wsStart + loc.host + socketPath;
+    return new WebSocket(endpoint);
+}
+
+function renderAvailableTests(socket, testsUrl, staticPath, launchTestAPIUrl, runTestForLecturerUrl, questionsAPIUrl) {
     const testsContainer = document.getElementById("tests_container");
     const subject = document.getElementById("subject");
     const nameFilter = document.getElementById("name_filter");
 
     let tests = [];
-	$.get(testsUrl).done((response) => {
+    $.get(testsUrl).done((response) => {
         tests = response.tests;
         testsContainer.innerHTML = '';
         for (let test of tests) {
             if (test.subject.id == subject.options[subject.selectedIndex].value) {
-                testsContainer.appendChild(getTestContainer(test, testsUrl, staticPath, launchTestAPIUrl, runTestForLecturerUrl, questionsAPIUrl));
+                testsContainer.appendChild(getTestContainer(socket, test, testsUrl, staticPath, launchTestAPIUrl, runTestForLecturerUrl, questionsAPIUrl));
             }
         }
         activateModalWindows();
-	});
+    });
 
-    subject.onkeyup = subject.onchange = nameFilter.onkeyup = nameFilter.onchange = () =>  {
+    subject.onkeyup = subject.onchange = nameFilter.onkeyup = nameFilter.onchange = () => {
         testsContainer.innerHTML = '';
         for (let test of tests) {
             if (test.name.toLowerCase().includes(nameFilter.value.toLowerCase())) {
                 if (test.subject.id == subject.options[subject.selectedIndex].value) {
-                    testsContainer.appendChild(getTestContainer(test, testsUrl, staticPath, launchTestAPIUrl, runTestForLecturerUrl, questionsAPIUrl));
+                    testsContainer.appendChild(getTestContainer(socket, test, testsUrl, staticPath, launchTestAPIUrl, runTestForLecturerUrl, questionsAPIUrl));
                 }
             }
         }
     };
+}
+
+function getRunningTestDiv(test, refsDict) {
+    const container = document.createElement('div');
+    container.classList.add('jumbotron');
+
+    const label = document.createElement('label');
+    label.setAttribute('htmlFor', 'test_name');
+
+    const nameH3 = document.createElement('h3');
+    nameH3.innerText = test.name;
+
+    const descP = document.createElement('p');
+    descP.innerText = test.description;
+
+    const infoP = document.createElement('p');
+    infoP.innerHTML = `<img src='${refsDict.userIcon}'> Запустил: ${test.launched_lecturer.username}<br>
+        <img src='${refsDict.researchIcon}'> Количество заданий в тесте: ${test.tasks_num}<br>
+        <img src='${refsDict.clockIcon}'> Время на выполнение: ${test.duration} c`;
+
+    const form = document.createElement('form');
+    form.setAttribute('action', refsDict.formUrl);
+    form.setAttribute('method', 'post');
+    form.innerHTML = refsDict.csrfToken + `<input type="hidden" name="test_id", value="${test.id}"> 
+        <button class="btn btn-primary"><img src='${refsDict.playIcon}'> Приступить</button>`;
+
+    label.appendChild(nameH3);
+    label.appendChild(descP);
+    label.appendChild(infoP);
+    label.appendChild(form);
+
+    container.appendChild(label)
+    return container;
+}
+
+function studentRenderAvailableTests(runningTestsUrl, runningTestsDiv, refsDict) {
+    const noRunningTestsDiv = document.getElementById('noRunningTestsDiv');
+    let runningTests = [];
+    $.get(runningTestsUrl)
+        .done(function (response) {
+            runningTests = response['tests'];
+            runningTestsDiv.innerHTML = '';
+            if (runningTests.length) {
+                noRunningTestsDiv.style.display = 'none';
+                for (let test of runningTests) {
+                    runningTestsDiv.appendChild(getRunningTestDiv(test, refsDict));
+                }
+            } else {
+                noRunningTestsDiv.style.display = '';
+            }
+        });
 }

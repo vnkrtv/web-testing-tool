@@ -10,6 +10,8 @@ def unauthenticated_user(view_func):
     Checked if user is authorized
     """
     def wrapper_func(request, *args, **kwargs):
+        if request.path == '/ws_running_tests/':
+            return view_func(request, *args, **kwargs)
         if request.user.is_authenticated:
             return view_func(request, *args, **kwargs)
         else:
@@ -25,6 +27,9 @@ def allowed_users(allowed_roles: list):
     """
     def decorator(view_func):
         def wrapper_func(request, *args, **kwargs):
+            if request.path == '/ws_running_tests/':
+                return view_func(request, *args, **kwargs)
+
             is_allowed = False
             for group in allowed_roles:
                 if request.user.groups.filter(name=group):

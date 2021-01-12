@@ -56,7 +56,23 @@
 <script src="{% static 'main/js/availableTests.js' %}"></script>
 <script src="{% static 'main/js/jquery-3.5.1.js' %}"></script>
 <script type="text/javascript">
-	renderAvailableTests("{% url 'api:tests_api' 'not_running' %}", '{% static_url %}', "{% url 'api:launch_test' 'test_id' %}", "{% url 'main:lecturer_run_test' 'test_id' %}", "{% url 'api:get_questions' 'test_id' %}");
+	const socketPath = '{% url "main:available_tests" %}';
+	let socket = getRunningTestsWebSocket(socketPath);
+
+	socket.onmessage = (e) => {
+		console.log('message', e);
+	};
+	socket.onopen = (e) => {
+		console.log('open', e);
+	};
+	socket.onerror = (e) => {
+		console.log('error', e);
+	};
+	socket.onclose = (e) => {
+		console.log('close', e);
+	};
+
+	renderAvailableTests(socket, "{% url 'api:tests_api' 'not_running' %}", '{% static_url %}', "{% url 'api:launch_test' 'test_id' %}", "{% url 'main:lecturer_run_test' 'test_id' %}", "{% url 'api:get_questions' 'test_id' %}");
 	{% if info %}
 	    renderInfoModalWindow("{{ info.title }}", "{{ info.message }}");	
 	{% endif %}

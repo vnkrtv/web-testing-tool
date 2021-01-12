@@ -1,6 +1,8 @@
-from django.core.asgi import get_asgi_application
-from websocket.middleware import websockets
+import os
+import django
 
+from channels.routing import get_default_application
 
-application = get_asgi_application()
-application = websockets(application)
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "quizer.settings")
+django.setup()
+application = get_default_application()

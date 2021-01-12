@@ -35,10 +35,10 @@ function getRunningTestDiv(test, idx, refsDict) {
     const container = document.createElement('div');
 
     const hr = document.createElement('hr');
-    hr.setAttribute('className', "my-4");
+    hr.setAttribute('class', "my-4");
 
     const label = document.createElement('label');
-    label.setAttribute('htmlFor', 'test_name');
+    label.setAttribute('htmlfor', 'test_name');
 
     const nameH3 = document.createElement('h3');
     nameH3.innerText = test.name;
@@ -49,7 +49,7 @@ function getRunningTestDiv(test, idx, refsDict) {
     const infoP = document.createElement('p');
     infoP.innerHTML = `<img src='${refsDict.researchIcon}'> Количество заданий в тесте: ${test.tasks_num}<br>
         <img src='${refsDict.clockIcon}'> Время на выполнение: ${test.duration} c<br>
-        <span class="pointer" onClick='hideTable("search_${idx}", "table_${idx}")' title="Нажмите, чтобы скрыть результаты">
+        <span class="pointer" onclick='hideTable("search_${idx}", "table_${idx}")' title="Нажмите, чтобы скрыть результаты">
               <img src='${refsDict.teamIcon}'> Выполнило слушателей: ${test.finished_students_results.length}
         </span>`;
 
@@ -58,7 +58,7 @@ function getRunningTestDiv(test, idx, refsDict) {
     searchInput.setAttribute('type', "text");
     searchInput.setAttribute('placeholder', "Искать...");
     searchInput.setAttribute('id', `search_${idx}`);
-    searchInput.setAttribute('onKeyUp', `tableSearch("search_${idx}", "table_${idx}")`);
+    searchInput.setAttribute('onkeyup', `tableSearch("search_${idx}", "table_${idx}")`);
 
     const resultsTable = getResultsTable(test.finished_students_results, idx);
     const form = document.createElement('form');

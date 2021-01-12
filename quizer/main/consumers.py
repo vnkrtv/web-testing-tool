@@ -23,8 +23,6 @@ class RunningTestsConsumer(WebsocketConsumer):
 
     def receive(self, text_data=None, bytes_data=None):
         received_dict = json.loads(text_data)
-        print('receive: ', received_dict)
-
         async_to_sync(self.channel_layer.group_send)(
             self.group_name,
             {

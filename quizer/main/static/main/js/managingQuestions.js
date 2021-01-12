@@ -258,3 +258,26 @@ function fillDeleteQuestionModal(qstnID, testID) {
     const overlay = document.getElementById('overlay');
     overlay.classList.toggle('active');
 }
+
+function renderQuestionsTable(questions, questionsTbody) {
+    questionsTbody.innerHTML = '';
+    const typesDict = {
+        '': 'Обычный',
+        'image': 'Изображения'
+    }
+    for (let i = 0; i < questions.length; i++) {
+        let question = questions[i];
+        const tr = document.createElement('tr');
+        tr.setAttribute('id', `row_${i}`);
+        tr.setAttribute('class', 'js-open-modal');
+        tr.setAttribute('onclick', `fillQuestionModal(${i})`);
+        tr.setAttribute('data-modal', "question-modal");
+        tr.innerHTML = `
+            <td scope="row"><strong>${i + 1}</strong></td>
+            <td>${question.formulation}</td>
+            <td>${question.tasks_num}</td>
+            <td>${question.multiselect ? '+' : '-'}</td>
+            <td>${typesDict[question.type]}</td>`;
+        questionsTbody.appendChild(tr);
+    }
+}

@@ -257,7 +257,7 @@ class RunningTestView(APIView):
                     test_id=test['id'],
                     lecturer_id=request.user.id)
                 results = test_results['results']
-                results.sort(key=lambda result: result['date'])
+                results.sort(key=lambda res: res['date'])
                 for result in results:
                     result['date'] = result['date'].strftime(date_format)
                 test['finished_students_results'] = results

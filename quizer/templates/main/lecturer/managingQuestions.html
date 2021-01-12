@@ -22,17 +22,7 @@
 		      <th><img class="pointer" src='{% sort_icon %}' onclick="sortTable('table', 4)"> Тип</th>
 	      </tr>
 	  </thead>
-	  <tbody>
-	  	{% for question in questions %}
-		  <tr id="row_{{ forloop.counter0 }}" class="js-open-modal" onclick="fillQuestionModal({{ forloop.counter0 }})" data-modal="question-modal">
-		      <td scope="row"><strong>{{ forloop.counter }}</strong></td>
-		      <td>{{ question.formulation }}</td>
-		      <td>{{ question.tasks_num }}</td>
-		      <td>{% if question.multiselect %}+{% else %}-{% endif %}</td>
-		      <td>{% get_question_type question.type %}</td>
-	      </tr>
-		{% endfor %}
-	    </tbody>
+	  <tbody id='questionsTbody'></tbody>
 	</table>
 </div>
 
@@ -100,10 +90,12 @@
 <script src="{% static 'main/js/jquery-3.5.1.js' %}"></script>
 <script type="text/javascript">
 	const mediaUrl = '{% media_url %}';
+	const questionsTbody = document.getElementById('questionsTbody');
 	let questions = [];
 	$.get("{% url 'api:get_questions' test.id %}"
 		).done(function(response) {
 			questions = response['questions'];
+			renderQuestionsTable(questions, questionsTbody);
 	});
 </script>
 

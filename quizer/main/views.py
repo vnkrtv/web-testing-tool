@@ -24,16 +24,9 @@ from .forms import SubjectForm, TestForm
 @allowed_users(allowed_roles=['lecturer'])
 def manage_questions(request, test_id: int):
     test = Test.objects.filter(id=test_id).first()
-    if not test:
-        return redirect(reverse('main:available_tests'))
-    storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())
-    test_questions = storage.get_many(test_id=test.id)
-    for question in test_questions:
-        question['id'] = str(question.pop('_id'))
     context = {
         'title': 'Вопросы',
-        'test': test,
-        'questions': test_questions
+        'test': test
     }
     return render(request, 'main/lecturer/managingQuestions.html', context)
 
@@ -74,30 +67,6 @@ def login_page(request):
         port=settings.DATABASES['default']['PORT'],
         db_name=settings.DATABASES['default']['NAME'])
     return redirect(reverse('main:available_tests'))
-
-
-async def get_running_tests(socket):
-    """
-    Async view for getting running tests in real time by usage WebSocket
-
-    :param socket: websocket.connection.WebSocket object
-    """
-    await socket.accept()
-    storage = await mongo.TestsResultsStorage.connect(db=mongo.get_conn())
-    running_tests = await storage.get_running_tests()
-    tests = []
-    for running_test in running_tests:
-        test = Test.objects.get(id=running_test['test_id']).to_dict()
-        launched_lecturer = User.objects.get(id=running_test['launched_lecturer_id'])
-        tests.append({
-            **test,
-            'launched_lecturer': {
-                'id': launched_lecturer.id,
-                'username': launched_lecturer.username
-            }
-        })
-    await socket.send_json(tests)
-    await socket.close()
 
 
 @unauthenticated_user

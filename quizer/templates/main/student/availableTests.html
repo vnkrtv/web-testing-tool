@@ -8,6 +8,9 @@
 
 <link rel="stylesheet" href="{% static 'main/css/modal-window.css' %}">
 
+<div class="alert alert-warning" id="websocketErrorDiv" role="alert" style="display: none">
+  Вебсокеты отвалились, поэтому автобновление страницы не работает. Для обновления страницы воспользуйтесь F5.
+</div>
 <div class='jumbotron' id="noRunningTestsDiv">
     <h3>Доступные тесты отсутствуют</h3>
     <p>Ни один из тестов пока не запущен.</p>
@@ -54,11 +57,10 @@
     socket.onopen = (e) => {
         console.log('open', e);
     };
-    socket.onerror = (e) => {
+    socket.onclose = socket.onerror = (e) => {
         console.log('error', e);
-    };
-    socket.onclose = (e) => {
-        console.log('close', e);
+        const websocketErrorDiv = document.getElementById("websocketErrorDiv");
+        websocketErrorDiv.style.display = '';
     };
 </script>
 {% endblock %}

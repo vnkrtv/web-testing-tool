@@ -235,8 +235,6 @@ class TestsView(View):
         """Configuring tests"""
         if 'add-question' in request.POST:
             self.add_question(request)
-        elif 'delete-question' in request.POST:
-            self.delete_question(request)
         elif 'edit-question' in request.POST:
             self.edit_question(request)
         else:
@@ -264,21 +262,6 @@ class TestsView(View):
                 'modal_title': 'Ошибка',
                 'modal_message': 'Форма некорректно заполнена'
             }
-
-    def delete_question(self, request):
-        """Deleting questions for test"""
-        question_id = request.POST['question_id']
-        test_id = int(request.POST['test_id'])
-        test = Test.objects.get(id=test_id)
-
-        storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())
-        storage.delete_by_id(
-            question_id=question_id,
-            test_id=test.id)
-        self.context = {
-            'modal_title': 'Вопрос удален',
-            'modal_message': "Вопрос к тесту %s был успешно удален." % test.name
-        }
 
     def edit_question(self, request):
         """Editing question for test"""

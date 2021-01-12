@@ -219,7 +219,7 @@ function fillQuestionModal(i) {
     const optionsDiv = document.getElementById('options-div');
     optionsDiv.innerHTML = '';
     for (let t = 0; t < question.options.length; t++) {
-        if (question.type == '') {
+        if (question.type === '') {
             if (question.multiselect) {
                 optionsDiv.appendChild(getQuestionOptionWithMultiselect(
                     t, question.options[t].option, question.options[t].is_true))
@@ -227,7 +227,7 @@ function fillQuestionModal(i) {
                 optionsDiv.appendChild(getQuestionOption(
                     t, question.options[t].option, question.options[t].is_true))
             }
-        } else if (question.type == 'image') {
+        } else if (question.type === 'image') {
             if (question.multiselect) {
                 optionsDiv.appendChild(getQuestionOptionWithMultiselectAndImages(
                     t, question.options[t].option, question.options[t].is_true))
@@ -257,6 +257,7 @@ function fillDeleteQuestionModal(qstnID, testID) {
 
     const overlay = document.getElementById('overlay');
     overlay.classList.toggle('active');
+    console.log(overlay.classList);
 }
 
 function renderQuestionsTable(questionsAPIUrl, questionsTbody) {
@@ -285,4 +286,16 @@ function renderQuestionsTable(questionsAPIUrl, questionsTbody) {
         }
         activateModalWindows();
     });
+}
+
+function deleteQuestion(questionsAPIUrl, questionsTbody, csrfToken) {
+    const qstnID = document.getElementById("delete-question-id").value;
+    const params = {
+        csrfmiddlewaretoken: csrfToken
+    };
+    $.post(`${questionsAPIUrl}/${qstnID}`, params)
+        .done((response) => {
+            renderQuestionsTable(questionsAPIUrl, questionsTbody);
+            renderInfoModalWindow("Вопрос удален", response['success']);
+        });
 }

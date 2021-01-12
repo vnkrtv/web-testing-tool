@@ -121,7 +121,7 @@ class QuestionsStorage(MongoDB):
             })
         else:
             question = self._col.find_one({
-                '_id': question_id,
+                '_id': ObjectId(question_id),
                 'test_id': test_id
             })
         return question

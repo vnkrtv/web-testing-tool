@@ -11,6 +11,12 @@
 <script type="text/javascript">
 	const socketPath = '{% url "main:available_tests" %}';
     let socket = getRunningTestsWebSocket(socketPath);
+    socket.onerror = (e) => {
+        console.log('error', e);
+    };
+    socket.onclose = (e) => {
+        console.log('close', e);
+    };
     socket.onopen = (e) => {
         let action = {
             action: 'test was passed',

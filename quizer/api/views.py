@@ -1,3 +1,5 @@
+import json
+
 from django.contrib.auth.models import User
 
 from rest_framework.generics import get_object_or_404
@@ -218,12 +220,25 @@ class QuestionView(APIView):
                 })
             return response
         else:  # PUT
-            storage.update_formulation(
-                question_id=question_id,
-                formulation=request_dict['formulation'])
+            with_images = json.loads(request_dict['withImages'][0])
+            formulation = request_dict['formulation'][0]
+            options = json.loads(request_dict['options'][0])
+            test = Test.objects.get(id=test_id)
+
+            if with_images:
+                storage.update_formulation(
+                    question_id=question_id,
+                    formulation=formulation
+                )
+            else:
+                storage.update(
+                    question_id=question_id,
+                    formulation=formulation,
+                    options=options
+                )
             message = "Вопрос '%s' по тесту '%s' был успешно отредактирован."
             return Response({
-                'success': message % (request_dict['formulation'], test.name)
+                'success': message % (formulation, test.name)
             })
 
 

@@ -9,84 +9,92 @@
 <link rel="stylesheet" href="{% static 'main/css/modal-window.css' %}">
 
 <div class='jumbotron'>
-	<h2>Вопросы к тесту {{ test.name }}</h2><br>
-	<p>Нажмите на вопрос, чтобы редактировать его.</p>
- 	<input class="form-control" type="text" placeholder="Искать..." id="search" onkeyup='tableSearch("search", "table")'>
-	<table id="table" class="table table-hover">
-	    <thead>
-	      <tr>
-	      	<th><img class="pointer" src='{% sort_icon %}' onclick="sortTableByNums('table', 0, true)"></th>
-		      <th><img class="pointer" src='{% sort_icon %}' onclick="sortTable('table', 1)"> Формулировка</th>
-		      <th><img class="pointer" src='{% sort_icon %}' onclick="sortTableByNums('table', 2)"> Число вариантов ответов</th>
-		      <th><img class="pointer" src='{% sort_icon %}' onclick="sortTable('table', 3)"> Мультивыбор</th>
-		      <th><img class="pointer" src='{% sort_icon %}' onclick="sortTable('table', 4)"> Тип</th>
-	      </tr>
-	  </thead>
-	  <tbody id='questionsTbody'></tbody>
-	</table>
+    <h2>Вопросы к тесту {{ test.name }}</h2><br>
+    <p>Нажмите на вопрос, чтобы редактировать его.</p>
+    <input class="form-control" type="text" placeholder="Искать..." id="search"
+           onkeyup='tableSearch("search", "table")'>
+    <table id="table" class="table table-hover">
+        <thead>
+        <tr>
+            <th><img class="pointer" src='{% sort_icon %}' onclick="sortTableByNums('table', 0, true)"></th>
+            <th><img class="pointer" src='{% sort_icon %}' onclick="sortTable('table', 1)"> Формулировка</th>
+            <th><img class="pointer" src='{% sort_icon %}' onclick="sortTableByNums('table', 2)"> Число вариантов
+                ответов
+            </th>
+            <th><img class="pointer" src='{% sort_icon %}' onclick="sortTable('table', 3)"> Мультивыбор</th>
+            <th><img class="pointer" src='{% sort_icon %}' onclick="sortTable('table', 4)"> Тип</th>
+        </tr>
+        </thead>
+        <tbody id='questionsTbody'></tbody>
+    </table>
 </div>
 
-<div class="modal-window" data-modal="question-modal">
-   <img class="modal__cross js-modal-close" src="{% close_icon %}">
-   <h4>Вопрос</h4>
-   <hr class="my hr4">
-   <form action="{% url 'main:tests' %}" method="post">
-   {% csrf_token %}
-	   <div class="form-row">
-		  	<div class="col-md-4 mb-3">
-		  		<label for="question">Формулировка вопроса
-		      		<input type="text" class="form-control" id='question-formulation' name="formulation" required>
-		      	</label>
-			    <div class="custom-control custom-checkbox my-1 mr-sm-2">
-			    	<input type="checkbox" class="custom-control-input" id="question-multiselect" disabled>
-			    	<label class="custom-control-label" for="question-multiselect">Мультивыбор</label>
-			    </div>
-			    <div class="custom-control custom-checkbox my-1 mr-sm-2">
-			    	<input type="checkbox" class="custom-control-input" id="question-with-images" disabled>
-			    	<label class="custom-control-label" for="question-with-images">Фотографии</label>
-			    </div>
-		  	</div>
-		</div>
-		<div class="form-row">
-		    <div class="col-md-4 mb-3">
-		    	<label for="tasks_num">Число вариантов</label>
-		    	<input type="number" class="form-control" name="tasks_num" id='question-tasks-num' min="2" disabled required>
-			</div>
-		</div>
-   		<div id="options-div"></div>
-   		<input type="hidden" name="test_id" id="test_id" value="{{ test.id }}">
-   		<input type="hidden" name="question_id" id="edit-question-id" value="">
-   		<input type="hidden" name="multiselect" id="hidden-question-multiselect" value="">
-   		<input type="hidden" name="with_images" id="hidden-question-with-images" value="">
-	     <div class="modal-footer">
-	        <div class="btn btn-primary js-modal-close"><img src='{% cancel_icon %}'> Закрыть</div>
-	        <button class="btn btn-primary" name="edit-question"><img src='{% edit_icon %}'> Изменить</button>
-	        <button class="btn btn-danger js-modal-close js-open-modal" id='delete-question-button' data-modal="delete-question-modal"><img src='{% delete_icon %}'> Удалить</button>
-	     </div>
-	   </form>
-</div>
-
-<div class="modal-window" data-modal="delete-question-modal">
-   <img class="modal__cross js-modal-close" src="{% close_icon %}">
-   <h4>Удалить вопрос</h4>
-   <hr class="my hr4">
-	<input type="hidden" name="test_id" id='delete-question-test-id' value="">
-	<input type="hidden" name="question_id" id='delete-question-id' value="">
-    <p id='delete-p'></p>
-     <div class="modal-footer">
+<div class="modal-window" data-modal="question-modal" id="question-edit-modal">
+    <img class="modal__cross js-modal-close" src="{% close_icon %}">
+    <h4>Вопрос</h4>
+    <hr class="my hr4">
+    <div class="form-row">
+        <div class="col-md-4 mb-3">
+            <label>Формулировка вопроса
+                <input type="text" class="form-control" id='question-formulation' name="formulation" required>
+            </label>
+            <div class="custom-control custom-checkbox my-1 mr-sm-2">
+                <input type="checkbox" class="custom-control-input" id="question-multiselect" disabled>
+                <label class="custom-control-label" for="question-multiselect">Мультивыбор</label>
+            </div>
+            <div class="custom-control custom-checkbox my-1 mr-sm-2">
+                <input type="checkbox" class="custom-control-input" id="question-with-images" disabled>
+                <label class="custom-control-label" for="question-with-images">Фотографии</label>
+            </div>
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="col-md-4 mb-3">
+            <label>Число вариантов</label>
+            <input type="number" class="form-control" name="tasks_num" id='question-tasks-num' min="2" disabled
+                   required>
+        </div>
+    </div>
+    <div id="options-div"></div>
+    <input type="hidden" name="test_id" id="test_id" value="{{ test.id }}">
+    <input type="hidden" name="question_id" id="edit-question-id" value="">
+    <input type="hidden" name="multiselect" id="hidden-question-multiselect" value="">
+    <input type="hidden" name="with_images" id="hidden-question-with-images" value="">
+    <div class="modal-footer">
         <div class="btn btn-primary js-modal-close"><img src='{% cancel_icon %}'> Закрыть</div>
-        <button class="btn btn-danger js-modal-close" onclick="deleteQuestion(questionsAPIUrl, questionsTbody, csrfToken)"><img src='{% delete_icon %}'> Удалить</button>
-     </div>
+        <button class="btn btn-primary js-modal-close"
+                onclick="editQuestion(questionsAPIUrl, questionsTbody, csrfToken)"><img src='{% edit_icon %}'> Изменить
+        </button>
+        <button class="btn btn-danger" id='delete-question-button' data-modal="delete-question-modal"><img
+                src='{% delete_icon %}'> Удалить
+        </button>
+    </div>
+</div>
+
+<div class="modal-window" data-modal="delete-question-modal" id="question-delete-modal">
+    <img class="modal__cross js-modal-close" src="{% close_icon %}">
+    <h4>Удалить вопрос</h4>
+    <hr class="my hr4">
+    <input type="hidden" name="test_id" id='delete-question-test-id' value="">
+    <input type="hidden" name="question_id" id='delete-question-id' value="">
+    <p id='delete-p'></p>
+    <div class="modal-footer">
+        <div class="btn btn-primary js-modal-close"><img src='{% cancel_icon %}'> Закрыть</div>
+        <button class="btn btn-danger js-modal-close"
+                onclick="deleteQuestion(questionsAPIUrl, questionsTbody, csrfToken)"><img src='{% delete_icon %}'>
+            Удалить
+        </button>
+    </div>
 </div>
 
 <div id="info-modal" class="modal-window" data-modal="info-modal">
-   <img class="modal__cross js-modal-close" src="{% close_icon %}">
-   <h4 id="info-modal-title"></h4>
-   <hr class="my hr4">
-   <p id="info-modal-p"></p>
-   <div class="modal-footer">
-      <button class="btn btn-primary js-modal-close"><img src='{% cancel_icon %}'> Закрыть</button>
-   </div>
+    <img class="modal__cross js-modal-close" src="{% close_icon %}">
+    <h4 id="info-modal-title"></h4>
+    <hr class="my hr4">
+    <p id="info-modal-p"></p>
+    <div class="modal-footer">
+        <button class="btn btn-primary js-modal-close"><img src='{% cancel_icon %}'> Закрыть</button>
+    </div>
 </div>
 
 <div id='overlay' class="overlay js-overlay-modal"></div>
@@ -96,12 +104,12 @@
 <script src="{% static 'main/js/table.js' %}"></script>
 <script src="{% static 'main/js/jquery-3.5.1.js' %}"></script>
 <script type="text/javascript">
-	const mediaUrl = '{% media_url %}';
-	const questionsAPIUrl = "{% url 'api:get_questions' test.id %}";
-	const csrfToken = '{{ csrf_token }}';
-	const questionsTbody = document.getElementById('questionsTbody');
-	let questions = []
-	renderQuestionsTable(questionsAPIUrl, questionsTbody);
+    const mediaUrl = '{% media_url %}';
+    const questionsAPIUrl = "{% url 'api:get_questions' test.id %}";
+    const csrfToken = '{{ csrf_token }}';
+    const questionsTbody = document.getElementById('questionsTbody');
+    let questions = []
+    renderQuestionsTable(questionsAPIUrl, questionsTbody);
 </script>
 
 {% endblock %}

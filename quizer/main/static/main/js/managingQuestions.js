@@ -10,7 +10,7 @@ function getQuestionOption(i, value, isTrue) {
     optionLabel.innerHTML = `Вариант ${i + 1}`;
 
     const optionInput = document.createElement('input');
-    optionInput.className = "form-control"
+    optionInput.className = "form-control option-input"
     optionInput.type = 'text';
     optionInput.id = `option_${i}`;
     optionInput.name = `option_${i}`;
@@ -24,7 +24,7 @@ function getQuestionOption(i, value, isTrue) {
     radioContainer.className = 'custom-control custom-checkbox my-1 mr-sm-2';
 
     const isTrueInput = document.createElement('input');
-    isTrueInput.className = "custom-control-input"
+    isTrueInput.className = "custom-control-input is-true-input"
     isTrueInput.type = 'radio';
     isTrueInput.id = `is_true_${i}`;
     isTrueInput.name = `is_true`;
@@ -110,7 +110,7 @@ function getQuestionOptionWithMultiselect(i, value, isTrue) {
     optionLabel.innerHTML = `Вариант ${i + 1}`;
 
     const optionInput = document.createElement('input');
-    optionInput.className = "form-control"
+    optionInput.className = "form-control option-input"
     optionInput.type = 'text';
     optionInput.id = `option_${i}`;
     optionInput.name = `option_${i}`;
@@ -124,7 +124,7 @@ function getQuestionOptionWithMultiselect(i, value, isTrue) {
     checkboxContainer.className = 'custom-control custom-checkbox my-1 mr-sm-2';
 
     const isTrueInput = document.createElement('input');
-    isTrueInput.className = "custom-control-input"
+    isTrueInput.className = "custom-control-input is-true-input"
     isTrueInput.type = 'checkbox';
     isTrueInput.id = `is_true_${i}`;
     isTrueInput.name = `is_true_${i}`;
@@ -157,16 +157,16 @@ function getQuestionOptionWithMultiselectAndImages(i, value, isTrue) {
     const fileContainer = document.createElement('div');
     fileContainer.className = 'form-group';
 
-    const option_label = document.createElement('label');
-    option_label.htmlFor = `option_${i}`;
-    option_label.innerHTML = `Вариант ${i + 1}`;
+    const optionLabel = document.createElement('label');
+    optionLabel.htmlFor = `option_${i}`;
+    optionLabel.innerHTML = `Вариант ${i + 1}`;
 
     const optionRef = document.createElement('a');
     optionRef.className = "form-control-file";
     optionRef.href = mediaUrl + value;
     optionRef.innerHTML = 'Посмотреть';
 
-    fileContainer.appendChild(option_label);
+    fileContainer.appendChild(optionLabel);
     fileContainer.appendChild(optionRef);
 
 
@@ -207,9 +207,9 @@ function fillQuestionModal(i) {
     optionsNumInput.value = question.tasks_num;
 
     const multiselectInput = document.getElementById('question-multiselect');
-    const hiddenMultelelectInput = document.getElementById('hidden-question-multiselect');
+    const hiddenMultiselectInput = document.getElementById('hidden-question-multiselect');
     multiselectInput.checked = (question.multiselect === true) ? 'checked' : '';
-    hiddenMultelelectInput.value = (question.multiselect === true) ? 'on' : '';
+    hiddenMultiselectInput.value = (question.multiselect === true) ? 'on' : '';
 
     const withImageInput = document.getElementById('question-with-images');
     const hiddenWithImagesInput = document.getElementById('hidden-question-with-images');
@@ -218,22 +218,22 @@ function fillQuestionModal(i) {
 
     const optionsDiv = document.getElementById('options-div');
     optionsDiv.innerHTML = '';
-    for (let t = 0; t < question.options.length; t++) {
+    for (let idx = 0; idx < question.options.length; idx++) {
         if (question.type === '') {
             if (question.multiselect) {
                 optionsDiv.appendChild(getQuestionOptionWithMultiselect(
-                    t, question.options[t].option, question.options[t].is_true))
+                    idx, question.options[idx].option, question.options[idx].is_true))
             } else {
                 optionsDiv.appendChild(getQuestionOption(
-                    t, question.options[t].option, question.options[t].is_true))
+                    idx, question.options[idx].option, question.options[idx].is_true))
             }
         } else if (question.type === 'image') {
             if (question.multiselect) {
                 optionsDiv.appendChild(getQuestionOptionWithMultiselectAndImages(
-                    t, question.options[t].option, question.options[t].is_true))
+                    idx, question.options[idx].option, question.options[idx].is_true))
             } else {
                 optionsDiv.appendChild(getQuestionOptionWithImages(
-                    t, question.options[t].option, questions[i].options[t].is_true))
+                    idx, question.options[idx].option, questions[i].options[idx].is_true))
             }
         }
     }
@@ -255,9 +255,11 @@ function fillDeleteQuestionModal(qstnID, testID) {
     const qstnIDInput = document.getElementById('delete-question-id');
     qstnIDInput.value = qstnID;
 
-    const overlay = document.getElementById('overlay');
-    overlay.classList.toggle('active');
-    console.log(overlay.classList);
+    const editModal = document.getElementById('question-edit-modal');
+    editModal.classList.toggle('active');
+
+    const deleteModal = document.getElementById('question-delete-modal');
+    deleteModal.classList.toggle('active');
 }
 
 function renderQuestionsTable(questionsAPIUrl, questionsTbody) {
@@ -286,6 +288,41 @@ function renderQuestionsTable(questionsAPIUrl, questionsTbody) {
         }
         activateModalWindows();
     });
+}
+
+function getValueById(id) {
+    return document.getElementById(id).value;
+}
+
+function editQuestion(questionsAPIUrl, questionsTbody, csrfToken) {
+    const qstnID = getValueById("edit-question-id");
+    const qstnFormulation = getValueById("question-formulation");
+    const withImages = ('on' === getValueById("hidden-question-with-images"));
+    const multiselect = ('on' === getValueById("hidden-question-multiselect"));
+    const optionInputs = document.getElementsByClassName('option-input');
+    const isTrueInputs = document.getElementsByClassName('is-true-input');
+
+    let options = [];
+    for (let i = 0; i < optionInputs.length; i++) {
+        options.push({
+            option: optionInputs[i].value,
+            is_true: isTrueInputs[i].checked
+        });
+    }
+
+    const params = {
+        withImages: withImages,
+        multiselect: multiselect,
+        formulation: qstnFormulation,
+        options: JSON.stringify(options),
+        csrfmiddlewaretoken: csrfToken
+    };
+    console.log(params);
+    $.post(`${questionsAPIUrl}/${qstnID}`, params)
+        .done((response) => {
+            renderQuestionsTable(questionsAPIUrl, questionsTbody);
+            renderInfoModalWindow("Вопрос отредактирован", response['success']);
+        });
 }
 
 function deleteQuestion(questionsAPIUrl, questionsTbody, csrfToken) {

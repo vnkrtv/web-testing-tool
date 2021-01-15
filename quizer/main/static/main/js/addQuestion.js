@@ -10,7 +10,7 @@ function getQuestionOption(i) {
     optionLabel.innerHTML = `Вариант ${i + 1}`;
 
     const optionInput = document.createElement('input');
-    optionInput.className = "form-control"
+    optionInput.className = "form-control option-input"
     optionInput.type = 'text';
     optionInput.id = `option_${i}`;
     optionInput.name = `option_${i}`;
@@ -23,7 +23,7 @@ function getQuestionOption(i) {
     radioContainer.className = 'custom-control custom-checkbox my-1 mr-sm-2';
 
     const isTrueInput = document.createElement('input');
-    isTrueInput.className = "custom-control-input"
+    isTrueInput.className = "custom-control-input is-true-input"
     isTrueInput.type = 'radio';
     isTrueInput.id = `is_true_${i}`;
     isTrueInput.name = `is_true`;
@@ -61,12 +61,12 @@ function getQuestionOptionWithImages(i) {
     optionLabel.innerHTML = `Вариант ${i + 1}`;
 
     const optionInput = document.createElement('input');
-    optionInput.className = "form-control-file"
+    optionInput.className = "form-control-file option-input"
     optionInput.type = 'file';
     optionInput.id = `option_${i}`;
     optionInput.name = `option_${i}`;
     optionInput.required = 'required';
-    optionInput.accept="image/*"
+    optionInput.accept = "image/*"
 
     fileContainer.appendChild(optionLabel);
     fileContainer.appendChild(optionInput);
@@ -75,7 +75,7 @@ function getQuestionOptionWithImages(i) {
     radioContainer.className = 'custom-control custom-checkbox my-1 mr-sm-2';
 
     const isTrueInput = document.createElement('input');
-    isTrueInput.className = "custom-control-input"
+    isTrueInput.className = "custom-control-input is-true-input"
     isTrueInput.type = 'radio';
     isTrueInput.id = `is_true_${i}`;
     isTrueInput.name = `is_true`;
@@ -109,7 +109,7 @@ function getQuestionOptionWithMultiselect(i) {
     optionLabel.innerHTML = `Вариант ${i + 1}`;
 
     const optionInput = document.createElement('input');
-    optionInput.className = "form-control"
+    optionInput.className = "form-control option-input"
     optionInput.type = 'text';
     optionInput.id = `option_${i}`;
     optionInput.name = `option_${i}`;
@@ -122,7 +122,7 @@ function getQuestionOptionWithMultiselect(i) {
     checkboxContainer.className = 'custom-control custom-checkbox my-1 mr-sm-2';
 
     const isTrueInput = document.createElement('input');
-    isTrueInput.className = "custom-control-input"
+    isTrueInput.className = "custom-control-input is-true-input"
     isTrueInput.type = 'checkbox';
     isTrueInput.id = `is_true_${i}`;
     isTrueInput.name = `is_true_${i}`;
@@ -159,12 +159,12 @@ function getQuestionOptionWithMultiselectAndImages(i) {
     option_label.innerHTML = `Вариант ${i + 1}`;
 
     const optionInput = document.createElement('input');
-    optionInput.className = "form-control-file"
+    optionInput.className = "form-control-file option-input"
     optionInput.type = 'file';
     optionInput.id = `option_${i}`;
     optionInput.name = `option_${i}`;
     optionInput.required = 'required';
-    optionInput.accept="image/*"
+    optionInput.accept = "image/*"
 
     fileContainer.appendChild(option_label);
     fileContainer.appendChild(optionInput);
@@ -174,7 +174,7 @@ function getQuestionOptionWithMultiselectAndImages(i) {
     checkboxContainer.className = 'custom-control custom-checkbox my-1 mr-sm-2';
 
     const isTrueInput = document.createElement('input');
-    isTrueInput.className = "custom-control-input"
+    isTrueInput.className = "custom-control-input is-true-input"
     isTrueInput.type = 'checkbox';
     isTrueInput.id = `is_true_${i}`;
     isTrueInput.name = `is_true_${i}`;
@@ -223,4 +223,100 @@ function renderAddQuestionModal() {
             }
         }
     };
+}
+
+function cleanUpAddQuestionModal() {
+    const getById = (id) => {
+        return document.getElementById(id);
+    };
+
+    const optionsDiv = getById("add-question-questions-div");
+    const qstnFormulation = getById("add-question-formulation");
+    const tasksNum = getById("add-question-tasks-num");
+    const withImages = getById("add-question-with-images");
+    const multiselect = getById("add-question-multiselect");
+
+    optionsDiv.innerHTML = '';
+    qstnFormulation.value = '';
+    tasksNum.value = '';
+    withImages.checked = false;
+    multiselect.checked = false
+
+
+}
+
+function addQuestion(questionsAPIUrl, testsAPIUrl, questionsUrl, staticUrl, csrfToken) {
+    const getById = (id) => {
+        return document.getElementById(id);
+    };
+    const qstnFormulation = getById("add-question-formulation").value;
+    const testID = parseInt(getById("add-question-test-id").value);
+    const tasksNum = parseInt(getById("add-question-tasks-num").value);
+    const withImages = getById("add-question-with-images").checked;
+    const multiselect = getById("add-question-multiselect").checked;
+    const optionInputs = document.getElementsByClassName('option-input');
+    const isTrueInputs = document.getElementsByClassName('is-true-input');
+
+    console.log('withImages: ', withImages);
+    console.log('multiselect: ', multiselect);
+
+    const apiUrl = questionsAPIUrl
+        .replace(/test_id/gi, testID)
+        .replace(/action/gi, 'new');
+    const onResponse = (response) => {
+        if (response['success'] !== undefined) {
+            cleanUpAddQuestionModal();
+            renderTests(testsAPIUrl, questionsUrl, staticUrl, csrfToken);
+            renderInfoModalWindow("Вопрос добавлен", response['success']);
+        } else {
+            renderInfoModalWindow("Ошибка", response['error']);
+        }
+    };
+    if (!withImages) {
+        let options = [];
+        for (let i = 0; i < optionInputs.length; i++) {
+            options.push({
+                option: optionInputs[i].value,
+                is_true: isTrueInputs[i].checked
+            });
+        }
+
+        const params = {
+            withImages: withImages,
+            multiselect: multiselect,
+            formulation: qstnFormulation,
+            tasksNum: tasksNum,
+            options: JSON.stringify(options),
+            csrfmiddlewaretoken: csrfToken
+        };
+        console.log(params);
+        $.post(apiUrl, params)
+            .done(onResponse);
+    } else {
+        let formData = new FormData();
+        formData.append('csrfmiddlewaretoken', csrfToken);
+        formData.append('withImages', withImages);
+        formData.append('multiselect', multiselect);
+        formData.append('formulation', qstnFormulation);
+        formData.append('tasksNum', tasksNum);
+
+        for (let i = 0; i < optionInputs.length; i++) {
+            let file = optionInputs[i].files[0];
+            formData.append(file.name, isTrueInputs[i].checked);
+            formData.append(file.name, file);
+        }
+
+        formData.forEach((key, val) => {
+            console.log(key, val);
+        });
+
+        $.ajax({
+            url: apiUrl,
+            type: 'post',
+            data: formData,
+            contentType: false,
+            processData: false,
+            success: onResponse
+        });
+    }
 }

@@ -290,11 +290,10 @@ function renderQuestionsTable(questionsAPIUrl, questionsTbody) {
     });
 }
 
-function getValueById(id) {
-    return document.getElementById(id).value;
-}
-
 function editQuestion(questionsAPIUrl, questionsTbody, csrfToken) {
+    const getValueById = (id) => {
+        return document.getElementById(id).value;
+    };
     const qstnID = getValueById("edit-question-id");
     const qstnFormulation = getValueById("question-formulation");
     const withImages = ('on' === getValueById("hidden-question-with-images"));

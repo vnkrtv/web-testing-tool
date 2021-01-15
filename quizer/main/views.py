@@ -223,7 +223,6 @@ class TestsView(View):
     def get(self, request):
         """Displays page with all tests"""
         self.context = {
-            **self.context,
             'title': self.title,
             'subjects': Subject.objects.all(),
             'form': TestForm()
@@ -233,33 +232,7 @@ class TestsView(View):
     @method_decorator(decorators)
     def post(self, request):
         """Configuring tests"""
-        if 'add-question' in request.POST:
-            self.add_question(request)
-        else:
-            self.context = {}
         return self.get(request)
-
-    def add_question(self, request):
-        """Adding new question for test"""
-        test = Test.objects.get(id=int(request.POST['test_id']))
-        try:
-            question = utils.parse_question_form(
-                request=request,
-                test=test)
-            storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())
-            storage.add_one(
-                question=question,
-                test_id=test.id)
-            message = "Вопрос %s к тесту %s успешно добавлен."
-            self.context = {
-                'modal_title': 'Вопрос добавлен',
-                'modal_message': message % (question['formulation'], test.name)
-            }
-        except KeyError:
-            self.context = {
-                'modal_title': 'Ошибка',
-                'modal_message': 'Форма некорректно заполнена'
-            }
 
 
 class PassedTestView(View):

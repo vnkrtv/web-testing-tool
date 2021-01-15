@@ -190,17 +190,23 @@ class QuestionView(APIView):
                 'success': message % (question['formulation'], test.name)
             })
         elif question_id == 'new':  # POST
-            question = utils.parse_question_form(
-                request=request,
-                test=test)
-            storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())
-            storage.add_one(
-                question=question,
-                test_id=test.id)
-            message = "Вопрос '%s' к тесту '%s' успешно добавлен."
-            return Response({
-                'success': message % (question['formulation'], test.name)
-            })
+            try:
+                question = utils.get_question_from_request(
+                    request=request,
+                    test=test)
+                storage.add_one(
+                    question=question,
+                    test_id=test.id)
+                message = "Вопрос '%s' к тесту '%s' успешно добавлен."
+                response = Response({
+                    'success': message % (question['formulation'], test.name)
+                })
+            except Exception as e:
+                response = Response({
+                    'error': f'Вопрос не был добавлен: {e}.'
+                })
+            finally:
+                return response
         elif question_id == 'load':  # POST
             try:
                 questions_list = utils.get_questions_list(request)

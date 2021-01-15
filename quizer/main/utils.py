@@ -2,9 +2,12 @@
 """
 Some utils for views
 """
+import json
+
 import jwt
 import requests
 from bson import ObjectId
+
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.http import HttpRequest
@@ -88,7 +91,7 @@ def get_auth_data(request: HttpRequest) -> tuple:
     return username, group
 
 
-def parse_question_form(request: HttpRequest, test: Test) -> dict:
+def get_question_from_request(request: HttpRequest, test: Test) -> dict:
     """
     Parse request with new question params to question dict
 
@@ -96,13 +99,13 @@ def parse_question_form(request: HttpRequest, test: Test) -> dict:
     :param test: <Test>
     :return: question
     """
+    with_images = request.POST['withImages'] == 'true'
     question = {
         '_id': ObjectId(),
-        'formulation': request.POST['question'],
-        'tasks_num': request.POST['tasks_num'],
-        'multiselect': 'multiselect' in request.POST,
-        'type': QuestionType.WITH_IMAGES if 'with_images' in request.POST else QuestionType.REGULAR,
-        'options': []
+        'formulation': request.POST['formulation'],
+        'tasks_num': int(request.POST['tasksNum']),
+        'multiselect': request.POST['multiselect'] == 'true',
+        'type': QuestionType.WITH_IMAGES if with_images else QuestionType.REGULAR
     }
     """
         request.POST:
@@ -116,29 +119,18 @@ def parse_question_form(request: HttpRequest, test: Test) -> dict:
         - if 'with_images':
             - option_{i} - <InMemoryUploadedFile>(image option)
     """
-    if question['multiselect']:
-        right_options_nums = [key.split('_')[2] for key in request.POST if 'is_true_' in key]
+    if not with_images:
+        question['options'] = json.loads(request.POST['options'])
     else:
-        right_options_nums = [request.POST['is_true']]
-    if question['type'] == QuestionType.WITH_IMAGES:
-        options = {
-            key.split('_')[1]: request.FILES[key]
-            for key in request.FILES if 'option_' in key
-        }
-        for option_num in options:
-            path = f'{test.subject.name}/{test.name}/{question["_id"]}/{option_num}.jpg'
-            default_storage.save(path, ContentFile(options[option_num].read()))
-            options[option_num] = path
-    else:
-        options = {
-            key.split('_')[1]: request.POST[key]
-            for key in request.POST if 'option_' in key
-        }
-    for option_num in options:
-        question['options'].append({
-            'option': options[option_num],
-            'is_true': option_num in right_options_nums
-        })
+        options = []
+        for i, file_name in enumerate(request.FILES):
+            path = f'{test.subject.name}/{test.name}/{question["_id"]}/{i}.{file_name.split(".")[-1]}'
+            default_storage.save(path, ContentFile(request.FILES[file_name].read()))
+            options.append({
+                'option': path,
+                'is_true': request.POST[file_name] == 'true'
+            })
+        question['options'] = options
     return question
 
 
@@ -301,7 +293,7 @@ def add_subject_with_tests(request: HttpRequest) -> str:
         except UnicodeDecodeError:
             print('UnicodeDecodeError - ошибка при обработке файла с вопросами к тесту %s' % test_name)
         except InvalidFileFormatError:
-            print\
+            print \
                 ('InvalidFileFormatError - ошибка при обработке файла с вопросами к тесту %s' % test_name)
     message = "Предмет '%s', %d тестов и %d вопросов к ним успешно добавлены."
     return message % (subject.name, tests_count, questions_count)

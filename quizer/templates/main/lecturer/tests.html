@@ -1,4 +1,4 @@
-{% extends "main/lecturerWrapper.html" %}
+ccc{% extends "main/lecturerWrapper.html" %}
 
 {% block content %}
 
@@ -9,197 +9,212 @@
 <link rel="stylesheet" href="{% static 'main/css/modal-window.css' %}">
 
 <div class='jumbotron'>
-	<h2>Тесты</h2><br>
-		<div>
-			<div class="row">
-			<div class="col-sm">
-				<p>Здесь отображаются все добавленные тесты.</p>
-			</div>
-		</div>
-		<div class="btn-group mr-1">
-			<button class="btn btn-success js-open-modal" data-modal="add-modal" onclick="fillAddTestModal()"><img src='{% add_icon %}'> Добавить тест</button>
-		</div>
-		<hr>
-		<div class="row">
-			<div class="col-sm">
-				<label class="my-1 mr-2">Предмет
-	      			<select class="custom-select my-1 mr-sm-2" id="subject" name="subject" required="required">
-				  	{% for subject in subjects %}
-				  		<option value="{{ subject.id }}">{{ subject }}</option>
-				  	{% endfor %}
-				    </select>
-	      		</label>
-			</div>
-		</div>
-		<div class="row">
-			<div class="col-sm">
-		      	<label class="my-1 mr-2">Фильтр по названию теста
-		      		<input type="text" class="form-control" id="name_filter" name="name_filter">
-		      	</label>
-	      	</div>
-  		</div>
+    <h2>Тесты</h2><br>
+    <div>
+        <div class="row">
+            <div class="col-sm">
+                <p>Здесь отображаются все добавленные тесты.</p>
+            </div>
+        </div>
+        <div class="btn-group mr-1">
+            <button class="btn btn-success js-open-modal" data-modal="add-modal" onclick="fillAddTestModal()"><img
+                    src='{% add_icon %}'> Добавить тест
+            </button>
+        </div>
+        <hr>
+        <div class="row">
+            <div class="col-sm">
+                <label class="my-1 mr-2">Предмет
+                    <select class="custom-select my-1 mr-sm-2" id="subject" name="subject" required="required">
+                        {% for subject in subjects %}
+                        <option value="{{ subject.id }}">{{ subject }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm">
+                <label class="my-1 mr-2">Фильтр по названию теста
+                    <input type="text" class="form-control" id="name_filter" name="name_filter">
+                </label>
+            </div>
+        </div>
     </div>
     <div id='tests_container'></div>
 </div>
 
 <div class="modal-window" data-modal="add-modal">
-   <img class="modal__cross js-modal-close" src="{% close_icon %}">
-   <h4>Новый тест</h4>
-   <hr class="my hr4">
+    <img class="modal__cross js-modal-close" src="{% close_icon %}">
+    <h4>Новый тест</h4>
+    <hr class="my hr4">
     <div>
         <div class="form-row">
-          <div class="col-md-4 mb-3">
-              <label for="{{ form.name.id_for_label }}">Название теста<br>
-                {{ form.name }}
-              </label>
-          </div>
+            <div class="col-md-4 mb-3">
+                <label for="{{ form.name.id_for_label }}">Название теста<br>
+                    {{ form.name }}
+                </label>
+            </div>
         </div>
         <div class="form-row">
-          <div class="col-md-4 mb-3">
-              <label for="{{ form.subject.id_for_label }}">Предмет<br>
-                {{ form.subject }}
-              </label>
-          </div>
+            <div class="col-md-4 mb-3">
+                <label for="{{ form.subject.id_for_label }}">Предмет<br>
+                    {{ form.subject }}
+                </label>
+            </div>
         </div>
         <div class="form-row">
-           <div class="col-md-4 mb-3">
-            <label for="{{ form.description.id_for_label }}">Описание<br>
-              {{ form.description }}
-            </label>
-          </div>
+            <div class="col-md-4 mb-3">
+                <label for="{{ form.description.id_for_label }}">Описание<br>
+                    {{ form.description }}
+                </label>
+            </div>
         </div>
         <div class="form-row">
-           <div class="col-md-4 mb-3">
-            <label for="{{ form.tasks_num.id_for_label }}">Количество заданий<br>
-              {{ form.tasks_num }}
-            </label>
-          </div>
+            <div class="col-md-4 mb-3">
+                <label for="{{ form.tasks_num.id_for_label }}">Количество заданий<br>
+                    {{ form.tasks_num }}
+                </label>
+            </div>
         </div>
         <div class="form-row">
-           <div class="col-md-4 mb-3">
-            <label for="{{ form.duration.id_for_label }}">Длительность теста в секундах<br>
-              {{ form.duration }}
-            </label>
-          </div>
+            <div class="col-md-4 mb-3">
+                <label for="{{ form.duration.id_for_label }}">Длительность теста в секундах<br>
+                    {{ form.duration }}
+                </label>
+            </div>
         </div>
     </div>
-   <div class="modal-footer">
-      <div class="btn btn-primary js-modal-close"><img src="{% cancel_icon %}"> Закрыть</div>
-      <button class="btn btn-success js-modal-close" onclick="addTest(testsAPIUrl, questionsUrl, staticUrl, csrfToken, userID)"><img src='{% add_icon %}'> Добавить</button>
-   </div>
+    <div class="modal-footer">
+        <div class="btn btn-primary js-modal-close"><img src="{% cancel_icon %}"> Закрыть</div>
+        <button class="btn btn-success js-modal-close"
+                onclick="addTest(testsAPIUrl, questionsUrl, staticUrl, csrfToken, userID)"><img src='{% add_icon %}'>
+            Добавить
+        </button>
+    </div>
 </div>
 
 <div class="modal-window" data-modal="edit-modal">
-   <img class="modal__cross js-modal-close" src="{% close_icon %}">
-   <h4>Редактировать тест</h4>
-   <hr class="my hr4">
-   		<input type="hidden" name="test_id" id="edit-test-id" value="">
-	    <div class="form-row">
-		  	<div class="col-md-4 mb-3">
-		  		<label for="test_name">Название теста
-		      		<input type="text" class="form-control" id="edit-test-name" name="name" value="" required>
-		      	</label>
-		  	</div>
-		</div>
-		<div class="form-row">
-		    <div class="col-md-4 mb-3">
-		        <label for="description">Описание</label>
-		        <textarea class="form-control" rows="3" cols="30" id="edit-test-description" name="description"></textarea>
-		    </div>
-		</div>
-		<div class="form-row">
-		    <div class="col-md-4 mb-3">
-		        <label for="description">Количество заданий</label>
-		        <input type="number" class="form-control" id="edit-test-tasks-num" name="tasks_num" min="1" value="" required>
-		    </div>
-		</div>
-		<div class="form-row">
-		    <div class="col-md-4 mb-3">
-		        <label for="description">Длительность теста в секундах</label>
-		        <input type="number" class="form-control" id="edit-test-duration" name="duration" min="1" value="" required>
-		    </div>
-		</div>
-   <div class="modal-footer">
-      <div class="btn btn-primary js-modal-close"><img src='{% cancel_icon %}'> Закрыть</div>
-      <button class="btn btn-primary js-modal-close" onclick="editTest(testsAPIUrl, questionsUrl, staticUrl, csrfToken)"><img src='{% edit_icon %}'> Изменить</button>
-   </div>
+    <img class="modal__cross js-modal-close" src="{% close_icon %}">
+    <h4>Редактировать тест</h4>
+    <hr class="my hr4">
+    <input type="hidden" name="test_id" id="edit-test-id" value="">
+    <div class="form-row">
+        <div class="col-md-4 mb-3">
+            <label>Название теста
+                <input type="text" class="form-control" id="edit-test-name" name="name" value="" required>
+            </label>
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="col-md-4 mb-3">
+            <label>Описание</label>
+            <textarea class="form-control" rows="3" cols="30" id="edit-test-description" name="description"></textarea>
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="col-md-4 mb-3">
+            <label>Количество заданий</label>
+            <input type="number" class="form-control" id="edit-test-tasks-num" name="tasks_num" min="1" value=""
+                   required>
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="col-md-4 mb-3">
+            <label>Длительность теста в секундах</label>
+            <input type="number" class="form-control" id="edit-test-duration" name="duration" min="1" value="" required>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <div class="btn btn-primary js-modal-close"><img src='{% cancel_icon %}'> Закрыть</div>
+        <button class="btn btn-primary js-modal-close"
+                onclick="editTest(testsAPIUrl, questionsUrl, staticUrl, csrfToken)"><img src='{% edit_icon %}'> Изменить
+        </button>
+    </div>
 </div>
 
 <div class="modal-window" data-modal="delete-modal">
-   <img class="modal__cross js-modal-close" src="{% close_icon %}">
-   <h4>Удалить тест</h4>
-   <hr class="my hr4">
+    <img class="modal__cross js-modal-close" src="{% close_icon %}">
+    <h4>Удалить тест</h4>
+    <hr class="my hr4">
     <p id='delete-p'></p>
     <input type="hidden" name="test_id" id='delete-test-id' value="">
-     <div class="modal-footer">
+    <div class="modal-footer">
         <div class="btn btn-primary js-modal-close"><img src='{% cancel_icon %}'> Закрыть</div>
-        <button class="btn btn-danger js-modal-close" onclick="deleteTest(testsAPIUrl, questionsUrl, staticUrl, csrfToken)"><img src='{% delete_icon %}'> Удалить</button>
-     </div>
+        <button class="btn btn-danger js-modal-close"
+                onclick="deleteTest(testsAPIUrl, questionsUrl, staticUrl, csrfToken)"><img src='{% delete_icon %}'>
+            Удалить
+        </button>
+    </div>
 </div>
 
 <div class="modal-window" data-modal="add-question-modal">
-   <img class="modal__cross js-modal-close" src="{% close_icon %}">
-   <h4>Добавить вопрос</h4>
-   <hr class="my hr4">
-   <form action="{% url 'main:tests' %}" enctype="multipart/form-data" method="post">
-   {% csrf_token %}
-		<input type="hidden" name="test_id" id='add-question-test-id' value="">
-	    <div class="form-row">
-		  	<div class="col-md-4 mb-3">
-		  		<label for="question">Формулировка вопроса
-		      		<input type="text" class="form-control" name="question" required>
-		      	</label>
-			    <div class="custom-control custom-checkbox my-1 mr-sm-2">
-			    	<input type="checkbox" class="custom-control-input" id="add-question-multiselect" name="multiselect">
-			    	<label class="custom-control-label" for="add-question-multiselect">Мультивыбор</label>
-			    </div>
-			    <div class="custom-control custom-checkbox my-1 mr-sm-2">
-			    	<input type="checkbox" class="custom-control-input" id="add-question-with-images" name="with_images">
-			    	<label class="custom-control-label" for="add-question-with-images">Фотографии</label>
-			    </div>
-		  	</div>
-	    </div>
-	    <div class="form-row">
-	        <div class="col-md-4 mb-3">
-	        	<label for="tasks_num">Число вариантов</label>
-	        	<input type="number" class="form-control" name="tasks_num" id='add-question-tasks-num' min="2" required>
-	    	</div>
-	    </div>
-	    <div id="add-question-questions-div"></div><br>
-		<div class="modal-footer">
-		   <div class="btn btn-primary js-modal-close"><img src='{% cancel_icon %}'> Закрыть</div>
-		   <button class="btn btn-success" name="add-question"><img src='{% add_icon %}'> Добавить</button>
-		</div>
-   </form>
+    <img class="modal__cross js-modal-close" src="{% close_icon %}">
+    <h4>Добавить вопрос</h4>
+    <hr class="my hr4">
+    <input type="hidden" id='add-question-test-id' value="">
+    <div class="form-row">
+        <div class="col-md-4 mb-3">
+            <label>Формулировка вопроса
+                <input type="text" class="form-control" id="add-question-formulation" required>
+            </label>
+            <div class="custom-control custom-checkbox my-1 mr-sm-2">
+                <input type="checkbox" class="custom-control-input" id="add-question-multiselect">
+                <label class="custom-control-label" for="add-question-multiselect">Мультивыбор</label>
+            </div>
+            <div class="custom-control custom-checkbox my-1 mr-sm-2">
+                <input type="checkbox" class="custom-control-input" id="add-question-with-images">
+                <label class="custom-control-label" for="add-question-with-images">Фотографии</label>
+            </div>
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="col-md-4 mb-3">
+            <label>Число вариантов</label>
+            <input type="number" class="form-control" id='add-question-tasks-num' min="2" required>
+        </div>
+    </div>
+    <div id="add-question-questions-div"></div>
+    <br>
+    <div class="modal-footer">
+        <div class="btn btn-primary js-modal-close"><img src='{% cancel_icon %}'> Закрыть</div>
+        <button class="btn btn-success js-modal-close"
+                onclick="addQuestion(questionsAPIUrl, testsAPIUrl, questionsUrl, staticUrl, csrfToken)"><img
+                src='{% add_icon %}'> Добавить
+        </button>
+    </div>
 </div>
 
 <div class="modal-window" data-modal="load-questions-modal">
-   <img class="modal__cross js-modal-close" src="{% close_icon %}">
-   <h4>Загрузить вопросы</h4>
-   <hr class="my hr4">
-	<input type="hidden" name="test_id" id='load-questions-test-id' value="">
+    <img class="modal__cross js-modal-close" src="{% close_icon %}">
+    <h4>Загрузить вопросы</h4>
+    <hr class="my hr4">
+    <input type="hidden" name="test_id" id='load-questions-test-id' value="">
     <div class="form-row">
-  	    <div class="col-md-4 mb-3">
-		    <div class="form-group">
-		  		<label for="file">Выберите файл</label>
-		    	<input type="file" class="form-control-file" id="file" name="file" required="required"> 
-		    </div>
-  	    </div>
+        <div class="col-md-4 mb-3">
+            <div class="form-group">
+                <label for="file">Выберите файл</label>
+                <input type="file" class="form-control-file" id="file" name="file" required="required">
+            </div>
+        </div>
     </div>
-     <div class="modal-footer">
+    <div class="modal-footer">
         <div class="btn btn-primary js-modal-close"><img src='{% cancel_icon %}'> Закрыть</div>
-        <button class="btn btn-success js-modal-close" onclick="loadQuestions(testsAPIUrl, questionsUrl, staticUrl, csrfToken, questionsAPIUrl)"><img src='{% download_icon %}'> Загрузить</button>
-     </div>
+        <button class="btn btn-success js-modal-close"
+                onclick="loadQuestions(testsAPIUrl, questionsUrl, staticUrl, csrfToken, questionsAPIUrl)"><img
+                src='{% download_icon %}'> Загрузить
+        </button>
+    </div>
 </div>
 
 <div id="info-modal" class="modal-window" data-modal="info-modal">
-   <img class="modal__cross js-modal-close" src="{% close_icon %}">
-   <h4 id="info-modal-title"></h4>
-   <hr class="my hr4">
-   <p id="info-modal-p"></p>
-   <div class="modal-footer">
-      <button class="btn btn-primary js-modal-close"><img src='{% cancel_icon %}'> Закрыть</button>
-   </div>
+    <img class="modal__cross js-modal-close" src="{% close_icon %}">
+    <h4 id="info-modal-title"></h4>
+    <hr class="my hr4">
+    <p id="info-modal-p"></p>
+    <div class="modal-footer">
+        <button class="btn btn-primary js-modal-close"><img src='{% cancel_icon %}'> Закрыть</button>
+    </div>
 </div>
 <div id="overlay" class="overlay js-overlay-modal"></div>
 
@@ -208,17 +223,14 @@
 <script src="{% static 'main/js/managingTests.js' %}"></script>
 <script src="{% static 'main/js/jquery-3.5.1.js' %}"></script>
 <script type="text/javascript">
-  const testsAPIUrl = "{% url 'api:tests_api' 'not_running' %}";
-  const questionsAPIUrl = "{% url 'api:questions_api' 'test_id' 'action' %}";
-  const questionsUrl = "{% url 'main:questions' 'test_id' %}";
-  const staticUrl = '{% static_url %}';
-  const csrfToken = "{{ csrf_token }}";
-  const userID = "{{ request.user.id }}"; 
-	renderTests(testsAPIUrl, questionsUrl, staticUrl, csrfToken);
-	renderAddQuestionModal();
-  {% if modal_title %}
-      renderInfoModalWindow("{{ modal_title }}", "{{ modal_message }}");  
-  {% endif %}
+    const testsAPIUrl = "{% url 'api:tests_api' 'not_running' %}";
+    const questionsAPIUrl = "{% url 'api:questions_api' 'test_id' 'action' %}";
+    const questionsUrl = "{% url 'main:questions' 'test_id' %}";
+    const staticUrl = '{% static_url %}';
+    const csrfToken = "{{ csrf_token }}";
+    const userID = "{{ request.user.id }}";
+    renderTests(testsAPIUrl, questionsUrl, staticUrl, csrfToken);
+    renderAddQuestionModal();
 </script>
 
 {% endblock %}

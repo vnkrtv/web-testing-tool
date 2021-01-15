@@ -206,31 +206,6 @@ function deleteTest(testsAPIUrl, questionsUrl, staticUrl, csrfToken) {
         });
 }
 
-function addQuestion(testsAPIUrl, questionsUrl, staticUrl, csrfToken, questionsAPIUrl) {
-    const testID = document.getElementById("add-questions-test-id").value;
-    const questionsFileInput = document.getElementById("file");
-    let formData = new FormData();
-    formData.append('csrfmiddlewaretoken', csrfToken);
-    formData.append('file', questionsFileInput.files[0]);
-
-    $.ajax({
-        url: questionsAPIUrl
-            .replace(/test_id/gi, testID)
-            .replace(/action/gi, 'load'),
-        type: 'post',
-        data: formData,
-        contentType: false,
-        processData: false,
-        success: (response) => {
-            renderTests(testsAPIUrl, questionsUrl, staticUrl, csrfToken);
-            if (response['success'] !== undefined) {
-                renderInfoModalWindow("Вопросы загружены", response['success']);
-            } else {
-                renderInfoModalWindow("Ошибка", response['error']);
-            }
-        }});
-}
-
 function loadQuestions(testsAPIUrl, questionsUrl, staticUrl, csrfToken, questionsAPIUrl) {
     const testID = document.getElementById("load-questions-test-id").value;
     const questionsFileInput = document.getElementById("file");

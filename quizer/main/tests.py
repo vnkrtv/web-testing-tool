@@ -424,7 +424,7 @@ class LoadingQuestionsTest(MainTest):
         self.assertContains(response, self.test.name)
         updated_questions = self.questions_storage.get_many(test_id=self.test.id)
         self.assertEqual(len(updated_questions), len(old_questions) + 2)
-'''
+
 
 
 class AddQuestionTest(MainTest):
@@ -460,7 +460,7 @@ class AddQuestionTest(MainTest):
         updated_questions = self.questions_storage.get_many(test_id=self.test.id)
         self.assertEqual(len(updated_questions), len(old_questions) + 1)
 
-'''
+
 class TestsResultsStorageTest(MainTest):
     """
     Tests for TestsResultsStorage class which stored all tests

@@ -16,7 +16,7 @@ from django.views import View
 from . import mongo
 from . import utils
 from .decorators import unauthenticated_user, allowed_users, post_method
-from .models import Test, Subject
+from .models import Test, Subject, QuestionType
 from .forms import SubjectForm, TestForm
 
 
@@ -89,8 +89,13 @@ def lecturer_run_test(request, test_id):
 
     right_answers = {}
     for i, question in enumerate(test_questions):
+        if question['type'] == QuestionType.SEQUENCE or question['type'] == QuestionType.SEQUENCE_WITH_IMAGES:
+            right_options = question['options']
+            right_options.sort(key=lambda option: int(option['num']))
+        else:
+            right_options = [option for option in question['options'] if option['is_true']]
         right_answers[str(i + 1)] = {
-            'right_answers': [option for option in question['options'] if option['is_true']],
+            'right_answers': right_options,
             'id': str(question['_id'])
         }
     storage = mongo.RunningTestsAnswersStorage.connect(db=mongo.get_conn())

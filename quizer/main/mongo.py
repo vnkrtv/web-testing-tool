@@ -94,6 +94,7 @@ class QuestionsStorage(MongoDB):
                 'options': [
                     {
                         'option': str,
+                        <'num': int - optional field for sequence questions>
                         'is_true': bool
                     },
                     ...

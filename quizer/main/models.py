@@ -75,3 +75,5 @@ class QuestionType:
     """
     REGULAR = ''
     WITH_IMAGES = 'image'
+    SEQUENCE = 'sequence'
+    SEQUENCE_WITH_IMAGES = 'sequence-image'

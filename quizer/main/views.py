@@ -180,6 +180,8 @@ class AvailableTestsView(View):
         storage.add_results_to_running_test(
             test_result=result,
             test_id=test_id)
+        print(request.POST)
+        print(result)
 
         self.context = {
             'title': 'Доступные тесты',

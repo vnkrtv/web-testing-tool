@@ -145,28 +145,38 @@ def parse_questions(content: str) -> list:
     parsed_questions_list = []
     if '' in questions_list:
         questions_list.remove('')
+    numbers = set('0123456789')
     for question in questions_list:
         buf = question.split('\n')
         if '' in buf:
             buf.remove('')
         formulation = buf[0]
         multiselect = False
+        sequence = False
         options = []
         for line in buf[1:]:
-            if '-' in line:
+            if line[0] == '-':
                 options.append({
                     'option': line.split('-')[1][1:],
                     'is_true': False
                 })
-            elif '*' in line:
+            elif line[0] == '*':
                 options.append({
                     'option': line.split('*')[1][1:],
                     'is_true': True
                 })
-            elif '+' in line:
+            elif line[0] == '+':
                 multiselect = True
                 options.append({
                     'option': line.split('+')[1][1:],
+                    'is_true': True
+                })
+            elif line[0] in numbers:
+                sequence = True
+                num = line.split()[0]
+                options.append({
+                    'option': line.split(num)[1][1:],
+                    'num': int(num),
                     'is_true': True
                 })
             else:
@@ -175,7 +185,7 @@ def parse_questions(content: str) -> list:
             'formulation': formulation,
             'tasks_num': len(options),
             'multiselect': multiselect,
-            'type': QuestionType.REGULAR,
+            'type': QuestionType.SEQUENCE if sequence else QuestionType.REGULAR,
             'options': options
         })
     return parsed_questions_list
@@ -213,12 +223,16 @@ def get_test_result(request: HttpRequest, right_answers: dict, test_duration: in
         """
         buf = key.split('_')
         if len(buf) == 1:
-            answers[buf[0]] = [response[key][0]]
-        else:
-            if buf[0] in answers:
-                answers[buf[0]].append(buf[1])
+            if len(response[key]) > 1:
+                answers[buf[0]] = response[key]
             else:
-                answers[buf[0]] = [buf[1]]
+                answers[buf[0]] = [response[key][0]]
+        else:
+            option = '_'.join(buf[1:])
+            if buf[0] in answers:
+                answers[buf[0]].append(option)
+            else:
+                answers[buf[0]] = [option]
 
     right_answers_count = 0
     questions = []

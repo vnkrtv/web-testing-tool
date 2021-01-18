@@ -11,7 +11,7 @@ services:
 before_script:
   - docker run --name mongodb -d mongo
   - entrypoint="$(echo "$(cat deploy/entrypoint)")"
-  - echo "${entrypoint/gunicorn quizer.wsgi:application --bind 0.0.0.0:80/python manage.py test main}" > deploy/entrypoint
+  - echo "${entrypoint/uvicorn quizer.asgi:application --host 0.0.0.0 --port 80/python manage.py test main}" > deploy/entrypoint
 
 script:
   - MONGO_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' mongodb)

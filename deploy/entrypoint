@@ -50,4 +50,4 @@ fi
 
 echo "${SETTINGS}" > ./quizer/settings.py
 
-gunicorn quizer.wsgi:application --bind 0.0.0.0:80
+uvicorn quizer.asgi:application --host 0.0.0.0 --port 80

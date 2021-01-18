@@ -6,66 +6,72 @@
 
 {% load main_extras %}
 
- 	<div class='jumbotron'>
- 		<h2>Результаты тестирований</h2><br>
- 		<div>
- 			<p>Здесь отображаются результаты тестирований по всем проведенным тестам.</p>
- 			<hr>
-			<div class="row">
-				<div class="col-sm">
-					<label class="my-1 mr-2">Предмет
-		      			<select class="custom-select my-1 mr-sm-2" id="subject" required="required">
-					  	{% for subject in subjects %}
-					  		<option value="{{ subject.id }}">{{ subject }}</option>
-					  	{% endfor %}
-					    </select>
-		      		</label>
-		      	</div>
-			</div>
-			<div class="row">
-				<div class="col-sm">
-		      		<label class="my-1 mr-2">Преподаватель
-		      			<select class="custom-select my-1 mr-sm-2" id="lecturer" required="required">
-					  	{% for lecturer in lecturers %}
-					  		<option value="{{ lecturer.id }}" id="lecturer_{{ lecturer }}">{{ lecturer }}</option>
-					  	{% endfor %}
-					    </select>
-		      		</label>
-		      	</div>
-			</div>
-			<div class="row">
-				<div class="col-sm">
-		      		<label class="my-1 mr-2">Тест
-		      			<select class="custom-select my-1 mr-sm-2" id="test" required="required"></select>
-		      		</label>
-				</div>
-			</div>
-	    </div>
-	    <hr>
-	    <input class="form-control" type="text" placeholder="Искать..." id="search" onkeyup='tableSearch("search", "table")'>
-		<table id="table" class="table table-hover">
-		    <thead>
-		      <tr>
-		      	<th><img class="pointer" src='{% sort_icon %}' onclick="sortTableByNums('table', 0, true)"></th>
-			      <th><img class="pointer" src='{% sort_icon %}' onclick="sortTable('table', 1)"> Дата запуска</th>
-			      <th><img class="pointer" src='{% sort_icon %}' onclick="sortTable('table', 2)"> Прошло слушателей</th>
-			      <th>Детальный результат</th>
-		      </tr>
-		  </thead>
-		  <tbody id='table_body'></tbody>
-		</table>
- 	</div>
+<div class='jumbotron'>
+    <h2>Результаты тестирований</h2><br>
+    <div>
+        <p>Здесь отображаются результаты тестирований по всем проведенным тестам.</p>
+        <hr>
+        <div class="row">
+            <div class="col-sm">
+                <label class="my-1 mr-2">Предмет
+                    <select class="custom-select my-1 mr-sm-2" id="subject" required="required">
+                        {% for subject in subjects %}
+                        <option value="{{ subject.id }}">{{ subject }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm">
+                <label class="my-1 mr-2">Преподаватель
+                    <select class="custom-select my-1 mr-sm-2" id="lecturer" required="required">
+                        {% for lecturer in lecturers %}
+                        <option value="{{ lecturer.id }}" id="lecturer_{{ lecturer }}">{{ lecturer }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm">
+                <label class="my-1 mr-2">Тест
+                    <select class="custom-select my-1 mr-sm-2" id="test" required="required"></select>
+                </label>
+            </div>
+        </div>
+    </div>
+    <hr>
+    <input class="form-control" type="text" placeholder="Искать..." id="search"
+           onkeyup='tableSearch("search", "table")'>
+    <table id="table" class="table table-hover">
+        <thead>
+        <tr>
+            <th><img class="pointer" src='{% sort_icon %}' onclick="sortTableByNums('table', 0, true)"></th>
+            <th><img class="pointer" src='{% sort_icon %}' onclick="sortTable('table', 1)"> Дата запуска</th>
+            <th><img class="pointer" src='{% sort_icon %}' onclick="sortTable('table', 2)"> Прошло слушателей</th>
+            <th>Детальный результат</th>
+        </tr>
+        </thead>
+        <tbody id='table_body'></tbody>
+    </table>
+</div>
 <script src="{% static 'main/js/table.js' %}"></script>
 <script src="{% static 'main/js/testsResults.js' %}"></script>
 <script src="{% static 'main/js/jquery-3.5.1.js' %}"></script>
 <script type="text/javascript">
-	const lecturerSelect = document.getElementById("lecturer");
-	for (let i in lecturerSelect.options) {
-	  if (lecturerSelect.options[i].innerHTML == '{{ user.username }}'){
-	    lecturerSelect.selectedIndex = i;
-	  }
-	}
-	main("{% url 'api:get_tests_results' 'all' %}", "{% url 'api:tests_api' 'all' %}", "{% url 'main:tests_results' %}");
+    const testsResultsAPIUrl = "{% url 'api:get_tests_results' 'all' %}";
+    const testsAPIUrl = "{% url 'api:tests_api' 'all' %}";
+    const testsResultUrl = "{% url 'main:tests_results' %}";
+    const username = '{{ user.username }}';
+
+    const lecturerSelect = document.getElementById("lecturer");
+    for (let i in lecturerSelect.options) {
+        if (lecturerSelect.options[i].innerText === username) {
+            lecturerSelect.selectedIndex = i;
+        }
+    }
+    main(testsResultsAPIUrl, testsAPIUrl, testsResultUrl);
 </script>
 
 {% endblock %}

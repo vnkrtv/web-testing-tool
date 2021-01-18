@@ -12,7 +12,8 @@
     <h2>{{ test.name }} - результаты тестирования</h2>
     <p><img src='{% clock_icon %}'>
         {% if end_date %}
-        Время тестирования: {{ start_date | date:"H:i:s" }} - {{ end_date | date:"H:i:s" }} {{ start_date | date:"d.m.y" }}<br>
+        Время тестирования: {{ start_date | date:"H:i:s" }} - {{ end_date | date:"H:i:s" }} {{ start_date | date:"d.m.y"
+        }}<br>
         {% else %}
         Дата тестирования: {{ start_date }}<br>
         {% endif %}
@@ -70,7 +71,10 @@
 <script src="{% static 'main/js/availableTests.js' %}"></script>
 <script src="{% static 'main/js/jquery-3.5.1.js' %}"></script>
 <script type="text/javascript">
-	const socketPath = '{% url "main:available_tests" %}';
+    const socketPath = '{% url "main:available_tests" %}';
+    const testsResultsAPIUrl = "{% url 'api:get_tests_results' test_results_id %}";
+    const questionsAPIUrl = "{% url 'api:get_questions' test.id %}";
+
     let socket = getRunningTestsWebSocket(socketPath);
     socket.onopen = (e) => {
         let action = {
@@ -83,10 +87,10 @@
     let testResults = [];
     let questions = [];
     let questionsMap = new Map();
-    $.get("{% url 'api:get_tests_results' test_results_id %}").done(function (response) {
+    $.get(testsResultsAPIUrl).done(function (response) {
         testResults = response['results'][0];
     });
-    $.get("{% url 'api:get_questions' test.id %}").done(function (response) {
+    $.get(questionsAPIUrl).done(function (response) {
         questions = response['questions'];
         questions.forEach(function (question) {
             questionsMap.set(question.id, question)

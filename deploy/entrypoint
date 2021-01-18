@@ -39,10 +39,12 @@ SETTINGS="${SETTINGS/<AUTH_URL>/${AUTH_URL}}"
 if [[ ! -z "${URL_PREFIX}" ]]; then
   URLS="$(echo "$(cat ./quizer/urls.py)")"
   URLS="${URLS/\'api\/\'/\'${URL_PREFIX}\/api/\'}"
-  URLS="${URLS/\'ws\/\'/\'${URL_PREFIX}\/ws/\'}"
   URLS="${URLS//\'\'/\'${URL_PREFIX}\/\'}"
-
   echo "${URLS}" > ./quizer/urls.py
+
+  ROUTING="$(echo "$(cat ./quizer/routing.py)")"
+  ROUTING="${ROUTING/available_tests/${URL_PREFIX}\/available_tests}"
+  echo "${ROUTING}" > ./quizer/routing.py
 
   SETTINGS="${SETTINGS//\'\/static\/\'/\'\/static\/${URL_PREFIX}\/\'}"
   SETTINGS="${SETTINGS//\'\/media\/\'/\'\/media\/${URL_PREFIX}\/\'}"

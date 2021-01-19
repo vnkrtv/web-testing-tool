@@ -115,10 +115,13 @@ function hideTable(searchInputID, tableID) {
 }
 
 function fillErrorsModal(rowID, testResults, questionsMap, mediaUrl) {
-    const container = document.getElementById('errors-container');
-    container.innerHTML = "";
     const resultID = parseInt(rowID.split("_")[1]);
     const questions = testResults.results[resultID]['questions'];
+
+    const errorModalHeader = document.getElementById("errorModalHeader");
+    errorModalHeader.innerText = `Результат ${testResults.results[resultID].username}`;
+    const container = document.getElementById('errors-container');
+    container.innerHTML = "";
 
     for (let i in questions) {
         const questionLi = document.createElement("li");
@@ -135,7 +138,7 @@ function fillErrorsModal(rowID, testResults, questionsMap, mediaUrl) {
             const optionLi = document.createElement("li");
             optionLi.className = "list-group-item list-group-item-action";
             optionLi.style = 'border: 2px solid #FFF; border-radius: 5px;';
-            if (question.type === '') {
+            if (question.type === '' || question.type === 'sequence') {
                 optionLi.innerText = option.option;
             } else if (question.type === 'image') {
                 const imgOption = document.createElement('img');

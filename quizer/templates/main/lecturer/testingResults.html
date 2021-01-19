@@ -54,8 +54,18 @@
 
 <div class="modal-window" data-modal="modal">
     <img class="modal__cross js-modal-close" src="{% close_icon %}">
-    <h4>Результат</h4>
+    <h4 id="errorModalHeader">Результат</h4>
     <hr class="my hr4">
+    <p class="alert alert-success">
+  <b>Выбран правильный ответ</b>
+</p>
+<p class="alert alert-danger">
+  <b>Выбран неправильный ответ</b>
+</p>
+<p class="alert alert-secondary">
+  <b>Правильный ответ не выбран</b>
+</p>
+<hr class="my hr4">
     <ul id='errors-container' class="list-group"></ul>
     <div class="modal-footer">
         <button type="button" class="btn btn-primary js-modal-close"><img class="js-modal-close"

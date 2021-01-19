@@ -35,7 +35,8 @@ def login_page(request):
     """Authorize user and redirect him to available_tests page"""
     logout(request)
     try:
-        username, group = utils.get_auth_data(request)
+        # username, group = utils.get_auth_data(request)
+        pass
     except DecodeError:
         return HttpResponse("JWT decode error: chet polomalos'")
     group2id = {
@@ -44,6 +45,7 @@ def login_page(request):
         'teacher': 1,
         'student': 2
     }
+    username, group = 'user', 'student'
     try:
         user = User.objects.get(username=username)
     except User.DoesNotExist:
@@ -363,13 +365,19 @@ def student_run_test(request):
     storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())
     test_questions = storage.get_many(test_id=test.id)
     test_questions = random.sample(test_questions, k=test.tasks_num)
+    print(test_questions)
     for question in test_questions:
-        random.shuffle(question['options'])
-
+        random.shuffle(question['options'], random.random)
+    print(test_questions)
     right_answers = {}
     for i, question in enumerate(test_questions):
+        if question['type'] == QuestionType.SEQUENCE or question['type'] == QuestionType.SEQUENCE_WITH_IMAGES:
+            right_options = question['options']
+            right_options.sort(key=lambda option: int(option['num']))
+        else:
+            right_options = [option for option in question['options'] if option['is_true']]
         right_answers[str(i + 1)] = {
-            'right_answers': [option for option in question['options'] if option['is_true']],
+            'right_answers': right_options,
             'id': str(question['_id'])
         }
     storage = mongo.RunningTestsAnswersStorage.connect(db=mongo.get_conn())

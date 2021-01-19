@@ -6,6 +6,8 @@
 
 {% load static %}
 
+<link rel="stylesheet" href="{% static 'main/css/draggable.css' %}">
+
 <form action="{% url 'main:test_result' %}" method="post">
     <div class="jumbotron" id='top'>
     <div class="list-group-item" style="position: sticky; top: 0; z-index: 228;">
@@ -28,30 +30,64 @@
         <input id="time" type="hidden" name='time' value="{{ test_duration }}">
     </label>
     <br>
-    <ul class="list-group">
-        {% csrf_token %}
-        {% for question in questions %}
-        <li class="list-group-item question" id='{{ forloop.counter }}'>{{ forloop.counter }}. {{ question.formulation }}
-            <ul class="list-group list-group-flush ul-hover">
-                {% for option in question.options %}
-                <li class="list-group-item list-group-item-action" onclick='clickOption("{{ forloop.parentloop.counter }}_{{ forloop.counter }}")'>
-                    {% if question.multiselect %}
-                        <input type="checkbox" id='{{ forloop.parentloop.counter }}_{{ forloop.counter }}' name='{{ forloop.parentloop.counter }}_{{ option.option }}' onclick='clickOption("{{ forloop.parentloop.counter }}_{{ forloop.counter }}")'>
-                    {% else %}
-                        <input type="radio" id='{{ forloop.parentloop.counter }}_{{ forloop.counter }}' name='{{ forloop.parentloop.counter }}' value="{{ option.option }}" onclick='clickOption("{{ forloop.parentloop.counter }}_{{ forloop.counter }}")'>
-                    {% endif %}
-                    <label for='{{ forloop.parentloop.counter }}_{{ forloop.counter }}'></label>
-                    {% if question.type == 'image' %}
-                        <img src='{% media_url %}{{ option.option }}' alt="Server pribolel" height="341" style="width: auto;">
-                    {% else %}
-                        {{ option.option }}                     
-                    {% endif %}                 
-                </li>
+        <div class="list-group">
+            {% csrf_token %}
+            {% for question in questions %}
+            <div class="list-group-item question" id='{{ forloop.counter }}'>{{ forloop.counter }}. {{ question.formulation }}
+                {% if question.type == 'sequence' or question.type == 'sequence-images' %}
+                <div class="ul-hover" id="sortableQuestions{{ forloop.counter }}">
+                {% else %}
+                <div class="list-group list-group-flush ul-hover" id="sortableQuestions{{ forloop.counter }}">
+                {% endif %}
+                    {% for option in question.options %}
+                        {% if question.type == 'sequence' or question.type == 'sequence-image' %}
+                        <div class="list-group-item-action"
+                             onclick='clickOption("{{ forloop.parentloop.counter }}_{{ forloop.counter }}")'>
+                            {% if not question.type == 'sequence-image' %}
+                            <div class="sortable-moves list-group-item list-group-item-action">{{ option.option }}
+                                <input type="hidden" id='{{ forloop.parentloop.counter }}_{{ forloop.counter }}'
+                                       name='{{ forloop.parentloop.counter }}' value="{{ option.option }}"
+                                       onclick='clickOption("{{ forloop.parentloop.counter }}_{{ forloop.counter }}")'>
+                            </div>
+                            {% else %}
+                            <div class="sortable-moves list-group-item list-group-item-action"><img
+                                    src='{% media_url %}{{ option.option }}' alt="Server pribolel" height="341"
+                                    style="width: auto;">
+                                <input type="hidden" id='{{ forloop.parentloop.counter }}_{{ forloop.counter }}'
+                                       name='{{ forloop.parentloop.counter }}' value="{{ option.option }}"
+                                       onclick='clickOption("{{ forloop.parentloop.counter }}_{{ forloop.counter }}")'>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% else %}
+
+                        <li class="list-group-item list-group-item-action"
+                            onclick='clickOption("{{ forloop.parentloop.counter }}_{{ forloop.counter }}")'>
+                            {% if question.multiselect %}
+                            <input type="checkbox" id='{{ forloop.parentloop.counter }}_{{ forloop.counter }}'
+                                   name='{{ forloop.parentloop.counter }}_{{ option.option }}'
+                                   onclick='clickOption("{{ forloop.parentloop.counter }}_{{ forloop.counter }}")'>
+                            {% else %}
+                            <input type="radio" id='{{ forloop.parentloop.counter }}_{{ forloop.counter }}'
+                                   name='{{ forloop.parentloop.counter }}' value="{{ option.option }}"
+                                   onclick='clickOption("{{ forloop.parentloop.counter }}_{{ forloop.counter }}")'>
+                            {% endif %}
+                            <label for='{{ forloop.parentloop.counter }}_{{ forloop.counter }}'></label>
+                            {% if question.type == 'image' %}
+                            <img src='{% media_url %}{{ option.option }}' alt="Server pribolel" height="341"
+                                 style="width: auto;">
+                            {% else %}
+                            {{ option.option }}
+                            {% endif %}
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+                    </div>
+                </div>
+                <br>
                 {% endfor %}
-            </ul>
-        </li>
+            </div>
         <br>
-        {% endfor %}
     </ul>
     <br>
     <button class="btn btn-primary" id="stop-button" name="test-passed"><img src='{% finish_icon %}'> Закончить тест</button>
@@ -60,11 +96,12 @@
 <script src="{% static 'main/js/runTest.js' %}"></script>
 <script src="{% static 'main/js/jquery-3.5.1.js' %}"></script>
 <script src="{% static 'main/js/smooth-scroll.js' %}"></script>
+<script src="{% static 'main/js/jquery-ui.js' %}"></script>
 <script type="text/javascript">
     function clickOption(optionID) {
         if (this.questionsMap === undefined) {
             this.questionsMap = new Map();
-            for (let i = 0; i < document.querySelectorAll("li.question").length; i++) {
+            for (let i = 0; i < document.querySelectorAll(".question").length; i++) {
                 this.questionsMap.set(i + 1, new Set());
             }
         }
@@ -88,6 +125,16 @@
             questionRef.classList.add('list-group-item-info');
         }
     }
+
+    const questionsCount = parseInt('{{ questions | length }}');
+    for (let i = 1; i <= questionsCount; i++) {
+
+        $(document).ready(function () {
+            $(`#sortableQuestions${i}`).sortable();
+            $(`#sortableQuestions${i}`).disableSelection();
+        });
+    }
+
     let scroll = new SmoothScroll('a[href*="#"]');
     runTest({{ test_duration }}, "{% url 'main:get_left_time' %}", "{{ csrf_token }}");
 </script>

@@ -35,7 +35,7 @@ def login_page(request):
     """Authorize user and redirect him to available_tests page"""
     logout(request)
     try:
-        # username, group = utils.get_auth_data(request)
+        username, group = utils.get_auth_data(request)
         pass
     except DecodeError:
         return HttpResponse("JWT decode error: chet polomalos'")
@@ -45,7 +45,6 @@ def login_page(request):
         'teacher': 1,
         'student': 2
     }
-    username, group = 'user', 'student'
     try:
         user = User.objects.get(username=username)
     except User.DoesNotExist:

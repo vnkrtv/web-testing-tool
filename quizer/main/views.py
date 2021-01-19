@@ -36,7 +36,6 @@ def login_page(request):
     logout(request)
     try:
         username, group = utils.get_auth_data(request)
-        pass
     except DecodeError:
         return HttpResponse("JWT decode error: chet polomalos'")
     group2id = {

@@ -62,8 +62,8 @@
     <input type="hidden" name="with_images" id="hidden-question-with-images" value="">
     <div class="modal-footer">
         <div class="btn btn-primary js-modal-close"><img src='{% cancel_icon %}'> Закрыть</div>
-        <button class="btn btn-primary js-modal-close"
-                onclick="editQuestion(questionsAPIUrl, questionsTbody, csrfToken)"><img src='{% edit_icon %}'> Изменить
+        <button class="btn btn-success js-modal-close"
+                onclick="editQuestion(questionsAPIUrl, questionsTbody, csrfToken)"><img src='{% edit_icon %}'> Сохранить
         </button>
         <button class="btn btn-danger" id='delete-question-button' data-modal="delete-question-modal"><img
                 src='{% delete_icon %}'> Удалить

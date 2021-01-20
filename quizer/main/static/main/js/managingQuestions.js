@@ -320,7 +320,11 @@ function editQuestion(questionsAPIUrl, questionsTbody, csrfToken) {
     $.post(`${questionsAPIUrl}/${qstnID}`, params)
         .done((response) => {
             renderQuestionsTable(questionsAPIUrl, questionsTbody);
-            renderInfoModalWindow("Вопрос отредактирован", response['success']);
+            if (response['success'] !== undefined) {
+                renderInfoModalWindow("Вопрос отредактирован", response['success']);
+            } else {
+                renderInfoModalWindow("Ошибка", response['error']);
+            }
         });
 }
 
@@ -332,6 +336,10 @@ function deleteQuestion(questionsAPIUrl, questionsTbody, csrfToken) {
     $.post(`${questionsAPIUrl}/${qstnID}`, params)
         .done((response) => {
             renderQuestionsTable(questionsAPIUrl, questionsTbody);
-            renderInfoModalWindow("Вопрос удален", response['success']);
+            if (response['success'] !== undefined) {
+                renderInfoModalWindow("Вопрос удален", response['success']);
+            } else {
+                renderInfoModalWindow("Ошибка", response['error']);
+            }
         });
 }

@@ -201,6 +201,10 @@ class QuestionView(APIView):
                 response = Response({
                     'success': message % (question['formulation'], test.name)
                 })
+            except utils.InvalidFileFormatError:
+                response = Response({
+                    'error': f'Вопрос не был добавлен, так как присутствуют пустые варианты ответов.'
+                })
             except Exception as e:
                 response = Response({
                     'error': f'Вопрос не был добавлен: {e}.'
@@ -220,32 +224,44 @@ class QuestionView(APIView):
                     'success': message % (test.name, len(questions_list))
                 })
             except utils.InvalidFileFormatError:
-                message = 'Вопросы не были загружены, так как формат файла неподходящий.'
+                message = 'Вопросы не были загружены, так как формат файла неподходящий ' \
+                          'или присутствуют пустые варианты ответов.'
                 response = Response({
                     'error': message
                 })
-            return response
+            finally:
+                return response
         else:  # PUT
-            with_images = json.loads(request_dict['withImages'][0])
-            formulation = request_dict['formulation'][0]
-            options = json.loads(request_dict['options'][0])
-            test = Test.objects.get(id=test_id)
+            try:
+                with_images = json.loads(request_dict['withImages'][0])
+                formulation = request_dict['formulation'][0]
+                options = json.loads(request_dict['options'][0])
+                print(options)
+                if '' in [opt['option'] for opt in options]:
+                    raise utils.InvalidFileFormatError('empty options are not allowed')
+                test = Test.objects.get(id=test_id)
 
-            if with_images:
-                storage.update_formulation(
-                    question_id=question_id,
-                    formulation=formulation
-                )
-            else:
-                storage.update(
-                    question_id=question_id,
-                    formulation=formulation,
-                    options=options
-                )
-            message = "Вопрос '%s' по тесту '%s' был успешно отредактирован."
-            return Response({
-                'success': message % (formulation, test.name)
-            })
+                if with_images:
+                    storage.update_formulation(
+                        question_id=question_id,
+                        formulation=formulation
+                    )
+                else:
+                    storage.update(
+                        question_id=question_id,
+                        formulation=formulation,
+                        options=options
+                    )
+                message = "Вопрос '%s' по тесту '%s' был успешно отредактирован."
+                response = Response({
+                    'success': message % (formulation, test.name)
+                })
+            except utils.InvalidFileFormatError:
+                response = Response({
+                    'error': f'Вопрос не был отредактирован, так как в вопросе присутствовали пустые варинаты ответов.'
+                })
+            finally:
+                return response
 
 
 class TestsResultView(APIView):

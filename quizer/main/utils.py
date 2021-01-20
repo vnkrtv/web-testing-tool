@@ -121,6 +121,8 @@ def get_question_from_request(request: HttpRequest, test: Test) -> dict:
     """
     if not with_images:
         question['options'] = json.loads(request.POST['options'])
+        if '' in [opt['option'] for opt in question['options']]:
+            raise InvalidFileFormatError('empty options are not allowed')
     else:
         options = []
         for i, file_name in enumerate(request.FILES):
@@ -156,24 +158,36 @@ def parse_questions(content: str) -> list:
         options = []
         for line in buf[1:]:
             if line[0] == '-':
+                option = line.split('-')[1][1:]
+                if not option:
+                    raise InvalidFileFormatError('empty options are not allowed')
                 options.append({
-                    'option': line.split('-')[1][1:],
+                    'option': option,
                     'is_true': False
                 })
             elif line[0] == '*':
+                option = line.split('*')[1][1:]
+                if not option:
+                    raise InvalidFileFormatError('empty options are not allowed')
                 options.append({
-                    'option': line.split('*')[1][1:],
+                    'option': option,
                     'is_true': True
                 })
             elif line[0] == '+':
                 multiselect = True
+                option = line.split('+')[1][1:]
+                if not option:
+                    raise InvalidFileFormatError('empty options are not allowed')
                 options.append({
-                    'option': line.split('+')[1][1:],
+                    'option': option,
                     'is_true': True
                 })
             elif line[0] in numbers:
                 sequence = True
                 num = line.split()[0]
+                option = line.split(num)[1][1:]
+                if not option:
+                    raise InvalidFileFormatError('empty options are not allowed')
                 options.append({
                     'option': line.split(num)[1][1:],
                     'num': int(num),
@@ -304,10 +318,9 @@ def add_subject_with_tests(request: HttpRequest) -> str:
             for question in questions_list:
                 storage.add_one(question=question, test_id=test.id)
             questions_count += len(questions_list)
-        except UnicodeDecodeError:
-            print('UnicodeDecodeError - ошибка при обработке файла с вопросами к тесту %s' % test_name)
-        except InvalidFileFormatError:
-            print \
-                ('InvalidFileFormatError - ошибка при обработке файла с вопросами к тесту %s' % test_name)
+        except UnicodeDecodeError as e:
+            print('%s - ошибка при обработке файла с вопросами к тесту %s' % (e, test_name))
+        except InvalidFileFormatError as e:
+            print('%s - ошибка при обработке файла с вопросами к тесту %s' % (e, test_name))
     message = "Предмет '%s', %d тестов и %d вопросов к ним успешно добавлены."
     return message % (subject.name, tests_count, questions_count)

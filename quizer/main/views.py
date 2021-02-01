@@ -1,6 +1,7 @@
 # pylint: disable=import-error, line-too-long, relative-beyond-top-level
 """Quizer backend"""
 import random
+import copy
 from datetime import datetime, timedelta
 
 from jwt import DecodeError
@@ -90,7 +91,7 @@ def lecturer_run_test(request, test_id):
     right_answers = {}
     for i, question in enumerate(test_questions):
         if question['type'] == QuestionType.SEQUENCE or question['type'] == QuestionType.SEQUENCE_WITH_IMAGES:
-            right_options = question['options']
+            right_options = copy.deepcopy(question['options'])
             right_options.sort(key=lambda option: int(option['num']))
         else:
             right_options = [option for option in question['options'] if option['is_true']]
@@ -185,8 +186,6 @@ class AvailableTestsView(View):
         storage.add_results_to_running_test(
             test_result=result,
             test_id=test_id)
-        print(request.POST)
-        print(result)
 
         self.context = {
             'title': 'Доступные тесты',
@@ -363,14 +362,14 @@ def student_run_test(request):
     storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())
     test_questions = storage.get_many(test_id=test.id)
     test_questions = random.sample(test_questions, k=test.tasks_num)
-    print(test_questions)
+
     for question in test_questions:
         random.shuffle(question['options'], random.random)
-    print(test_questions)
+
     right_answers = {}
     for i, question in enumerate(test_questions):
         if question['type'] == QuestionType.SEQUENCE or question['type'] == QuestionType.SEQUENCE_WITH_IMAGES:
-            right_options = question['options']
+            right_options = copy.deepcopy(question['options'])
             right_options.sort(key=lambda option: int(option['num']))
         else:
             right_options = [option for option in question['options'] if option['is_true']]

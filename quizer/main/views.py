@@ -202,7 +202,7 @@ class SubjectsView(View):
     """Configuring study subject view"""
     template = 'main/admin/subjects.html'
     title = 'Учебные предметы'
-    decorators = [unauthenticated_user, allowed_users(allowed_roles=['admin'])]
+    decorators = [unauthenticated_user, allowed_users(allowed_roles=['lecturer'])]
 
     @method_decorator(decorators)
     def get(self, request):

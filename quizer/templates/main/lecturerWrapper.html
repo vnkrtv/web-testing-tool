@@ -27,11 +27,7 @@
 	    Quizer <img src="{% static 'favicon/favicon-32x32.png' %}" width="25" length="25">
 	  </div>
 	  <ul class="sidebar-navigation">
-	  	{% if user.is_superuser %}
-	  	<li class="header">Администратор</li>
-	  	{% else %}
-	  	<li class="header">Преподаватель</li>	  	
-	  	{% endif %}
+	  	<li class="header">Преподаватель</li>
 	  	<li>
 	      <a href="{% url 'main:available_tests' %}">
 	        <i aria-hidden="true"></i><img src='{% person_icon %}'> {{ user.username }}

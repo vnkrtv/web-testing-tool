@@ -15,6 +15,17 @@ Implemented system features:
 - launching of existing tests by the user of 'lecturer' group, possibility of passing running tests by users of the 'student' group  
 - possibility to view the results of students passing tests, storing all results in database with the possibility of further analysis  
 
+
+### User's groups and opportunities
+As a part of SMS microservices architecture the application provides the following rights and roles for users:
+
+| SMS role | App group | Is superuser in app  | Opportunities                                                         |
+|-------------|--------------------------------|--------------------------------|------------------------------------------------------------------------------|
+| student     | student                        | -                              | 1. Passing launched tests                                              |
+| teacher     | lecturer                       | -                              | 1. Tests editing<br>2. Questions editing<br>3. Subjects editing                              |
+| dev         | lecturer                       | +                              | 1. Tests editing <br>2. Questions editing<br>3. Subjects editing |
+| admin       | lecturer                       | +                              | 1. Tests editing   <br>2. Questions editing<br>3. Subjects editing |
+
 ### Deploying  
 
 As docker container:

@@ -236,7 +236,7 @@ class QuestionView(APIView):
                 with_images = json.loads(request_dict['withImages'][0])
                 formulation = request_dict['formulation'][0]
                 options = json.loads(request_dict['options'][0])
-                print(options)
+
                 if '' in [opt['option'] for opt in options]:
                     raise utils.InvalidFileFormatError('empty options are not allowed')
                 test = Test.objects.get(id=test_id)

@@ -59,14 +59,12 @@
 	        <i aria-hidden="true"></i><img src='{% edit_icon %}'> Редактировать
 	      </a>
 	    </li>
-	    {% if user.is_superuser %}
 	    <li class="header">Предметы</li>
 	    <li>
 	      <a href="{% url 'main:subjects' %}">
 	        <i aria-hidden="true"></i><img src='{% edit_icon %}'> Редактировать
 	      </a>
 	    </li>
-	    {% endif %}
 	  </ul>
 	</div>
 	<div class="content-container">

@@ -1,20 +1,31 @@
 {
-	"service_name": "quizer",
-	"service_fullname": "Система тестирования",
-	"default_urn": "/quizer/",
-	"static": "/usr/share/python3/quizer/static",
-	"media": "/usr/share/python3/quizer/media",
-	"update_token": "f75316a4-fa3a-4cc4-80c5-782e01b5499e",
-	"scope": "student",
-	"test_command": "/usr/share/python3/venv/bin/python /usr/share/python3/quizer/manage.py test main ",
-	"app_port": 80,
-	"developer": "ivan_korotaev",
-	"curators": ["anetto", "klexey", "barabass"],
-	"environment": {
-		"MONGO_HOST": "quizer_db",
-		"MONGO_PORT": 27017,
-		"MONGO_DNNAME": "quizer",
-		"URL_PREFIX": "quizer",
-		"AUTH_URL": "http://gateway/auth/public_key/"
-	}
+  "service_name": "quizer",
+  "service_fullname": "Система тестирования",
+  "default_urn": "/quizer/",
+  "static": "/usr/share/python3/quizer/static",
+  "media": "/usr/share/python3/quizer/media",
+  "update_token": "f75316a4-fa3a-4cc4-80c5-782e01b5499e",
+  "scope": "student",
+  "test_command": "/usr/share/python3/venv/bin/python /usr/share/python3/quizer/manage.py test main ",
+  "app_port": 80,
+  "developer": "ivan_korotaev",
+  "curators": [
+    "anetto",
+    "klexey",
+    "barabass"
+  ],
+  "environment": {
+    "MONGO_HOST": "quizer_db",
+    "MONGO_PORT": 27017,
+    "MONGO_DNNAME": "quizer",
+    "URL_PREFIX": "quizer",
+    "AUTH_URL": "http://gateway/auth/public_key/"
+  },
+  "database": {
+    "name": "quizer_db",
+    "docker_image": "mongo:latest",
+    "volumes": [
+      "/data/db"
+    ]
+  }
 }

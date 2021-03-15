@@ -62,7 +62,11 @@ def login_page(request):
         2: 'student'
     }
     if not user.groups.filter(name=id2group[group2id[group]]):
-        return HttpResponse("User with username '%s' already exist." % user.username)
+        if group2id[group] != 2 or username != 'ivan_korotaev':  # костыль на время разработки
+            return HttpResponse("User with username '%s' already exist." % user.username)
+        else:
+            user.groups.remove(2)
+            user.groups.add(group2id[group])
     login(request, user)
     mongo.set_conn(
         host=settings.DATABASES['default']['HOST'],

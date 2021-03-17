@@ -143,7 +143,7 @@ def parse_questions(content: str) -> list:
     :param content: string with questions
     :return: questions list
     """
-    questions_list = content.split('\n\n')
+    questions_list = content.replace('\r', '').split('\n\n')
     parsed_questions_list = []
     if '' in questions_list:
         questions_list.remove('')

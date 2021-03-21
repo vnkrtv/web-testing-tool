@@ -31,7 +31,7 @@ class TestSerializer(serializers.Serializer):
     subject = serializers.IntegerField()
     author = serializers.IntegerField()
     name = serializers.CharField(max_length=200)
-    description = serializers.CharField(required=False)
+    description = serializers.CharField(required=False, default='')
     tasks_num = serializers.IntegerField()
     duration = serializers.IntegerField()
 

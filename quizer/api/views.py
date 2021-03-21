@@ -125,6 +125,7 @@ class TestView(APIView):
             })
         else:  # PUT
             updated_test = get_object_or_404(Test.objects.all(), pk=state)
+            print(request.data)
             serializer = TestSerializer(instance=updated_test, data=request.data, partial=True)
             if serializer.is_valid(raise_exception=True):
                 updated_test = serializer.save()

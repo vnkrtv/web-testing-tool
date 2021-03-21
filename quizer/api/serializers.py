@@ -31,7 +31,7 @@ class TestSerializer(serializers.Serializer):
     subject = serializers.IntegerField()
     author = serializers.IntegerField()
     name = serializers.CharField(max_length=200)
-    description = serializers.CharField(required=False, default='')
+    description = serializers.CharField(default='')
     tasks_num = serializers.IntegerField()
     duration = serializers.IntegerField()
 
@@ -48,7 +48,7 @@ class TestSerializer(serializers.Serializer):
 
     def update(self, instance, validated_data):
         instance.name = validated_data.get('name', instance.name)
-        instance.description = validated_data.get('description', instance.description)
+        instance.description = validated_data.get('description', '')
         instance.tasks_num = validated_data.get('tasks_num', instance.tasks_num)
         instance.duration = validated_data.get('duration', instance.duration)
         instance.save()

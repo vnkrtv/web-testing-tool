@@ -224,11 +224,9 @@ class QuestionView(APIView):
                 response = Response({
                     'success': message % (test.name, len(questions_list))
                 })
-            except utils.InvalidFileFormatError:
-                message = 'Вопросы не были загружены, так как формат файла неподходящий ' \
-                          'или присутствуют пустые варианты ответов.'
+            except utils.InvalidFileFormatError as e:
                 response = Response({
-                    'error': message
+                    'error': f'Вопросы не были загружены: {e}'
                 })
             finally:
                 return response

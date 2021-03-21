@@ -148,19 +148,30 @@ def parse_questions(content: str) -> list:
     if '' in questions_list:
         questions_list.remove('')
     numbers = set('0123456789')
+    cur_line = 0
     for question in questions_list:
         buf = question.split('\n')
         if '' in buf:
             buf.remove('')
+
         formulation = buf[0]
+        cur_line += 1
+
         multiselect = False
         sequence = False
         options = []
+        if len(buf[1:]) == 0:
+            raise InvalidFileFormatError(f'строка {cur_line} - вопрос без вариантов ответа')
         for line in buf[1:]:
+            cur_line += 1  # Line with option
+            if len(line) > 1 and line[1] != ' ':
+                err_str = f'строка {cur_line} - некорректный формат варианта ответа (пропущен пробел)'
+                raise InvalidFileFormatError(err_str)
             if line[0] == '-':
                 option = line.split('-')[1][1:]
                 if not option:
-                    raise InvalidFileFormatError('empty options are not allowed')
+                    err_str = f'строка {cur_line} - некорректный формат варианта ответа (пустой вариант ответа)'
+                    raise InvalidFileFormatError(err_str)
                 options.append({
                     'option': option,
                     'is_true': False
@@ -168,7 +179,8 @@ def parse_questions(content: str) -> list:
             elif line[0] == '*':
                 option = line.split('*')[1][1:]
                 if not option:
-                    raise InvalidFileFormatError('empty options are not allowed')
+                    err_str = f'строка {cur_line} - некорректный формат варианта ответа (пустой вариант ответа)'
+                    raise InvalidFileFormatError(err_str)
                 options.append({
                     'option': option,
                     'is_true': True
@@ -177,7 +189,8 @@ def parse_questions(content: str) -> list:
                 multiselect = True
                 option = line.split('+')[1][1:]
                 if not option:
-                    raise InvalidFileFormatError('empty options are not allowed')
+                    err_str = f'строка {cur_line} - некорректный формат варианта ответа (пустой вариант ответа)'
+                    raise InvalidFileFormatError(err_str)
                 options.append({
                     'option': option,
                     'is_true': True
@@ -187,14 +200,19 @@ def parse_questions(content: str) -> list:
                 num = line.split()[0]
                 option = line.split(num)[1][1:]
                 if not option:
-                    raise InvalidFileFormatError('empty options are not allowed')
+                    err_str = f'строка {cur_line} - некорректный формат варианта ответа (пустой вариант ответа)'
+                    raise InvalidFileFormatError(err_str)
                 options.append({
-                    'option': line.split(num)[1][1:],
+                    'option': option,
                     'num': int(num),
                     'is_true': True
                 })
             else:
-                raise InvalidFileFormatError('invalid file format')
+                err_str = f'строка {cur_line} - некорректный формат варианта ответа (пустой вариант ответа)'
+                raise InvalidFileFormatError(err_str)
+        options_set = set([_['option'] for _ in options])
+        if len(options) != len(options_set):
+            raise InvalidFileFormatError(f'строка {cur_line} - повторяющиеся варианты ответов')
         parsed_questions_list.append({
             'formulation': formulation,
             'tasks_num': len(options),
@@ -202,6 +220,7 @@ def parse_questions(content: str) -> list:
             'type': QuestionType.SEQUENCE if sequence else QuestionType.REGULAR,
             'options': options
         })
+        cur_line += 1  # Empty string between questions
     return parsed_questions_list
 
 

@@ -164,33 +164,28 @@ def parse_questions(content: str) -> list:
             raise InvalidFileFormatError(f'строка {cur_line} - вопрос без вариантов ответа')
         for line in buf[1:]:
             cur_line += 1  # Line with option
+
             if len(line) > 1 and line[1] != ' ':
                 err_str = f'строка {cur_line} - некорректный формат варианта ответа (пропущен пробел)'
                 raise InvalidFileFormatError(err_str)
+
+            option = line[2:]
+            if not option:
+                err_str = f'строка {cur_line} - некорректный формат варианта ответа (пустой вариант ответа)'
+                raise InvalidFileFormatError(err_str)
+
             if line[0] == '-':
-                option = line.split('-')[1][1:]
-                if not option:
-                    err_str = f'строка {cur_line} - некорректный формат варианта ответа (пустой вариант ответа)'
-                    raise InvalidFileFormatError(err_str)
                 options.append({
                     'option': option,
                     'is_true': False
                 })
             elif line[0] == '*':
-                option = line.split('*')[1][1:]
-                if not option:
-                    err_str = f'строка {cur_line} - некорректный формат варианта ответа (пустой вариант ответа)'
-                    raise InvalidFileFormatError(err_str)
                 options.append({
                     'option': option,
                     'is_true': True
                 })
             elif line[0] == '+':
                 multiselect = True
-                option = line.split('+')[1][1:]
-                if not option:
-                    err_str = f'строка {cur_line} - некорректный формат варианта ответа (пустой вариант ответа)'
-                    raise InvalidFileFormatError(err_str)
                 options.append({
                     'option': option,
                     'is_true': True
@@ -198,17 +193,13 @@ def parse_questions(content: str) -> list:
             elif line[0] in numbers:
                 sequence = True
                 num = line.split()[0]
-                option = line.split(num)[1][1:]
-                if not option:
-                    err_str = f'строка {cur_line} - некорректный формат варианта ответа (пустой вариант ответа)'
-                    raise InvalidFileFormatError(err_str)
                 options.append({
                     'option': option,
                     'num': int(num),
                     'is_true': True
                 })
             else:
-                err_str = f'строка {cur_line} - некорректный формат варианта ответа (пустой вариант ответа)'
+                err_str = f'строка {cur_line} - некорректный формат варианта ответа (вопроса не определен)'
                 raise InvalidFileFormatError(err_str)
         options_set = set([_['option'] for _ in options])
         if len(options) != len(options_set):

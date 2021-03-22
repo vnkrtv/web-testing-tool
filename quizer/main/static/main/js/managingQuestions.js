@@ -284,6 +284,12 @@ function renderQuestionsTable(questionsAPIUrl, questionsTbody) {
                 <td>${question.tasks_num}</td>
                 <td>${question.multiselect ? '+' : '-'}</td>
                 <td>${typesDict[question.type]}</td>`;
+            let trTitle = `${question.formulation}\n\n`;
+            for (let idx = 0; idx < question.options.length; idx++) {
+                let isTrue = question.options[idx].is_true ? '+' : '-';
+                trTitle += `${isTrue} ${question.options[idx].option}\n`;
+            }
+            tr.setAttribute('title', trTitle);
             questionsTbody.appendChild(tr);
         }
         activateModalWindows();

@@ -3,11 +3,15 @@
 Classes for working with MongoDB and objects stored in it
 """
 import shutil
+from typing import Dict, List, Any
 from pathlib import Path
 from datetime import datetime, timedelta
+
 import pymongo
 from bson import ObjectId, errors
+
 from django.conf import settings
+
 from .models import Test, QuestionType
 
 __db_conn: pymongo.database.Database = None
@@ -81,7 +85,7 @@ class QuestionsStorage(MongoDB):
             collection_name='questions')
         return storage
 
-    def add_one(self, question, test_id: int) -> None:
+    def add_one(self, question: Dict[str, Any], test_id: int) -> None:
         """
         Add question to MongoDB
 
@@ -127,7 +131,7 @@ class QuestionsStorage(MongoDB):
             })
         return question
 
-    def get_many(self, test_id: int) -> list:
+    def get_many(self, test_id: int) -> List[Dict[str, Any]]:
         """
         Get all questions for Test(id='test_id')
 
@@ -192,7 +196,7 @@ class QuestionsStorage(MongoDB):
             {'$set': {'formulation': formulation}}
         )
 
-    def update(self, question_id: str, formulation: str, options: list) -> None:
+    def update(self, question_id: str, formulation: str, options: Dict[str, Any]) -> None:
         """
         Update question formulation and options
 
@@ -244,7 +248,7 @@ class RunningTestsAnswersStorage(MongoDB):
             collection_name='running_tests_answers')
         return storage
 
-    def add(self, right_answers, test_id: str, user_id: str, test_duration: int) -> None:
+    def add(self, right_answers: Dict[str, Any], test_id: str, user_id: str, test_duration: int) -> None:
         """
         Add right answers for running tests and current user
 
@@ -270,7 +274,7 @@ class RunningTestsAnswersStorage(MongoDB):
             'user_id': user_id
         })
 
-    def get(self, user_id: int) -> dict:
+    def get(self, user_id: int) -> Dict[str, Any]:
         """
         Get right answers for running test and current user
 
@@ -282,12 +286,12 @@ class RunningTestsAnswersStorage(MongoDB):
         })
         return right_answers
 
-    def get_left_time(self, user_id: int):
+    def get_left_time(self, user_id: int) -> int:
         """
         Get left time for passing running test by current user
 
         :param user_id: <int>, user who passes test
-        :return: <dict>
+        :return: <int>
         """
         right_answers = self._col.find_one({
             'user_id': user_id,
@@ -308,7 +312,7 @@ class RunningTestsAnswersStorage(MongoDB):
             'user_id': user_id,
         })
 
-    def cleanup(self, user_id: int) -> list:
+    def cleanup(self, user_id: int) -> List[Dict[str, Any]]:
         """
         Delete all temporary tests answers for user
 
@@ -360,7 +364,7 @@ class TestsResultsStorage(MongoDB):
             'date': datetime.now() + timedelta(hours=3)
         })
 
-    def add_results_to_running_test(self, test_result: dict, test_id: int) -> None:
+    def add_results_to_running_test(self, test_result: Dict[str, Any], test_id: int) -> None:
         """
         Add passed test result to other results for running test
 
@@ -389,7 +393,7 @@ class TestsResultsStorage(MongoDB):
             {'$push': {'results': test_result}}
         )
 
-    def get_running_test_results(self, test_id: int, lecturer_id: int) -> dict:
+    def get_running_test_results(self, test_id: int, lecturer_id: int) -> Dict[str, Any]:
         """
         Get results of running test
 
@@ -402,7 +406,7 @@ class TestsResultsStorage(MongoDB):
         )
         return test_results if test_results else {}
 
-    def get_running_tests_ids(self) -> list:
+    def get_running_tests_ids(self) -> List[int]:
         """
         Return list of running tests ids
 
@@ -411,7 +415,7 @@ class TestsResultsStorage(MongoDB):
         running_tests = self._col.find({'is_running': True})
         return [test['test_id'] for test in running_tests] if running_tests else []
 
-    def get_running_tests(self) -> list:
+    def get_running_tests(self) -> List[Dict[str, Any]]:
         """
         Return list of running tests
 
@@ -433,7 +437,7 @@ class TestsResultsStorage(MongoDB):
             {'$set': {'is_running': False}}
         )
 
-    def get_latest_test_results(self, test_id: int, lecturer_id: int) -> list:
+    def get_latest_test_results(self, test_id: int, lecturer_id: int) -> List[Dict[str, Any]]:
         """
         Get results of latest test
 
@@ -451,7 +455,7 @@ class TestsResultsStorage(MongoDB):
             return latest_test_results['results']
         return []
 
-    def get_tests_results(self, test_id: int, lecturer_id: int) -> list:
+    def get_tests_results(self, test_id: int, lecturer_id: int) -> List[Dict[str, Any]]:
         """
         Get results of all tests with test_id ran by lecturer with lecturer_id
 
@@ -479,7 +483,7 @@ class TestsResultsStorage(MongoDB):
                 })
         return parsed_test_results
 
-    def get_test_result(self, _id: str) -> dict:
+    def get_test_result(self, _id: str) -> Dict[str, Any]:
         """
         Get results of all tests with test_id ran by lecturer with lecturer_id
 
@@ -505,7 +509,7 @@ class TestsResultsStorage(MongoDB):
             }
         return {}
 
-    def get_all_tests_results(self) -> list:
+    def get_all_tests_results(self) -> List[Dict[str, Any]]:
         """
         Get results of all passed tests
 

@@ -2,6 +2,8 @@
 """
 Models for working with MongoDB and objects stored in it
 """
+from typing import List, Dict, Any
+
 from django.db import models
 from django.conf import settings
 
@@ -38,7 +40,7 @@ class Test(models.Model):
     tasks_num = models.IntegerField('Количество заданий в тесте', default=0)
     duration = models.IntegerField('Длительность теста в секундах', default=300)
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> Dict[str, Any]:
         """
         Test model representation as dictionary
 

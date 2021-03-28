@@ -2,6 +2,7 @@
 """
 Some utils for views
 """
+from typing import List, Dict, Tuple, Any
 import json
 
 import jwt
@@ -18,7 +19,9 @@ from .mongo import get_conn, QuestionsStorage
 
 
 class InvalidFileFormatError(Exception):
-    pass
+    """
+    Handling exceptions during questions file parsing
+    """
 
 
 class SubjectParser:
@@ -75,7 +78,7 @@ class SubjectParser:
         }.get(short_name, 200)
 
 
-def get_auth_data(request: HttpRequest) -> tuple:
+def get_auth_data(request: HttpRequest) -> Tuple[str, str]:
     """
     Get user's username and group using 'user_jqt' cookies
 
@@ -91,7 +94,7 @@ def get_auth_data(request: HttpRequest) -> tuple:
     return username, group
 
 
-def get_question_from_request(request: HttpRequest, test: Test) -> dict:
+def get_question_from_request(request: HttpRequest, test: Test) -> Dict[str, Any]:
     """
     Parse request with new question params to question dict
 
@@ -136,23 +139,19 @@ def get_question_from_request(request: HttpRequest, test: Test) -> dict:
     return question
 
 
-def parse_questions(content: str) -> list:
+def parse_questions(content: str) -> List[Dict[str, Any]]:
     """
     Parsing string with questions to questions list
 
     :param content: string with questions
     :return: questions list
     """
-    questions_list = content.replace('\r', '').split('\n\n')
+    questions_list = [question for question in content.replace('\r', '').split('\n\n') if question]
     parsed_questions_list = []
-    if '' in questions_list:
-        questions_list.remove('')
     numbers = set('0123456789')
     cur_line = 0
     for question in questions_list:
-        buf = question.split('\n')
-        if '' in buf:
-            buf.remove('')
+        buf = [item for item in question.split('\n') if item]
 
         formulation = buf[0]
         cur_line += 1
@@ -215,7 +214,7 @@ def parse_questions(content: str) -> list:
     return parsed_questions_list
 
 
-def get_questions_list(request: HttpRequest) -> list:
+def get_questions_list(request: HttpRequest) -> List[Dict[str, Any]]:
     """
     Parse request with loaded file with questions to questions list
 
@@ -226,7 +225,7 @@ def get_questions_list(request: HttpRequest) -> list:
     return parse_questions(content)
 
 
-def get_test_result(request: HttpRequest, right_answers: dict, test_duration: int) -> dict:
+def get_test_result(request: HttpRequest, right_answers: dict, test_duration: int) -> Dict[str, Any]:
     """
     Get testing result from HttpRequest object
 
@@ -282,7 +281,7 @@ def get_test_result(request: HttpRequest, right_answers: dict, test_duration: in
     }
 
 
-def parse_questions_file(file_name: str) -> list:
+def parse_questions_file(file_name: str) -> List[Dict[str, Any]]:
     """
     Parse file with questions to questions list
 

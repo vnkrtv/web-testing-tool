@@ -216,24 +216,11 @@ class AuthorizationTest(MainTest):
         self.assertContains(response, 'Преподаватель')
 
     @mock.patch('main.utils.get_auth_data')
-    def test_new_user_auth(self, get_auth_data) -> None:
-        """
-        Test for authorization of new user belonging to 'student' group
-        """
-        get_auth_data.return_value = 'New user', 'student'
-        client = Client()
-        client.logout()
-        response = client.get(reverse('main:login_page'), follow=True)
-
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Слушатель')
-
-    @mock.patch('main.utils.get_auth_data')
     def test_anonymous_auth(self, get_auth_data) -> None:
         """
         Test for authorization of a user not registered in the system
         """
-        get_auth_data.return_value = '', ''
+        get_auth_data.return_value = 'anon', 'unknown'
         client = Client()
         client.logout()
         response = client.get(reverse('main:login_page'), follow=True)

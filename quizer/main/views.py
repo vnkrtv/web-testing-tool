@@ -45,7 +45,7 @@ def login_page(request: HttpRequest) -> HttpResponse:
         'teacher': 1,
         'student': 2
     }
-    if username != 'ivan_korotaev':  # костыль на время разработки
+    if username == 'ivan_korotaev':  # костыль на время разработки
         group = 'admin'
     try:
         user = User.objects.get(username=username)

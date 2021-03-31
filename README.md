@@ -23,7 +23,6 @@ As a part of SMS microservices architecture the application provides the followi
 |-------------|--------------------------------|--------------------------------|------------------------------------------------------------------------------|
 | student     | student                        | -                              | 1. Passing launched tests                                              |
 | teacher     | lecturer                       | -                              | 1. Tests editing<br>2. Questions editing<br>3. Subjects editing                              |
-| dev         | lecturer                       | +                              | 1. Tests editing <br>2. Questions editing<br>3. Subjects editing |
 | admin       | lecturer                       | +                              | 1. Tests editing   <br>2. Questions editing<br>3. Subjects editing |
 
 ### Deploying  

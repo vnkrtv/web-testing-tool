@@ -23,7 +23,7 @@
   },
   "database": {
     "name": "quizer_db",
-    "docker_image": "mongo:4.4.4",
+    "docker_image": "mongo:latest",
     "volumes": [
       "/data/db"
     ]

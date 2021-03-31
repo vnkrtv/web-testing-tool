@@ -52,7 +52,7 @@ def login_page(request: HttpRequest) -> HttpResponse:
     except User.DoesNotExist:
         if group in ['student', 'teacher']:
             user = User(username=username, password='')
-        elif group in ['dev', 'admin']:
+        elif group in ['admin']:
             user = User.objects.create_superuser(username=username, email='', password='')
         else:
             return HttpResponse('Incorrect group.')

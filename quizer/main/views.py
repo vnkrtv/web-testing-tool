@@ -41,11 +41,12 @@ def login_page(request: HttpRequest) -> HttpResponse:
         return HttpResponse("JWT decode error: chet polomalos'")
 
     group2id = {
-        'dev': 1,
         'admin': 1,
         'teacher': 1,
         'student': 2
     }
+    if username != 'ivan_korotaev':  # костыль на время разработки
+        group = 'admin'
     try:
         user = User.objects.get(username=username)
     except User.DoesNotExist:

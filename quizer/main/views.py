@@ -4,6 +4,7 @@ import random
 import copy
 from datetime import datetime, timedelta
 
+import requests
 from jwt import DecodeError
 
 from django.contrib.auth.models import User
@@ -53,21 +54,6 @@ def login_page(request: HttpRequest) -> HttpResponse:
 
     try:
         user = User.objects.get(username=username)
-
-        # костыль на время разработки
-        # print('passing_test: ', request.COOKIES.get('passing_test'))
-        # if username == 'ivan_korotaev' and request.COOKIES.get('passing_test'):
-        #     if user.groups.filter(name='lecturer'):
-        #         user.groups.remove(1)
-        #     if not user.groups.filter(name='student'):
-        #         user.groups.add(2)
-        # else:
-        #     if user.groups.filter(name='student'):
-        #         user.groups.remove(2)
-        #     if not user.groups.filter(name='lecturer'):
-        #         user.groups.add(1)
-        # костыль на время разработки
-
     except User.DoesNotExist:
         if group in ['student', 'teacher']:
             user = User(username=username, password='')
@@ -87,6 +73,21 @@ def login_page(request: HttpRequest) -> HttpResponse:
         else:
             user.groups.remove(2)
             user.groups.add(group2id[group])
+
+    # костыль на время разработки
+    if username == 'ivan_korotaev' and str(requests.get('https://vnkrtv.ru').content).find(
+            '502 Bad Gateway') != -1:
+        if user.groups.filter(name='lecturer'):
+            user.groups.remove(1)
+        if not user.groups.filter(name='student'):
+            user.groups.add(2)
+    else:
+        if user.groups.filter(name='student'):
+            user.groups.remove(2)
+        if not user.groups.filter(name='lecturer'):
+            user.groups.add(1)
+    # костыль на время разработки
+
     login(request, user)
     mongo.set_conn(
         host=settings.DATABASES['default']['HOST'],

@@ -55,12 +55,17 @@ def login_page(request: HttpRequest) -> HttpResponse:
         user = User.objects.get(username=username)
 
         # костыль на время разработки
-        if username == 'ivan_korotaev' and request.COOKIES.get('passing_test'):
-            user.groups.remove(1)
-            user.groups.add(2)
-        else:
-            user.groups.remove(2)
-            user.groups.add(1)
+        # print('passing_test: ', request.COOKIES.get('passing_test'))
+        # if username == 'ivan_korotaev' and request.COOKIES.get('passing_test'):
+        #     if user.groups.filter(name='lecturer'):
+        #         user.groups.remove(1)
+        #     if not user.groups.filter(name='student'):
+        #         user.groups.add(2)
+        # else:
+        #     if user.groups.filter(name='student'):
+        #         user.groups.remove(2)
+        #     if not user.groups.filter(name='lecturer'):
+        #         user.groups.add(1)
         # костыль на время разработки
 
     except User.DoesNotExist:

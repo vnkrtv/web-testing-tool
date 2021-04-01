@@ -45,10 +45,24 @@ def login_page(request: HttpRequest) -> HttpResponse:
         'teacher': 1,
         'student': 2
     }
-    if username == 'ivan_korotaev':  # костыль на время разработки
+
+    # костыль на время разработки
+    if username == 'ivan_korotaev':
         group = 'admin'
+    # костыль на время разработки
+
     try:
         user = User.objects.get(username=username)
+
+        # костыль на время разработки
+        if username == 'ivan_korotaev' and request.COOKIES.get('passing_test'):
+            user.groups.remove(1)
+            user.groups.add(2)
+        else:
+            user.groups.remove(2)
+            user.groups.add(1)
+        # костыль на время разработки
+
     except User.DoesNotExist:
         if group in ['student', 'teacher']:
             user = User(username=username, password='')

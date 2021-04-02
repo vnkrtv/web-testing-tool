@@ -47,6 +47,7 @@ def login_page(request: HttpRequest) -> HttpResponse:
         'student': 2
     }
 
+
     # костыль на время разработки
     if username == 'ivan_korotaev':
         group = 'admin'
@@ -68,6 +69,9 @@ def login_page(request: HttpRequest) -> HttpResponse:
         2: 'student'
     }
     if not user.groups.filter(name=id2group[group2id[group]]):
+        if group2id[group] == 2:
+            user.groups.remove(1)
+            user.groups.add(2)
         if group2id[group] != 1 and username != 'ivan_korotaev':  # костыль на время разработки
             return HttpResponse("User with username '%s' already exist." % user.username)
         else:

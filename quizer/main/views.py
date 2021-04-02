@@ -68,7 +68,7 @@ def login_page(request: HttpRequest) -> HttpResponse:
         1: 'lecturer',
         2: 'student'
     }
-    if group2id[group] == 2:
+    if group2id[group] == 1:
         if user.groups.filter(name='lecturer'):
             user.groups.remove(1)
         if not user.groups.filter(name='student'):

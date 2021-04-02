@@ -17,7 +17,7 @@
             <div class="list-group list-group-horizontal">
             {% for question in question_group.0 %}            
                 {% if forloop.counter == 1 and forloop.parentloop.counter == 1 %}
-                    <a data-scroll href="#top" id="ref_{{ forloop.counter | add:question_group.1  }}" class="list-group-item list-group-item-action btn-sm text-center">{{ forloop.counter | add:question_group.1 }}</a>
+                    <a data-scroll href="#top" id="ref_{{ forloop.counter | add:question_group.1  }}" class="list-group-item list-group-item-action btn-sm text-center">1</a>
                 {% else %}
                     <a data-scroll href="#{{ forloop.counter0 | add:question_group.1  }}" id="ref_{{ forloop.counter | add:question_group.1  }}" class="list-group-item list-group-item-action btn-sm text-center">{{ forloop.counter | add:question_group.1 }}</a>
                 {% endif %}
@@ -33,7 +33,10 @@
         <div class="list-group">
             {% csrf_token %}
             {% for question in questions %}
-            <div class="list-group-item question" id='{{ forloop.counter }}'>{{ forloop.counter }}. {{ question.formulation }}
+            <div class="list-group-item question" id='{{ forloop.counter }}'>
+                {% autoescape off %}
+                    {{ forloop.counter }}. {% process_code_tag question.formulation %}
+                {% endautoescape %}
                 {% if question.type == 'sequence' or question.type == 'sequence-images' %}
                 <div class="ul-hover" id="sortableQuestions{{ forloop.counter }}">
                 {% else %}
@@ -97,6 +100,7 @@
 <script src="{% static 'main/js/jquery-3.5.1.js' %}"></script>
 <script src="{% static 'main/js/smooth-scroll.js' %}"></script>
 <script src="{% static 'main/js/jquery-ui.js' %}"></script>
+<script src="{% static 'main/js/code-prettify.js' %}"></script>
 <script type="text/javascript">
     function clickOption(optionID) {
         if (this.questionsMap === undefined) {
@@ -135,7 +139,10 @@
         });
     }
 
-    let scroll = new SmoothScroll('a[href*="#"]');
+    let scroll = new SmoothScroll('a[href*="#"]', {
+        speed: 300 * (questionsCount / 25),
+        speedAsDuration: true
+    });
     runTest({{ test_duration }}, "{% url 'main:get_left_time' %}", "{{ csrf_token }}");
 </script>
 

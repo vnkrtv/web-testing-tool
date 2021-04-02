@@ -7,6 +7,11 @@ register = template.Library()
 
 
 @register.simple_tag
+def process_code_tag(text: str):
+    return text.replace('<code>', '<code class="prettyprint">')
+
+
+@register.simple_tag
 def get_question_type(question_type):
     types_dict = {
         '': 'Обычный',

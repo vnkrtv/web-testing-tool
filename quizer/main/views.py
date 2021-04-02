@@ -38,6 +38,7 @@ def login_page(request: HttpRequest) -> HttpResponse:
     logout(request)
     try:
         username, group = utils.get_auth_data(request)
+        # username, group = 'ivan_korotaev', 'admin'
     except DecodeError:
         return HttpResponse("JWT decode error: chet polomalos'")
 
@@ -46,7 +47,6 @@ def login_page(request: HttpRequest) -> HttpResponse:
         'teacher': 1,
         'student': 2
     }
-
 
     # костыль на время разработки
     if username == 'ivan_korotaev':
@@ -78,7 +78,7 @@ def login_page(request: HttpRequest) -> HttpResponse:
 
     # костыль на время разработки
     if username == 'ivan_korotaev':
-        if True: #str(requests.get('https://vnkrtv.ru').content).find('502 Bad Gateway') != -1:
+        if str(requests.get('https://vnkrtv.ru').content).find('502 Bad Gateway') != -1:
             if user.groups.filter(name='lecturer'):
                 user.groups.remove(1)
             if not user.groups.filter(name='student'):
@@ -134,14 +134,7 @@ def lecturer_run_test(request: HttpRequest, test_id: int) -> HttpResponse:
         test_id=test.id,
         user_id=request.user.id,
         test_duration=test.duration)
-
-    if len(test_questions) < 25:
-        group_size = len(test_questions)
-    else:
-        group_size = 25
-    questions_list = list(zip(*[iter(test_questions)] * group_size))
-    questions_list += [test_questions[len(questions_list) * group_size:]]
-    questions_list = [(questions_group, len(questions_group) * i) for i, questions_group in enumerate(questions_list)]
+    questions_list = utils.split_questions(test_questions)
     context = {
         'title': 'Тест',
         'questions': test_questions,
@@ -422,15 +415,7 @@ def student_run_test(request: HttpRequest) -> HttpResponse:
         storage.add_results_to_running_test(
             test_result=result,
             test_id=test.id)
-
-    if len(test_questions) < 25:
-        group_size = len(test_questions)
-    else:
-        group_size = 25
-    questions_list = list(zip(*[iter(test_questions)] * group_size))
-    questions_list += [test_questions[len(questions_list) * group_size:]]
-    questions_list = [(questions_group, len(questions_group) * i) for i, questions_group in enumerate(questions_list)]
-
+    questions_list = utils.split_questions(test_questions)
     context = {
         'title': 'Тест',
         'questions': test_questions,

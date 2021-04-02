@@ -18,7 +18,7 @@
                     {% for question in question_group.0 %}
                     {% if forloop.counter == 1 and forloop.parentloop.counter == 1 %}
                     <a data-scroll href="#top" id="ref_{{ forloop.counter | add:question_group.1 }}"
-                       class="list-group-item list-group-item-action btn-sm text-center">{{ forloop.counter | add:question_group.1 }}</a>
+                       class="list-group-item list-group-item-action btn-sm text-center">1</a>
                     {% else %}
                     <a data-scroll href="#{{ forloop.counter0 | add:question_group.1  }}"
                        id="ref_{{ forloop.counter | add:question_group.1 }}"
@@ -40,7 +40,7 @@
                 {% if question.type == 'sequence' or question.type == 'sequence-images' %}
                 <div class="ul-hover" id="sortableQuestions{{ forloop.counter }}">
                 {% else %}
-                <div class="list-group list-group-flush ul-hover" id="sortableQuestions{{ forloop.counter }}">
+                <div class="list-group list-group-flush ul-hover">
                 {% endif %}
                     {% for option in question.options %}
                         {% if question.type == 'sequence' or question.type == 'sequence-image' %}

@@ -2,7 +2,8 @@
 """
 Some utils for views
 """
-from typing import List, Dict, Tuple, Any
+import math
+from typing import List, Dict, Tuple, Any, Union
 import json
 
 import jwt
@@ -92,6 +93,23 @@ def get_auth_data(request: HttpRequest) -> Tuple[str, str]:
     username = decoded_jwt.get('username', '')
     group = decoded_jwt.get('group', '')
     return username, group
+
+
+def split_questions(questions: List[Dict[str, Any]]) -> List[Tuple[List[Dict[str, Any]], Union[int, float]]]:
+    """
+    Split questions list into grouped list of questions lists
+
+    :param questions: questions list
+    :return: grouped list of questions
+    """
+    max_group_size = 25
+    group_size = math.ceil(len(questions) / max_group_size)
+    optional_group_size = math.ceil(len(questions) / group_size)
+    questions_list = []
+    for idx, step in enumerate(range(0, len(questions), optional_group_size)):
+        questions_group = questions[step: optional_group_size + step]
+        questions_list.append((questions_group, idx * optional_group_size))
+    return questions_list
 
 
 def get_question_from_request(request: HttpRequest, test: Test) -> Dict[str, Any]:

@@ -120,7 +120,6 @@ function getAvailableTestDiv(test, refsDict) {
     const container = document.createElement('div');
     container.classList.add('jumbotron');
 
-
     const nameH3 = document.createElement('h3');
     nameH3.innerText = `${test.subject.name}: ${test.name}`;
 

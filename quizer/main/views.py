@@ -88,10 +88,11 @@ def login_page(request: HttpRequest) -> HttpResponse:
         if not user.groups.filter(name='student'):
             user.groups.add(2)
     else:
-        if user.groups.filter(name='student'):
-            user.groups.remove(2)
-        if not user.groups.filter(name='lecturer'):
-            user.groups.add(1)
+        if username == 'ivan_korotaev':
+            if user.groups.filter(name='student'):
+                user.groups.remove(2)
+            if not user.groups.filter(name='lecturer'):
+                user.groups.add(1)
     # костыль на время разработки
 
     login(request, user)

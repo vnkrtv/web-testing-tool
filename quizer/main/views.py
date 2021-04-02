@@ -68,27 +68,22 @@ def login_page(request: HttpRequest) -> HttpResponse:
         1: 'lecturer',
         2: 'student'
     }
-    if group2id[group] == 2:
-        if user.groups.filter(name='lecturer'):
-            user.groups.remove(1)
-        if not user.groups.filter(name='student'):
-            user.groups.add(2)
     if not user.groups.filter(name=id2group[group2id[group]]):
-        if group2id[group] != 1 and username != 'ivan_korotaev':  # костыль на время разработки
+        if group2id[group] != 1:
             return HttpResponse("User with username '%s' already exist." % user.username)
         else:
-            user.groups.remove(2)
+            if user.groups.filter(name='student'):
+                user.groups.remove(2)
             user.groups.add(group2id[group])
 
     # костыль на время разработки
-    if username == 'ivan_korotaev' and str(requests.get('https://vnkrtv.ru').content).find(
-            '502 Bad Gateway') != -1:
-        if user.groups.filter(name='lecturer'):
-            user.groups.remove(1)
-        if not user.groups.filter(name='student'):
-            user.groups.add(2)
-    else:
-        if username == 'ivan_korotaev':
+    if username == 'ivan_korotaev':
+        if True: #str(requests.get('https://vnkrtv.ru').content).find('502 Bad Gateway') != -1:
+            if user.groups.filter(name='lecturer'):
+                user.groups.remove(1)
+            if not user.groups.filter(name='student'):
+                user.groups.add(2)
+        else:
             if user.groups.filter(name='student'):
                 user.groups.remove(2)
             if not user.groups.filter(name='lecturer'):

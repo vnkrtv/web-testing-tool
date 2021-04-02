@@ -120,11 +120,9 @@ function getAvailableTestDiv(test, refsDict) {
     const container = document.createElement('div');
     container.classList.add('jumbotron');
 
-    const label = document.createElement('label');
-    label.setAttribute('htmlFor', 'test_name');
 
     const nameH3 = document.createElement('h3');
-    nameH3.innerText = test.name;
+    nameH3.innerText = `${test.subject.name}: ${test.name}`;
 
     const descP = document.createElement('p');
     descP.innerText = test.description;
@@ -140,12 +138,11 @@ function getAvailableTestDiv(test, refsDict) {
     form.innerHTML = refsDict.csrfToken + `<input type="hidden" name="test_id", value="${test.id}"> 
         <button class="btn btn-primary"><img src='${refsDict.playIcon}'> Приступить</button>`;
 
-    label.appendChild(nameH3);
-    label.appendChild(descP);
-    label.appendChild(infoP);
-    label.appendChild(form);
+    container.appendChild(nameH3);
+    container.appendChild(descP);
+    container.appendChild(infoP);
+    container.appendChild(form);
 
-    container.appendChild(label)
     return container;
 }
 

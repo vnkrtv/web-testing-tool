@@ -19,7 +19,8 @@
     "MONGO_PORT": 27017,
     "MONGO_DNNAME": "quizer",
     "URL_PREFIX": "quizer",
-    "AUTH_URL": "http://gateway/auth/public_key/"
+    "AUTH_URL": "http://gateway/auth/public_key/",
+    "WORKERS_NUM": 8
   },
   "database": {
     "name": "quizer_db",

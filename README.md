@@ -53,7 +53,7 @@ docker run -p <HOST_PORT>:80 \
   -e MONGO_DBNAME=<MONGO_DBNAME> \
   -e AUTH_URL=<AUTH_URL> \
   -e URL_PREFIX=<URL_PREFIX> \
-  -e DEMONSTRATION_VARIANT=<y> \
+  -e WORKERS_NUM=<WORKERS_NUM> \
   --name testing-app quizer
 ```
 Container envs:  
@@ -62,20 +62,15 @@ Container envs:
 - MONGO_DBNAME - MongoDB database name for app, default - "quizer"
 - AUTH_URL - auth url for getting public key using JWT, default - "http://sms.gitwork.ru/auth/public_key/"
 - URL_PREFIX - prefix for all paths in app (for example, "quizer"), default - ""
-- DEMONSTRATION_VARIANT - if set, adds some data for demonstration purposes:
-  - user 'user' with password 'password', who belongs to group 'student'
-  - 2 added subjects 'Python' and 'OSS', 3 tests and 2 questions for one of them
-  
-For any building option, the application initially contains one user:
-- user 'admin' with password 'admin', who belongs to group 'lecturer' and who is also a superuser_only, which is able to enter django admin panel and add new lecturers,students or superusers
-
+- WORKERS_NUM - number of async workers
+ 
 To run test, you need:
 - auth as user belong to group 'lecturer'
-- go to '/tests/' page and run one of them. You can select test by subject and its name
+- go to '/available_tests/' page and run one of them. You can select test by subject and its name
     
 After that you can pass test:
 - auth as user belong to group 'student'
-- go to '/tests/' page and run it
+- go to '/available_tests/' page and run it
 
 To stop test and see students results:
 - auth as user belong to group 'lecturer' and launched the test

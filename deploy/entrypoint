@@ -52,4 +52,4 @@ fi
 
 echo "${SETTINGS}" > ./quizer/settings.py
 
-uvicorn quizer.asgi:application --host 0.0.0.0 --port 80
+gunicorn -w 8 -k uvicorn.workers.UvicornWorker quizer.asgi:application --host 0.0.0.0 --port 80

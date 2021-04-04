@@ -12,7 +12,7 @@ from bson import ObjectId, errors
 
 from django.conf import settings
 
-from .models import Test, QuestionType
+from .models import Test, Question
 
 __db_conn: pymongo.database.Database = None
 
@@ -156,7 +156,7 @@ class QuestionsStorage(MongoDB):
             test_id=test_id
         )
         test = Test.objects.get(id=test_id)
-        if question['type'] == QuestionType.WITH_IMAGES:
+        if question['type'] == Question.Type.WITH_IMAGES:
             path = Path(f'{settings.MEDIA_ROOT}/{test.subject.name}/{test.name}/{question["_id"]}')
             shutil.rmtree(path)
         self._col.delete_one({
@@ -176,7 +176,7 @@ class QuestionsStorage(MongoDB):
             '_id': ObjectId(question_id),
         })
         test = Test.objects.get(id=test_id)
-        if question['type'] == QuestionType.WITH_IMAGES:
+        if question['type'] == Question.Type.WITH_IMAGES:
             path = Path(f'{settings.MEDIA_ROOT}/{test.subject.name}/{test.name}/{question["_id"]}')
             shutil.rmtree(path, ignore_errors=True)
         self._col.delete_one({
@@ -220,7 +220,7 @@ class QuestionsStorage(MongoDB):
         questions = self.get_many(test_id=test_id)
         test = Test.objects.get(id=test_id)
         for question in questions:
-            if question['type'] == QuestionType.WITH_IMAGES:
+            if question['type'] == Question.Type.WITH_IMAGES:
                 p = Path(f'{settings.MEDIA_ROOT}/{test.subject.name}/{test.name}/{question["_id"]}')
                 shutil.rmtree(p)
         deleted_questions_count = self._col.delete_many({

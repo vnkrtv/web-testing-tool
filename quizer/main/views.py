@@ -18,7 +18,7 @@ from django.views import View
 from . import mongo
 from . import utils
 from .decorators import unauthenticated_user, allowed_users, post_method
-from .models import Test, Subject, QuestionType
+from .models import Test, Subject, Question
 from .forms import SubjectForm, TestForm
 
 
@@ -118,7 +118,7 @@ def lecturer_run_test(request: HttpRequest, test_id: int) -> HttpResponse:
 
     right_answers = {}
     for i, question in enumerate(test_questions):
-        if question['type'] == QuestionType.SEQUENCE or question['type'] == QuestionType.SEQUENCE_WITH_IMAGES:
+        if question['type'] == Question.Type.SEQUENCE or question['type'] == Question.Type.SEQUENCE_WITH_IMAGES:
             right_options = copy.deepcopy(question['options'])
             right_options.sort(key=lambda option: int(option['num']))
         else:
@@ -390,7 +390,7 @@ def student_run_test(request: HttpRequest) -> HttpResponse:
 
     right_answers = {}
     for i, question in enumerate(test_questions):
-        if question['type'] == QuestionType.SEQUENCE or question['type'] == QuestionType.SEQUENCE_WITH_IMAGES:
+        if question['type'] == Question.Type.SEQUENCE or question['type'] == Question.Type.SEQUENCE_WITH_IMAGES:
             right_options = copy.deepcopy(question['options'])
             right_options.sort(key=lambda option: int(option['num']))
         else:

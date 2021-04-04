@@ -7,7 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from main.models import Subject, Test
+from main.models import Subject, Test, Question, Option
 from main import mongo, utils
 from .serializers import SubjectSerializer, TestSerializer
 from .permissions import IsLecturer

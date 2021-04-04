@@ -15,7 +15,7 @@ from django.core.files.storage import default_storage
 from django.http import HttpRequest
 from django.conf import settings
 
-from .models import Test, Subject, QuestionType
+from .models import Test, Subject, Question
 from .mongo import get_conn, QuestionsStorage
 
 
@@ -126,7 +126,7 @@ def get_question_from_request(request: HttpRequest, test: Test) -> Dict[str, Any
         'formulation': request.POST['formulation'],
         'tasks_num': int(request.POST['tasksNum']),
         'multiselect': request.POST['multiselect'] == 'true',
-        'type': QuestionType.WITH_IMAGES if with_images else QuestionType.REGULAR
+        'type': Question.Type.WITH_IMAGES if with_images else Question.Type.REGULAR
     }
     """
         request.POST:
@@ -225,7 +225,7 @@ def parse_questions(content: str) -> List[Dict[str, Any]]:
             'formulation': formulation,
             'tasks_num': len(options),
             'multiselect': multiselect,
-            'type': QuestionType.SEQUENCE if sequence else QuestionType.REGULAR,
+            'type': Question.Type.SEQUENCE if sequence else Question.Type.REGULAR,
             'options': options
         })
         cur_line += 1  # Empty string between questions

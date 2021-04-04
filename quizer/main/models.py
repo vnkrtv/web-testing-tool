@@ -4,16 +4,17 @@ Models for working with MongoDB and objects stored in it
 """
 from typing import List, Dict, Any
 
-from django.db import models
+from djongo import models
 from django.conf import settings
 
-
 DEFAULT_AUTHOR_ID = 1
+DEFAULT_TEST_ID = 1
 
 
 class Subject(models.Model):
     name = models.CharField('Название дисциплины', max_length=50)
     description = models.TextField('Описание дисциплины', default="")
+    objects = models.DjongoManager()
 
     def __str__(self):
         return self.name
@@ -39,6 +40,7 @@ class Test(models.Model):
     description = models.TextField('Описание теста', default="")
     tasks_num = models.IntegerField('Количество заданий в тесте', default=0)
     duration = models.IntegerField('Длительность теста в секундах', default=300)
+    objects = models.DjongoManager()
 
     def to_dict(self) -> Dict[str, Any]:
         """
@@ -46,7 +48,7 @@ class Test(models.Model):
 
         :return: <dict>
         """
-        d = {
+        return {
             'id': self.id,
             'name': self.name,
             'description': self.description,
@@ -61,7 +63,6 @@ class Test(models.Model):
                 'username': self.author.username
             }
         }
-        return d
 
     def __str__(self):
         return self.name
@@ -71,11 +72,75 @@ class Test(models.Model):
         verbose_name_plural = 'Тесты'
 
 
-class QuestionType:
-    """
-    Class for storing various questions types
-    """
-    REGULAR = ''
-    WITH_IMAGES = 'image'
-    SEQUENCE = 'sequence'
-    SEQUENCE_WITH_IMAGES = 'sequence-image'
+class Option(models.Model):
+    option = models.CharField(max_length=1_000)
+    is_true = models.BooleanField()
+    num = models.IntegerField(blank=True)
+
+    class Meta:
+        abstract = True
+        verbose_name = 'Вариант ответа'
+        verbose_name_plural = 'Варианты ответа'
+
+
+class Question(models.Model):
+    _id = models.ObjectIdField()
+    formulation = models.CharField('Формулировка вопроса', max_length=1_000)
+    multiselect = models.BooleanField('Вопрос с мультивыбором')
+    tasks_num = models.IntegerField('Число вариантов ответа')
+    test = models.ForeignKey(
+        Test,
+        verbose_name='Тест',
+        related_name='questions',
+        on_delete=models.CASCADE,
+        default=DEFAULT_TEST_ID)
+    options = models.ArrayField(model_container=Option)
+    type = models.CharField('Тип вопроса', max_length=50)
+    objects = models.DjongoManager()
+
+    @classmethod
+    def from_dict(cls, question_dict: Dict[str, Any], test_id: int):
+        question = cls(
+            formulation=question_dict['formulation'],
+            multiselect=question_dict['multiselect'],
+            tasks_num=question_dict['tasks_num'],
+            type=question_dict['type'],
+            test=Test.objects.get(id=test_id)
+        )
+        if question.type in [Question.Type.SEQUENCE, Question.Type.SEQUENCE_WITH_IMAGES]:
+            question.options = [
+                Option(option=option['option'], is_true=option['is_true'], num=option['num'])
+                for option in question_dict['options']
+            ]
+        else:
+            question.options = [
+                Option(option=option['option'], is_true=option['is_true'])
+                for option in question_dict['options']
+            ]
+        return question
+
+    @classmethod
+    def parse_options(cls, question_dict: Dict[str, Any]) -> List[Option]:
+        if question_dict['type'] in [cls.Type.SEQUENCE, cls.Type.SEQUENCE_WITH_IMAGES]:
+            return [
+                Option(option=option['option'], is_true=option['is_true'], num=option['num'])
+                for option in question_dict['options']
+            ]
+        return [
+            Option(option=option['option'], is_true=option['is_true'])
+            for option in question_dict['options']
+        ]
+
+    class Type:
+        """
+        Class for storing various questions types
+        """
+        REGULAR = ''
+        WITH_IMAGES = 'image'
+        SEQUENCE = 'sequence'
+        SEQUENCE_WITH_IMAGES = 'sequence-image'
+
+    class Meta:
+        db_table = 'questions'
+        verbose_name = 'Вопрос'
+        verbose_name_plural = 'Вопросы'

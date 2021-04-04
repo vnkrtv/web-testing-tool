@@ -237,7 +237,7 @@ function renderTests(testsUrl, questionsUrl, staticUrl, csrfToken) {
     const nameFilter = document.getElementById("name_filter");
 
     let tests = [];
-	$.get(testsUrl)
+	$.get(testsUrl + '?state=not_running')
         .done(function(response) {
             tests = response['tests'];
             testsContainer.innerHTML = '';

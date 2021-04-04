@@ -38,15 +38,6 @@ class SubjectView(APIView):
             'success': "Предмет '%s' успешно добавлен." % new_subject.name
         })
 
-    def delete(self, _, subject_id):
-        subject = get_object_or_404(Subject.objects.all(), pk=subject_id)
-        message = "Учебный предмет '%s', а также все тесты и вопросы, " \
-                  "относящиеся к нему, были успешно удалены." % subject.name
-        subject.delete()
-        return Response({
-            'success': message
-        })
-
     def put(self, request, subject_id):
         updated_subject = get_object_or_404(Subject.objects.all(), pk=subject_id)
         serializer = SubjectSerializer(instance=updated_subject, data=request.data, partial=True)
@@ -56,37 +47,49 @@ class SubjectView(APIView):
             'success': "Предмет '%s' был успешно отредактирован." % updated_subject.name
         })
 
+    def delete(self, _, subject_id):
+        subject = get_object_or_404(Subject.objects.all(), pk=subject_id)
+        message = "Учебный предмет '%s', а также все тесты и вопросы, " \
+                  "относящиеся к нему, были успешно удалены." % subject.name
+        subject.delete()
+        return Response({
+            'success': message
+        })
+
 
 class TestView(APIView):
-    permission_classes = [IsAuthenticated]
+    authentication_classes = []
+    permission_classes = []
+    # permission_classes = [IsAuthenticated]
 
-    def get(self, _, state):
+    def get(self, request):
+        state = request.query_params.get('state', None)
         storage = mongo.TestsResultsStorage.connect(db=mongo.get_conn())
         running_tests = storage.get_running_tests()
-        if state == 'running':
-            tests = []
-            for running_test in running_tests:
-                test = Test.objects.get(id=running_test['test_id']).to_dict()
-                launched_lecturer = User.objects.get(id=running_test['launched_lecturer_id'])
-                tests.append({
-                    **test,
-                    'launched_lecturer': {
-                        'id': launched_lecturer.id,
-                        'username': launched_lecturer.username
-                    }
-                })
-        elif state == 'not_running':
-            running_tests_ids = [test['test_id'] for test in running_tests]
-            tests = [t.to_dict() for t in Test.objects.exclude(id__in=running_tests_ids)]
-            storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())
-            for test in tests:
-                test['questions_num'] = len(storage.get_many(test_id=test['id']))
-        elif state == 'all':
-            tests = [t.to_dict() for t in Test.objects.all()]
-        else:
-            tests = []
+        # if state == 'running':
+        #     tests = []
+        #     for running_test in running_tests:
+        #         test = Test.objects.get(id=running_test['test_id']).to_dict()
+        #         launched_lecturer = User.objects.get(id=running_test['launched_lecturer_id'])
+        #         tests.append({
+        #             **test,
+        #             'launched_lecturer': {
+        #                 'id': launched_lecturer.id,
+        #                 'username': launched_lecturer.username
+        #             }
+        #         })
+        # elif state == 'not_running':
+        #     running_tests_ids = [test['test_id'] for test in running_tests]
+        #     tests = [t.to_dict() for t in Test.objects.exclude(id__in=running_tests_ids)]
+        #     storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())
+        #     for test in tests:
+        #         test['questions_num'] = len(storage.get_many(test_id=test['id']))
+        # elif state == 'all':
+        #     tests = [t.to_dict() for t in Test.objects.all()]
+        # else:
+        #     tests = []
         return Response({
-            'tests': tests
+            'tests': []
         })
 
     def post(self, request, state):
@@ -101,12 +104,13 @@ class TestView(APIView):
             deleted_questions_count = storage.delete_many(test_id=test.id)
             test.delete()
 
-            message = "Тест '%s' по предмету '%s', а также все " + \
+            message = "Тест '%s' по предмету '%s', а также все " \
                       "вопросы к нему в количестве %d были успешно удалены."
             return Response({
                 'success': message % (test_name, subject_name, deleted_questions_count)
             })
         elif state == 'new':  # POST
+
             serializer = TestSerializer(data=request.data)
             if serializer.is_valid(raise_exception=True):
                 new_test = serializer.save()
@@ -124,6 +128,27 @@ class TestView(APIView):
                 'success': "Тест '%s' по предмету '%s' был успешно отредактирован." %
                            (updated_test.name, updated_test.subject.name)
             })
+
+    # def put(self, request, test_id):
+    #     updated_test = get_object_or_404(Test.objects.all(), pk=test_id)
+    #     serializer = TestSerializer(instance=updated_test, data=request.data, partial=True)
+    #     if serializer.is_valid(raise_exception=True):
+    #         updated_test = serializer.save()
+    #     return Response({
+    #         'success': "Тест '%s' по предмету '%s' был успешно отредактирован." %
+    #                    (updated_test.name, updated_test.subject.name)
+    #     })
+    #
+    # def delete(self, _, test_id):
+    #     test = get_object_or_404(Test.objects.all(), pk=test_id)
+    #     message = "Тест '%s' по предмету '%s', а также все " \
+    #               "вопросы к нему были успешно удалены." % (test.name, test.subject.name)
+    #     test.delete()
+    #     return Response({
+    #         'success': message
+    #     })
+
+
 
 
 class LaunchTestView(APIView):

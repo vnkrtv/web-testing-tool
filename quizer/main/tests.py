@@ -8,7 +8,7 @@ from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.auth.models import User, Group
 from django.conf import settings
-from .models import Subject, Test, Question, Option
+from .models import Subject, Test, Question, QuestionOption
 from . import mongo
 
 QUESTIONS_FILE_DATA = """Как создать вопрос?

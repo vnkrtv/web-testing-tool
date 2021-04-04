@@ -41,7 +41,7 @@
     </div>
    <div class="modal-footer">
       <div class="btn btn-primary js-modal-close"><img src="{% cancel_icon %}"> Закрыть</div>
-      <button class="btn btn-success js-modal-close" onclick="addSubject(editSubjectAPIUrl, getSubjectsAPIUrl, csrfToken)"><img src='{% add_icon %}'> Добавить</button>
+      <button class="btn btn-success js-modal-close" onclick="addSubject(editSubjectAPIUrl, subjectAPIUrl, csrfToken)"><img src='{% add_icon %}'> Добавить</button>
    </div>
 </div>
 
@@ -75,7 +75,7 @@
       </div>
      <div class="modal-footer">
         <div class="btn btn-primary js-modal-close"><img src="{% cancel_icon %}"> Закрыть</div>
-        <button class="btn btn-success js-modal-close" onclick="loadSubject(editSubjectAPIUrl,getSubjectsAPIUrl, csrfToken)"><img src='{% download_icon %}'> Загрузить</button>
+        <button class="btn btn-success js-modal-close" onclick="loadSubject(editSubjectAPIUrl, subjectAPIUrl, csrfToken)"><img src='{% download_icon %}'> Загрузить</button>
      </div>
 </div>
 
@@ -87,7 +87,7 @@
     <input type="hidden" name="subject_id" id='delete-subject-id' value="">
      <div class="modal-footer">
         <div class="btn btn-primary js-modal-close"><img src='{% cancel_icon %}'> Закрыть</div>
-        <button class="btn btn-danger js-modal-close" onclick="deleteSubject(editSubjectAPIUrl,getSubjectsAPIUrl, csrfToken)"><img src='{% delete_icon %}'> Удалить</button>
+        <button class="btn btn-danger js-modal-close" onclick="deleteSubject(editSubjectAPIUrl,subjectAPIUrl, csrfToken)"><img src='{% delete_icon %}'> Удалить</button>
      </div>
 </div>
 
@@ -111,7 +111,7 @@
       </div>
      <div class="modal-footer">
         <div class="btn btn-primary js-modal-close"><img src='{% cancel_icon %}'> Закрыть</div>
-        <button class="btn btn-success js-modal-close" onclick="editSubject(editSubjectAPIUrl,getSubjectsAPIUrl,csrfToken)"><img src='{% edit_icon %}'> Сохранить</button>
+        <button class="btn btn-success js-modal-close" onclick="editSubject(editSubjectAPIUrl, subjectAPIUrl, csrfToken)"><img src='{% edit_icon %}'> Сохранить</button>
      </div>
 </div>
 
@@ -132,12 +132,12 @@
 <script src="{% static 'main/js/managingSubjects.js' %}"></script>
 <script type="text/javascript">
     const csrfToken = "{{ csrf_token }}";
-    const editSubjectAPIUrl = "{% url 'api:edit_subject' 'subject_id' %}";
-    const getSubjectsAPIUrl = "{% url 'api:get_subjects' %}";
+    const editSubjectAPIUrl = "{% url 'api:edit_subjects_api' 'subject_id' %}";
+    const subjectAPIUrl = "{% url 'api:subjects_api' %}";
     const dbIconUrl = "{% database_icon %}";
     const editIconUrl = "{% edit_icon %}";
     const delIconUrl = "{% delete_icon %}";
-    renderSubjects(getSubjectsAPIUrl, dbIconUrl, editIconUrl, delIconUrl)
+    renderSubjects(subjectAPIUrl, dbIconUrl, editIconUrl, delIconUrl)
 </script>
 
 {% endblock %}

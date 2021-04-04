@@ -25,45 +25,36 @@ class SubjectView(APIView):
             'subjects': serializer.data
         })
 
-    def post(self, request, pk):
-        request_dict = dict(request.POST)
-        if len(request_dict) == 1:  # DELETE, only csrftoken passed
-            subject = get_object_or_404(Subject.objects.all(), pk=pk)
-            subject_name = subject.name
-            tests = Test.objects.filter(subject__id=subject.id)
-            tests_count = tests.count()
-
-            deleted_questions_count = 0
-            storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())
-            for test in tests:
-                deleted_questions_count += storage.delete_many(test_id=test.id)
-            subject.delete()
-
-            message = "Учебный предмет '%s', %d тестов к нему, а также все " + \
-                      "вопросы к тестам в количестве %d были успешно удалены."
-            return Response({
-                'success': message % (subject_name, tests_count, deleted_questions_count)
-            })
-        elif pk == 'new':  # POST
-            serializer = SubjectSerializer(data=request.data)
-            if serializer.is_valid(raise_exception=True):
-                new_subject = serializer.save()
-            return Response({
-                'success': "Предмет '%s' успешно добавлен." % new_subject.name
-            })
-        elif pk == 'load':  # POST
+    def post(self, request):
+        if request.POST.get('load'):
             message = utils.add_subject_with_tests(request)
             return Response({
                 'success': message
             })
-        else:  # PUT
-            updated_subject = get_object_or_404(Subject.objects.all(), pk=pk)
-            serializer = SubjectSerializer(instance=updated_subject, data=request.data, partial=True)
-            if serializer.is_valid(raise_exception=True):
-                updated_subject = serializer.save()
-            return Response({
-                'success': "Предмет '%s' был успешно отредактирован." % updated_subject.name
-            })
+        serializer = SubjectSerializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            new_subject = serializer.save()
+        return Response({
+            'success': "Предмет '%s' успешно добавлен." % new_subject.name
+        })
+
+    def delete(self, _, subject_id):
+        subject = get_object_or_404(Subject.objects.all(), pk=subject_id)
+        message = "Учебный предмет '%s', а также все тесты и вопросы, " \
+                  "относящиеся к нему, были успешно удалены." % subject.name
+        subject.delete()
+        return Response({
+            'success': message
+        })
+
+    def put(self, request, subject_id):
+        updated_subject = get_object_or_404(Subject.objects.all(), pk=subject_id)
+        serializer = SubjectSerializer(instance=updated_subject, data=request.data, partial=True)
+        if serializer.is_valid(raise_exception=True):
+            updated_subject = serializer.save()
+        return Response({
+            'success': "Предмет '%s' был успешно отредактирован." % updated_subject.name
+        })
 
 
 class TestView(APIView):

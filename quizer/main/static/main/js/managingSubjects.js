@@ -41,79 +41,92 @@ function fillDeleteModal(subjectID) {
     deleteSubjectInput.value = subjectID;
 }
 
-function deleteSubject(editSubjectAPIUrl, getSubjectsAPIUrl, csrfToken) {
+function deleteSubject(editSubjectAPIUrl, subjectAPIUrl, csrfToken) {
     const subjectID = document.getElementById("delete-subject-id").value;
-    const params = {
-        csrfmiddlewaretoken: csrfToken
-    };
-    $.post(editSubjectAPIUrl.replace(/subject_id/gi, subjectID), params)
-        .done((response) => {
-            renderSubjects(getSubjectsAPIUrl, dbIconUrl, editIconUrl, delIconUrl, csrfToken);
+    $.ajax({
+        url: editSubjectAPIUrl.replace(/subject_id/gi, subjectID),
+        type: 'delete',
+        contentType: false,
+        processData: false,
+        headers: {'X-CSRFToken': csrfToken},
+        success: (response) => {
+            renderSubjects(subjectAPIUrl, dbIconUrl, editIconUrl, delIconUrl, csrfToken);
             renderInfoModalWindow("Предмет удален", response['success']);
-        });
+        }});
 }
 
-function loadSubject(editSubjectAPIUrl, getSubjectsAPIUrl, csrfToken) {
+function loadSubject(editSubjectAPIUrl, subjectAPIUrl, csrfToken) {
     const nameInput = document.getElementById("load-subject-name");
     const descriptionInput = document.getElementById("load-subject-description");
     const filesNamesInput = document.getElementById('files_names');
     const filesInput = document.getElementById('tests-files');
 
     let formData = new FormData();
-    formData.append('csrfmiddlewaretoken', csrfToken);
     formData.append('name', nameInput.value);
     formData.append('description', descriptionInput.value);
+    formData.append('load', '');
     formData.append('files_names', filesNamesInput.value);
-    formData.append('csrfmiddlewaretoken', csrfToken);
     for (let file of filesInput.files) {
         formData.append('tests', file);
     }
-
     $.ajax({
-        url: editSubjectAPIUrl.replace(/subject_id/gi, 'load'),
+        url: subjectAPIUrl,
         type: 'post',
         data: formData,
         contentType: false,
         processData: false,
+        headers: {'X-CSRFToken': csrfToken},
         success: (response) => {
-            renderSubjects(getSubjectsAPIUrl, dbIconUrl, editIconUrl, delIconUrl, csrfToken);
+            renderSubjects(subjectAPIUrl, dbIconUrl, editIconUrl, delIconUrl, csrfToken);
             renderInfoModalWindow("Новый предмет", response['success']);
         }});
 }
 
-function editSubject(editSubjectAPIUrl, getSubjectsAPIUrl, csrfToken) {
+function editSubject(editSubjectAPIUrl, subjectAPIUrl, csrfToken) {
     const idInput = document.getElementById("edit-subject-id");
     const nameInput = document.getElementById("edit-name");
     const descriptionInput = document.getElementById("edit-description");
-    const params = {
-        csrfmiddlewaretoken: csrfToken,
-        name: nameInput.value,
-        description: descriptionInput.value
-    };
-    $.post(editSubjectAPIUrl.replace(/subject_id/gi, idInput.value), params)
-        .done((response) => {
-            renderSubjects(getSubjectsAPIUrl, dbIconUrl, editIconUrl, delIconUrl, csrfToken);
+
+    let formData = new FormData();
+    formData.append('name', nameInput.value);
+    formData.append('description', descriptionInput.value);
+
+    $.ajax({
+        url: editSubjectAPIUrl.replace(/subject_id/gi, idInput.value),
+        type: 'put',
+        data: formData,
+        contentType: false,
+        processData: false,
+        headers: {'X-CSRFToken': csrfToken},
+        success: (response) => {
+            renderSubjects(subjectAPIUrl, dbIconUrl, editIconUrl, delIconUrl, csrfToken);
             renderInfoModalWindow("Предмет отредактирован", response['success']);
-        });
+        }});
 }
 
-function addSubject(editSubjectAPIUrl, getSubjectsAPIUrl, csrfToken) {
+function addSubject(editSubjectAPIUrl, subjectAPIUrl, csrfToken) {
     const nameInput = document.getElementById("id_name");
     const descriptionInput = document.getElementById("id_description");
-    const params = {
-        csrfmiddlewaretoken: csrfToken,
-        name: nameInput.value,
-        description: descriptionInput.value
-    };
-    $.post(editSubjectAPIUrl.replace(/subject_id/gi, 'new'), params)
-        .done((response) => {
-            renderSubjects(getSubjectsAPIUrl, dbIconUrl, editIconUrl, delIconUrl, csrfToken);
+
+    let formData = new FormData();
+    formData.append('name', nameInput.value);
+    formData.append('description', descriptionInput.value);
+
+    $.ajax({
+        url: subjectAPIUrl,
+        type: 'post',
+        data: formData,
+        contentType: false,
+        processData: false,
+        headers: {'X-CSRFToken': csrfToken},
+        success: (response) => {
+            renderSubjects(subjectAPIUrl, dbIconUrl, editIconUrl, delIconUrl, csrfToken);
             renderInfoModalWindow("Новый предмет", response['success']);
-        });
+        }});
 }
 
-function renderSubjects(getSubjectsAPIUrl, dbIconUrl, editIconUrl, delIconUrl) {
-    $.get(getSubjectsAPIUrl)
+function renderSubjects(subjectAPIUrl, dbIconUrl, editIconUrl, delIconUrl) {
+    $.get(subjectAPIUrl)
         .done((response) => {
             const subjects = response['subjects'];
             const subjectsDiv = document.getElementById("subjects-container");

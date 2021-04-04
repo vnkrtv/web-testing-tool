@@ -1,12 +1,13 @@
 from django.urls import path
+from django.views.decorators.csrf import csrf_exempt
 
 from . import views
 
 app_name = 'api'
 
 urlpatterns = [
-    path('subjects/', views.SubjectView.as_view(), name='get_subjects'),
-    path('subjects/<pk>', views.SubjectView.as_view(), name='edit_subject'),
+    path('subjects/', views.SubjectView.as_view(), name='subjects_api'),
+    path('subjects/<subject_id>', views.SubjectView.as_view(), name='edit_subjects_api'),
     path('tests/<str:state>', views.TestView.as_view(), name='tests_api'),
     path('tests/launch/<pk>', views.LaunchTestView.as_view(), name='launch_test'),
     path('test/<test_id>/questions', views.QuestionView.as_view(), name='get_questions'),

@@ -55,7 +55,7 @@ class TestSerializer(serializers.Serializer):
         return instance
 
     class Meta:
-        model = Subject
+        model = Test
         read_only_fields = (
             'id',
             'subject_id',

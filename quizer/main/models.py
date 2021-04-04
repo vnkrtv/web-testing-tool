@@ -75,7 +75,7 @@ class Test(models.Model):
 class Option(models.Model):
     option = models.CharField(max_length=1_000)
     is_true = models.BooleanField()
-    num = models.IntegerField(blank=True)
+    num = models.IntegerField(null=True)
 
     class Meta:
         abstract = True
@@ -100,35 +100,22 @@ class Question(models.Model):
 
     @classmethod
     def from_dict(cls, question_dict: Dict[str, Any], test_id: int):
-        question = cls(
+        return cls(
             formulation=question_dict['formulation'],
             multiselect=question_dict['multiselect'],
             tasks_num=question_dict['tasks_num'],
             type=question_dict['type'],
-            test=Test.objects.get(id=test_id)
-        )
-        if question.type in [Question.Type.SEQUENCE, Question.Type.SEQUENCE_WITH_IMAGES]:
-            question.options = [
-                Option(option=option['option'], is_true=option['is_true'], num=option['num'])
-                for option in question_dict['options']
-            ]
-        else:
-            question.options = [
-                Option(option=option['option'], is_true=option['is_true'])
-                for option in question_dict['options']
-            ]
-        return question
+            test=Test.objects.get(id=test_id),
+            options=cls.parse_options(question_dict['options']))
 
     @classmethod
-    def parse_options(cls, question_dict: Dict[str, Any]) -> List[Option]:
-        if question_dict['type'] in [cls.Type.SEQUENCE, cls.Type.SEQUENCE_WITH_IMAGES]:
-            return [
-                Option(option=option['option'], is_true=option['is_true'], num=option['num'])
-                for option in question_dict['options']
-            ]
+    def parse_options(cls, options: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         return [
-            Option(option=option['option'], is_true=option['is_true'])
-            for option in question_dict['options']
+            {
+                'option': option['option'],
+                'is_true': option['is_true'],
+                'num': option.get('num')
+            } for option in options
         ]
 
     class Type:

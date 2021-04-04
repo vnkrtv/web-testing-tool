@@ -8,7 +8,7 @@ from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.auth.models import User, Group
 from django.conf import settings
-from .models import Subject, Test, Question
+from .models import Subject, Test, Question, Option
 from . import mongo
 
 QUESTIONS_FILE_DATA = """Как создать вопрос?
@@ -70,59 +70,37 @@ class MainTest(TestCase):
             tasks_num=2,
             duration=60)
 
+        Question.objects.create(
+            formulation='First question with multiselect',
+            multiselect=True,
+            tasks_num=3,
+            type=Question.Type.REGULAR,
+            test=Test.objects.get(id=self.test.id),
+            options=Question.parse_options([
+                {'option': 'First true option', 'is_true': True},
+                {'option': 'Second false option', 'is_true': False},
+                {'option': 'Third true option', 'is_true': True}
+            ])
+        )
+        Question.objects.create(
+            formulation='Second question with single answer',
+            multiselect=True,
+            tasks_num=2,
+            type=Question.Type.REGULAR,
+            test=Test.objects.get(id=self.test.id),
+            options=Question.parse_options([
+                {'option': 'False option', 'is_true': False},
+                {'option': 'True option', 'is_true': True}
+            ])
+        )
         mongo.set_conn(
             host=settings.DATABASES['default']['HOST'],
             port=settings.DATABASES['default']['PORT'],
             db_name=settings.DATABASES['default']['TEST']['NAME'])
-        self.questions_storage = mongo.QuestionsStorage.connect(
-            db=mongo.get_conn())
         self.running_tests_answers_storage = mongo.RunningTestsAnswersStorage.connect(
             db=mongo.get_conn())
         self.tests_results_storage = mongo.TestsResultsStorage.connect(
             db=mongo.get_conn())
-
-        self.questions_storage.add_one(
-            question={
-                'formulation': 'First question with multiselect',
-                'tasks_num': 3,
-                'multiselect': True,
-                'type': Question.Type.REGULAR,
-                'options': [
-                    {
-                        'option': 'First true option',
-                        'is_true': True
-                    },
-                    {
-                        'option': 'Second false option',
-                        'is_true': False
-                    },
-                    {
-                        'option': 'Third true option',
-                        'is_true': True
-                    }
-                ]
-            },
-            test_id=self.test.id
-        )
-        self.questions_storage.add_one(
-            question={
-                'formulation': 'Second question with single answer',
-                'tasks_num': 2,
-                'multiselect': False,
-                'type': Question.Type.REGULAR,
-                'options': [
-                    {
-                        'option': 'False option',
-                        'is_true': False
-                    },
-                    {
-                        'option': 'True option',
-                        'is_true': True
-                    },
-                ]
-            },
-            test_id=self.test.id
-        )
 
 
 class QuestionsStorageTest(MainTest):
@@ -131,58 +109,67 @@ class QuestionsStorageTest(MainTest):
     with 'questions' collection in database
     """
 
-    def test_adding_and_getting_questions(self) -> None:
-        """
-        Test for 'add_one' and 'get_many' QuestionsStorage methods
-        """
-        questions = self.questions_storage.get_many(test_id=self.test.id)
-        question = {
-            'formulation': 'Test question',
-            'tasks_num': 2,
-            'multiselect': False,
-            'type': QuestionType.REGULAR,
-            'options': [
-                {
-                    'option': 'First true option',
-                    'is_true': True
-                },
-                {
-                    'option': 'Second false option',
-                    'is_true': False
-                }
-            ]
-        }
-        self.questions_storage.add_one(
-            question=question,
-            test_id=self.test.id
-        )
-        updated_questions = self.questions_storage.get_many(test_id=self.test.id)
-        self.assertEqual(updated_questions, questions + [question])
+    def test_all(self):
+        self.assertEqual(1, Subject.objects.all().count())
+        self.assertEqual(1, Test.objects.all().count())
+        self.assertEqual(2, Question.objects.all().count())
+        Subject.objects.get(id=self.subject.id).delete()
+        self.assertEqual(0, Subject.objects.all().count())
+        self.assertEqual(0, Test.objects.all().count())
+        self.assertEqual(0, Question.objects.all().count())
 
-    def test_deleting_questions(self) -> None:
-        """
-        Test for 'delete_by_formulation' and 'get_many' QuestionsStorage methods
-        """
-        questions = self.questions_storage.get_many(test_id=self.test.id)
-        self.questions_storage.delete_by_formulation(
-            question_formulation='First question with multiselect',
-            test_id=self.test.id
-        )
-        updated_questions = self.questions_storage.get_many(test_id=self.test.id)
-        self.assertEqual(len(questions) - 1, len(updated_questions))
-
-    def test_deleting_all_questions(self) -> None:
-        """
-        Test for 'delete_many' and 'get_many' QuestionsStorage methods
-        """
-        questions = self.questions_storage.get_many(test_id=self.test.id)
-        self.assertNotEqual(0, len(questions))
-
-        self.questions_storage.delete_many(
-            test_id=self.test.id
-        )
-        updated_questions = self.questions_storage.get_many(test_id=self.test.id)
-        self.assertEqual(0, len(updated_questions))
+#     def test_adding_and_getting_questions(self) -> None:
+#         """
+#         Test for 'add_one' and 'get_many' QuestionsStorage methods
+#         """
+#         questions = self.questions_storage.get_many(test_id=self.test.id)
+#         question = {
+#             'formulation': 'Test question',
+#             'tasks_num': 2,
+#             'multiselect': False,
+#             'type': QuestionType.REGULAR,
+#             'options': [
+#                 {
+#                     'option': 'First true option',
+#                     'is_true': True
+#                 },
+#                 {
+#                     'option': 'Second false option',
+#                     'is_true': False
+#                 }
+#             ]
+#         }
+#         self.questions_storage.add_one(
+#             question=question,
+#             test_id=self.test.id
+#         )
+#         updated_questions = self.questions_storage.get_many(test_id=self.test.id)
+#         self.assertEqual(updated_questions, questions + [question])
+#
+#     def test_deleting_questions(self) -> None:
+#         """
+#         Test for 'delete_by_formulation' and 'get_many' QuestionsStorage methods
+#         """
+#         questions = self.questions_storage.get_many(test_id=self.test.id)
+#         self.questions_storage.delete_by_formulation(
+#             question_formulation='First question with multiselect',
+#             test_id=self.test.id
+#         )
+#         updated_questions = self.questions_storage.get_many(test_id=self.test.id)
+#         self.assertEqual(len(questions) - 1, len(updated_questions))
+#
+#     def test_deleting_all_questions(self) -> None:
+#         """
+#         Test for 'delete_many' and 'get_many' QuestionsStorage methods
+#         """
+#         questions = self.questions_storage.get_many(test_id=self.test.id)
+#         self.assertNotEqual(0, len(questions))
+#
+#         self.questions_storage.delete_many(
+#             test_id=self.test.id
+#         )
+#         updated_questions = self.questions_storage.get_many(test_id=self.test.id)
+#         self.assertEqual(0, len(updated_questions))
 
 
 class AuthorizationTest(MainTest):

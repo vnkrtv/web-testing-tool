@@ -41,7 +41,7 @@ function fillDeleteModal(subjectID) {
     deleteSubjectInput.value = subjectID;
 }
 
-function deleteSubject(editSubjectAPIUrl, subjectAPIUrl, csrfToken) {
+function deleteSubject() {
     const subjectID = document.getElementById("delete-subject-id").value;
     $.ajax({
         url: editSubjectAPIUrl.replace(/subject_id/gi, subjectID),
@@ -50,12 +50,12 @@ function deleteSubject(editSubjectAPIUrl, subjectAPIUrl, csrfToken) {
         processData: false,
         headers: {'X-CSRFToken': csrfToken},
         success: (response) => {
-            renderSubjects(subjectAPIUrl, dbIconUrl, editIconUrl, delIconUrl, csrfToken);
+            renderSubjects();
             renderInfoModalWindow("Предмет удален", response['success']);
         }});
 }
 
-function loadSubject(editSubjectAPIUrl, subjectAPIUrl, csrfToken) {
+function loadSubject() {
     const nameInput = document.getElementById("load-subject-name");
     const descriptionInput = document.getElementById("load-subject-description");
     const filesNamesInput = document.getElementById('files_names');
@@ -77,12 +77,12 @@ function loadSubject(editSubjectAPIUrl, subjectAPIUrl, csrfToken) {
         processData: false,
         headers: {'X-CSRFToken': csrfToken},
         success: (response) => {
-            renderSubjects(subjectAPIUrl, dbIconUrl, editIconUrl, delIconUrl, csrfToken);
+            renderSubjects();
             renderInfoModalWindow("Новый предмет", response['success']);
         }});
 }
 
-function editSubject(editSubjectAPIUrl, subjectAPIUrl, csrfToken) {
+function editSubject() {
     const idInput = document.getElementById("edit-subject-id");
     const nameInput = document.getElementById("edit-name");
     const descriptionInput = document.getElementById("edit-description");
@@ -99,12 +99,12 @@ function editSubject(editSubjectAPIUrl, subjectAPIUrl, csrfToken) {
         processData: false,
         headers: {'X-CSRFToken': csrfToken},
         success: (response) => {
-            renderSubjects(subjectAPIUrl, dbIconUrl, editIconUrl, delIconUrl, csrfToken);
+            renderSubjects();
             renderInfoModalWindow("Предмет отредактирован", response['success']);
         }});
 }
 
-function addSubject(editSubjectAPIUrl, subjectAPIUrl, csrfToken) {
+function addSubject() {
     const nameInput = document.getElementById("id_name");
     const descriptionInput = document.getElementById("id_description");
 
@@ -120,12 +120,12 @@ function addSubject(editSubjectAPIUrl, subjectAPIUrl, csrfToken) {
         processData: false,
         headers: {'X-CSRFToken': csrfToken},
         success: (response) => {
-            renderSubjects(subjectAPIUrl, dbIconUrl, editIconUrl, delIconUrl, csrfToken);
+            renderSubjects();
             renderInfoModalWindow("Новый предмет", response['success']);
         }});
 }
 
-function renderSubjects(subjectAPIUrl, dbIconUrl, editIconUrl, delIconUrl) {
+function renderSubjects() {
     $.get(subjectAPIUrl)
         .done((response) => {
             const subjects = response['subjects'];

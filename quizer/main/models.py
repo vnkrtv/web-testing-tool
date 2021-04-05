@@ -72,31 +72,25 @@ class Test(models.Model):
 
     @classmethod
     def get_running_tests(cls) -> List[Dict[str, Any]]:
-        # return [
-        #     {
-        #         **res.test.to_dict(),
-        #         'questions_num': res.test.questions.count(),
-        #         'launched_lecturer': {
-        #             'id': res.launched_lecturer.id,
-        #             'username': res.launched_lecturer.username
-        #         }
-        #     } for res in TestResult.objects.filter(is_running=True)
-        # ]
-        for res in TestResult.objects.filter(is_running=False):
-            print('test: ', res.test)
-        for res in TestResult.objects.filter(is_running=True):
-            print('test: ', res.test)
         return [
-            res.test.to_dict() for res in TestResult.objects.filter(is_running=True)
+            {
+                **res.test.to_dict(),
+                'questions_num': res.test.questions.count(),
+                'launched_lecturer': {
+                    'id': res.launched_lecturer.id,
+                    'username': res.launched_lecturer.username
+                }
+            } for res in TestResult.objects.filter(is_running=True)
         ]
 
     @classmethod
     def get_not_running_tests(cls) -> List[Dict[str, Any]]:
         return [
             {
-                **res.test.to_dict(),
-                'questions_num': res.test.questions.count()
-            } for res in TestResult.objects.filter(is_running=True)
+                **test.to_dict(),
+                'questions_num': test.questions.count()
+            } for test in Test.objects.all()
+            if test.id not in [_['id'] for _ in cls.get_running_tests()]
         ]
 
     def __str__(self):
@@ -219,6 +213,7 @@ class UserQuestionAnswer(models.Model):
     selected_answers = models.JSONField()
     right_answers = models.JSONField()
     is_true = models.BooleanField(default=False)
+
     # selected_answers = models.ArrayField(model_container=Option)
     # right_answers = models.ArrayField(model_container=Option)
 

@@ -88,7 +88,7 @@
     <div class="modal-footer">
         <div class="btn btn-primary js-modal-close"><img src="{% cancel_icon %}"> Закрыть</div>
         <button class="btn btn-success js-modal-close"
-                onclick="addTest(testsAPIUrl, questionsUrl, staticUrl, csrfToken, userID)"><img src='{% add_icon %}'>
+                onclick="addTest(userID)"><img src='{% add_icon %}'>
             Добавить
         </button>
     </div>
@@ -128,7 +128,7 @@
     <div class="modal-footer">
         <div class="btn btn-primary js-modal-close"><img src='{% cancel_icon %}'> Закрыть</div>
         <button class="btn btn-success js-modal-close"
-                onclick="editTest(testsAPIUrl, questionsUrl, staticUrl, csrfToken)"><img src='{% edit_icon %}'> Сохранить
+                onclick="editTest()"><img src='{% edit_icon %}'> Сохранить
         </button>
     </div>
 </div>
@@ -142,7 +142,7 @@
     <div class="modal-footer">
         <div class="btn btn-primary js-modal-close"><img src='{% cancel_icon %}'> Закрыть</div>
         <button class="btn btn-danger js-modal-close"
-                onclick="deleteTest(testsAPIUrl, questionsUrl, staticUrl, csrfToken)"><img src='{% delete_icon %}'>
+                onclick="deleteTest()"><img src='{% delete_icon %}'>
             Удалить
         </button>
     </div>
@@ -179,7 +179,7 @@
     <div class="modal-footer">
         <div class="btn btn-primary js-modal-close"><img src='{% cancel_icon %}'> Закрыть</div>
         <button class="btn btn-success js-modal-close"
-                onclick="addQuestion(questionsAPIUrl, testsAPIUrl, questionsUrl, staticUrl, csrfToken)"><img
+                onclick="addQuestion()"><img
                 src='{% add_icon %}'> Добавить
         </button>
     </div>
@@ -201,7 +201,7 @@
     <div class="modal-footer">
         <div class="btn btn-primary js-modal-close"><img src='{% cancel_icon %}'> Закрыть</div>
         <button class="btn btn-success js-modal-close"
-                onclick="loadQuestions(testsAPIUrl, questionsUrl, staticUrl, csrfToken, questionsAPIUrl)"><img
+                onclick="loadQuestions()"><img
                 src='{% download_icon %}'> Загрузить
         </button>
     </div>
@@ -224,12 +224,13 @@
 <script src="{% static 'main/js/jquery-3.5.1.js' %}"></script>
 <script type="text/javascript">
     const testsAPIUrl = "{% url 'api:tests_api' %}";
+    const editTestsAPIUrl = "{% url 'api:edit_tests_api' 'test_id' %}";
     const questionsAPIUrl = "{% url 'api:questions_api' 'test_id' 'action' %}";
     const questionsUrl = "{% url 'main:questions' 'test_id' %}";
     const staticUrl = '{% static_url %}';
     const csrfToken = "{{ csrf_token }}";
     const userID = "{{ request.user.id }}";
-    renderTests(testsAPIUrl, questionsUrl, staticUrl, csrfToken);
+    renderTests();
     renderAddQuestionModal();
 </script>
 

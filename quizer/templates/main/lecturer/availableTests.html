@@ -60,9 +60,6 @@
 	let socket = getRunningTestsWebSocket(socketPath);
 
 	renderAvailableTests(socket, "{% url 'api:tests_api' %}", '{% static_url %}', "{% url 'api:launch_test' 'test_id' %}", "{% url 'main:lecturer_run_test' 'test_id' %}", "{% url 'api:get_questions' 'test_id' %}");
-	{% if info %}
-	    renderInfoModalWindow("{{ info.title }}", "{{ info.message }}");	
-	{% endif %}
 </script>
 
 {% endblock %}

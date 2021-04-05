@@ -41,7 +41,7 @@
     </div>
    <div class="modal-footer">
       <div class="btn btn-primary js-modal-close"><img src="{% cancel_icon %}"> Закрыть</div>
-      <button class="btn btn-success js-modal-close" onclick="addSubject(editSubjectAPIUrl, subjectAPIUrl, csrfToken)"><img src='{% add_icon %}'> Добавить</button>
+      <button class="btn btn-success js-modal-close" onclick="addSubject()"><img src='{% add_icon %}'> Добавить</button>
    </div>
 </div>
 
@@ -75,7 +75,7 @@
       </div>
      <div class="modal-footer">
         <div class="btn btn-primary js-modal-close"><img src="{% cancel_icon %}"> Закрыть</div>
-        <button class="btn btn-success js-modal-close" onclick="loadSubject(editSubjectAPIUrl, subjectAPIUrl, csrfToken)"><img src='{% download_icon %}'> Загрузить</button>
+        <button class="btn btn-success js-modal-close" onclick="loadSubject()"><img src='{% download_icon %}'> Загрузить</button>
      </div>
 </div>
 
@@ -87,7 +87,7 @@
     <input type="hidden" name="subject_id" id='delete-subject-id' value="">
      <div class="modal-footer">
         <div class="btn btn-primary js-modal-close"><img src='{% cancel_icon %}'> Закрыть</div>
-        <button class="btn btn-danger js-modal-close" onclick="deleteSubject(editSubjectAPIUrl,subjectAPIUrl, csrfToken)"><img src='{% delete_icon %}'> Удалить</button>
+        <button class="btn btn-danger js-modal-close" onclick="deleteSubject()"><img src='{% delete_icon %}'> Удалить</button>
      </div>
 </div>
 
@@ -111,7 +111,7 @@
       </div>
      <div class="modal-footer">
         <div class="btn btn-primary js-modal-close"><img src='{% cancel_icon %}'> Закрыть</div>
-        <button class="btn btn-success js-modal-close" onclick="editSubject(editSubjectAPIUrl, subjectAPIUrl, csrfToken)"><img src='{% edit_icon %}'> Сохранить</button>
+        <button class="btn btn-success js-modal-close" onclick="editSubject()"><img src='{% edit_icon %}'> Сохранить</button>
      </div>
 </div>
 
@@ -129,7 +129,7 @@
 
 <script src="{% static 'main/js/jquery-3.5.1.js' %}"></script>
 <script src="{% static 'main/js/modalWindow.js' %}"></script>
-<script src="{% static 'main/js/managingSubjects.js' %}"></script>
+<script src="{% static 'main/js/subjects.js' %}"></script>
 <script type="text/javascript">
     const csrfToken = "{{ csrf_token }}";
     const editSubjectAPIUrl = "{% url 'api:edit_subjects_api' 'subject_id' %}";
@@ -137,7 +137,7 @@
     const dbIconUrl = "{% database_icon %}";
     const editIconUrl = "{% edit_icon %}";
     const delIconUrl = "{% delete_icon %}";
-    renderSubjects(subjectAPIUrl, dbIconUrl, editIconUrl, delIconUrl)
+    renderSubjects()
 </script>
 
 {% endblock %}

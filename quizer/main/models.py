@@ -209,13 +209,12 @@ class Option(models.Model):
 
 
 class UserQuestionAnswer(models.Model):
-    id = models.ObjectIdField()
-    selected_answers = models.JSONField()
-    right_answers = models.JSONField()
+    question_id = models.ObjectIdField()
+    # selected_answers = models.JSONField()
+    # right_answers = models.JSONField()
     is_true = models.BooleanField(default=False)
-
-    # selected_answers = models.ArrayField(model_container=Option)
-    # right_answers = models.ArrayField(model_container=Option)
+    selected_answers = models.ArrayField(model_container=Option)
+    right_answers = models.ArrayField(model_container=Option)
 
     class Meta:
         abstract = True

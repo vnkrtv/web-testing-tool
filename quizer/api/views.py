@@ -9,7 +9,7 @@ from rest_framework.views import APIView
 
 from main.models import Subject, Test, Question, TestResult, RunningTestsAnswers
 from main import mongo, utils
-from .serializers import SubjectSerializer, TestSerializer
+from .serializers import SubjectSerializer, TestSerializer, QuestionSerializer
 from .permissions import IsLecturer
 
 
@@ -134,13 +134,12 @@ class QuestionView(APIView):
     permission_classes = [IsAuthenticated, IsLecturer]
 
     def get(self, _, test_id):
-        test = get_object_or_404(Test.objects.all(), pk=test_id)
-        storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())
-        test_questions = storage.get_many(test_id=test.id)
-        for question in test_questions:
+        test_questions = Question.objects.filter(test__id=test_id)
+        serializer = QuestionSerializer(instance=test_questions, many=True)
+        for question in serializer.data:
             question['id'] = str(question.pop('_id'))
         return Response({
-            'questions': test_questions
+            'questions': serializer.data
         })
 
     def post(self, request, test_id, question_id):

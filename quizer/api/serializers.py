@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 
 from rest_framework import serializers
 
-from main.models import Subject, Test
+from main.models import Subject, Test, Question
 
 
 class SubjectSerializer(serializers.Serializer):
@@ -60,4 +60,34 @@ class TestSerializer(serializers.Serializer):
             'id',
             'subject_id',
             'author_id'
+        )
+
+
+class QuestionSerializer(serializers.Serializer):
+    _id = serializers.ReadOnlyField()
+    test = serializers.IntegerField()
+    formulation = serializers.CharField(max_length=1_000)
+    multiselect = serializers.BooleanField()
+    tasks_num = serializers.IntegerField()
+    options = serializers.JSONField()
+
+    def create(self, validated_data):
+        test = Test.objects.get(id=validated_data.get('test'))
+        return Question.objects.create(
+            formulation=validated_data.get('formulation'),
+            multiselect=validated_data.get('multiselect'),
+            tasks_num=validated_data.get('tasks_num'),
+            options=Question.parse_options(validated_data.get('options')),
+            test=test)
+
+    def update(self, instance, validated_data):
+        instance.formulation = validated_data.get('formulation', instance.formulation)
+        instance.save()
+        return instance
+
+    class Meta:
+        model = Question
+        read_only_fields = (
+            'id',
+            'test_id'
         )

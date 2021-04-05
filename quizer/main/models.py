@@ -66,6 +66,39 @@ class Test(models.Model):
             }
         }
 
+    @classmethod
+    def get_all(cls) -> List[Dict[str, Any]]:
+        return [test.to_dict() for test in Test.objects.all()]
+
+    @classmethod
+    def get_running_tests(cls) -> List[Dict[str, Any]]:
+        # return [
+        #     {
+        #         **res.test.to_dict(),
+        #         'questions_num': res.test.questions.count(),
+        #         'launched_lecturer': {
+        #             'id': res.launched_lecturer.id,
+        #             'username': res.launched_lecturer.username
+        #         }
+        #     } for res in TestResult.objects.filter(is_running=True)
+        # ]
+        for res in TestResult.objects.filter(is_running=False):
+            print('test: ', res.test)
+        for res in TestResult.objects.filter(is_running=True):
+            print('test: ', res.test)
+        return [
+            res.test.to_dict() for res in TestResult.objects.filter(is_running=True)
+        ]
+
+    @classmethod
+    def get_not_running_tests(cls) -> List[Dict[str, Any]]:
+        return [
+            {
+                **res.test.to_dict(),
+                'questions_num': res.test.questions.count()
+            } for res in TestResult.objects.filter(is_running=True)
+        ]
+
     def __str__(self):
         return self.name
 
@@ -174,7 +207,7 @@ class RunningTestsAnswers(models.Model):
         verbose_name_plural = 'Ответы за запущенные тесты'
 
 
-class Answer(models.Model):
+class Option(models.Model):
     option = models.CharField(max_length=1_000)
 
     class Meta:
@@ -182,9 +215,12 @@ class Answer(models.Model):
 
 
 class UserQuestionAnswer(models.Model):
-    question_id = models.ObjectIdField()
-    selected_answers = models.ArrayField(model_container=Answer)
-    right_answers = models.ArrayField(model_container=Answer)
+    id = models.ObjectIdField()
+    selected_answers = models.JSONField()
+    right_answers = models.JSONField()
+    is_true = models.BooleanField(default=False)
+    # selected_answers = models.ArrayField(model_container=Option)
+    # right_answers = models.ArrayField(model_container=Option)
 
     class Meta:
         abstract = True
@@ -206,6 +242,7 @@ class UserResult(models.Model):
 class TestResult(models.Model):
     _id = models.ObjectIdField()
     is_running = models.BooleanField('Тест еще запущен')
+    comment = models.TextField('Комментарий преподавателя', default='')
     date = models.DateTimeField('Время запуска тестирования',
                                 default=lambda: datetime.now() + TZ_TIMEDELTA)
     launched_lecturer = models.ForeignKey(

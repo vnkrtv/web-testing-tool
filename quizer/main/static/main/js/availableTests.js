@@ -145,10 +145,10 @@ function getAvailableTestDiv(test, refsDict) {
     return container;
 }
 
-function studentRenderAvailableTests(runningTestsUrl, runningTestsDiv, refsDict) {
+function studentRenderAvailableTests(testsAPIUrl, runningTestsDiv, refsDict) {
     const noRunningTestsDiv = document.getElementById('noRunningTestsDiv');
     let runningTests = [];
-    $.get(runningTestsUrl)
+    $.get(testsAPIUrl + '?state=not_running')
         .done(function (response) {
             runningTests = response['tests'];
             runningTestsDiv.innerHTML = '';

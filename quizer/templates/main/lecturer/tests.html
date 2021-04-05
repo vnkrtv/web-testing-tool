@@ -223,7 +223,7 @@
 <script src="{% static 'main/js/managingTests.js' %}"></script>
 <script src="{% static 'main/js/jquery-3.5.1.js' %}"></script>
 <script type="text/javascript">
-    const testsAPIUrl = "{% url 'api:tests_api' 'not_running' %}";
+    const testsAPIUrl = "{% url 'api:tests_api' %}";
     const questionsAPIUrl = "{% url 'api:questions_api' 'test_id' 'action' %}";
     const questionsUrl = "{% url 'main:questions' 'test_id' %}";
     const staticUrl = '{% static_url %}';

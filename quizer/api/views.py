@@ -7,7 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from main.models import Subject, Test, Question, Option
+from main.models import Subject, Test, Question, TestResult, RunningTestsAnswers
 from main import mongo, utils
 from .serializers import SubjectSerializer, TestSerializer
 from .permissions import IsLecturer
@@ -60,95 +60,48 @@ class SubjectView(APIView):
 class TestView(APIView):
     authentication_classes = []
     permission_classes = []
+
     # permission_classes = [IsAuthenticated]
 
     def get(self, request):
         state = request.query_params.get('state', None)
-        storage = mongo.TestsResultsStorage.connect(db=mongo.get_conn())
-        running_tests = storage.get_running_tests()
-        # if state == 'running':
-        #     tests = []
-        #     for running_test in running_tests:
-        #         test = Test.objects.get(id=running_test['test_id']).to_dict()
-        #         launched_lecturer = User.objects.get(id=running_test['launched_lecturer_id'])
-        #         tests.append({
-        #             **test,
-        #             'launched_lecturer': {
-        #                 'id': launched_lecturer.id,
-        #                 'username': launched_lecturer.username
-        #             }
-        #         })
-        # elif state == 'not_running':
-        #     running_tests_ids = [test['test_id'] for test in running_tests]
-        #     tests = [t.to_dict() for t in Test.objects.exclude(id__in=running_tests_ids)]
-        #     storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())
-        #     for test in tests:
-        #         test['questions_num'] = len(storage.get_many(test_id=test['id']))
-        # elif state == 'all':
-        #     tests = [t.to_dict() for t in Test.objects.all()]
-        # else:
-        #     tests = []
+        if state == 'running':
+            tests = Test.get_running_tests()
+        elif state == 'not_running':
+            tests = Test.get_not_running_tests()
+        else:
+            tests = Test.get_all()
         return Response({
-            'tests': []
+            'tests': tests
         })
 
-    def post(self, request, state):
-        request_dict = dict(request.POST)
-        if len(request_dict) == 1:  # DELETE, only csrftoken passed
-            test = get_object_or_404(Test.objects.all(), pk=state)
+    def post(self, request):
+        serializer = TestSerializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            new_test = serializer.save()
+        return Response({
+            'success': "Тест '%s' по предмету '%s' успешно добавлен." %
+                       (new_test.name, new_test.subject.name)
+        })
 
-            test_name = test.name
-            subject_name = test.subject.name
+    def put(self, request, test_id):
+        updated_test = get_object_or_404(Test.objects.all(), pk=test_id)
+        serializer = TestSerializer(instance=updated_test, data=request.data, partial=True)
+        if serializer.is_valid(raise_exception=True):
+            updated_test = serializer.save()
+        return Response({
+            'success': "Тест '%s' по предмету '%s' был успешно отредактирован." %
+                       (updated_test.name, updated_test.subject.name)
+        })
 
-            storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())
-            deleted_questions_count = storage.delete_many(test_id=test.id)
-            test.delete()
-
-            message = "Тест '%s' по предмету '%s', а также все " \
-                      "вопросы к нему в количестве %d были успешно удалены."
-            return Response({
-                'success': message % (test_name, subject_name, deleted_questions_count)
-            })
-        elif state == 'new':  # POST
-
-            serializer = TestSerializer(data=request.data)
-            if serializer.is_valid(raise_exception=True):
-                new_test = serializer.save()
-            return Response({
-                'success': "Тест '%s' по предмету '%s' успешно добавлен." %
-                           (new_test.name, new_test.subject.name)
-            })
-        else:  # PUT
-            updated_test = get_object_or_404(Test.objects.all(), pk=state)
-            print(request.data)
-            serializer = TestSerializer(instance=updated_test, data=request.data, partial=True)
-            if serializer.is_valid(raise_exception=True):
-                updated_test = serializer.save()
-            return Response({
-                'success': "Тест '%s' по предмету '%s' был успешно отредактирован." %
-                           (updated_test.name, updated_test.subject.name)
-            })
-
-    # def put(self, request, test_id):
-    #     updated_test = get_object_or_404(Test.objects.all(), pk=test_id)
-    #     serializer = TestSerializer(instance=updated_test, data=request.data, partial=True)
-    #     if serializer.is_valid(raise_exception=True):
-    #         updated_test = serializer.save()
-    #     return Response({
-    #         'success': "Тест '%s' по предмету '%s' был успешно отредактирован." %
-    #                    (updated_test.name, updated_test.subject.name)
-    #     })
-    #
-    # def delete(self, _, test_id):
-    #     test = get_object_or_404(Test.objects.all(), pk=test_id)
-    #     message = "Тест '%s' по предмету '%s', а также все " \
-    #               "вопросы к нему были успешно удалены." % (test.name, test.subject.name)
-    #     test.delete()
-    #     return Response({
-    #         'success': message
-    #     })
-
-
+    def delete(self, _, test_id):
+        test = get_object_or_404(Test.objects.all(), pk=test_id)
+        message = "Тест '%s' по предмету '%s', а также все " \
+                  "вопросы к нему были успешно удалены." % (test.name, test.subject.name)
+        test.delete()
+        return Response({
+            'success': message
+        })
 
 
 class LaunchTestView(APIView):

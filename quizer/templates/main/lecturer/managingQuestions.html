@@ -56,14 +56,14 @@
         </div>
     </div>
     <div id="options-div"></div>
-    <input type="hidden" name="test_id" id="test_id" value="{{ test.id }}">
-    <input type="hidden" name="question_id" id="edit-question-id" value="">
-    <input type="hidden" name="multiselect" id="hidden-question-multiselect" value="">
-    <input type="hidden" name="with_images" id="hidden-question-with-images" value="">
+    <input type="hidden" id="test_id" value="{{ test.id }}">
+    <input type="hidden" id="edit-question-id" value="">
+    <input type="hidden" id="hidden-question-multiselect" value="">
+    <input type="hidden" id="hidden-question-type" value="">
     <div class="modal-footer">
         <div class="btn btn-primary js-modal-close"><img src='{% cancel_icon %}'> Закрыть</div>
         <button class="btn btn-success js-modal-close"
-                onclick="editQuestion(questionsAPIUrl, questionsTbody, csrfToken)"><img src='{% edit_icon %}'> Сохранить
+                onclick="editQuestion()"><img src='{% edit_icon %}'> Сохранить
         </button>
         <button class="btn btn-danger" id='delete-question-button' data-modal="delete-question-modal"><img
                 src='{% delete_icon %}'> Удалить
@@ -81,7 +81,7 @@
     <div class="modal-footer">
         <div class="btn btn-primary js-modal-close"><img src='{% cancel_icon %}'> Закрыть</div>
         <button class="btn btn-danger js-modal-close"
-                onclick="deleteQuestion(questionsAPIUrl, questionsTbody, csrfToken)"><img src='{% delete_icon %}'>
+                onclick="deleteQuestion()"><img src='{% delete_icon %}'>
             Удалить
         </button>
     </div>
@@ -105,11 +105,11 @@
 <script src="{% static 'main/js/jquery-3.5.1.js' %}"></script>
 <script type="text/javascript">
     const mediaUrl = '{% media_url %}';
-    const questionsAPIUrl = "{% url 'api:get_questions' test.id %}";
+    const questionsAPIUrl = "{% url 'api:questions_api' test.id %}";
     const csrfToken = '{{ csrf_token }}';
     const questionsTbody = document.getElementById('questionsTbody');
     let questions = []
-    renderQuestionsTable(questionsAPIUrl, questionsTbody);
+    renderQuestionsTable();
 </script>
 
 {% endblock %}

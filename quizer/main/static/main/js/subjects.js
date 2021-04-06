@@ -64,7 +64,7 @@ function loadSubject() {
     let formData = new FormData();
     formData.append('name', nameInput.value);
     formData.append('description', descriptionInput.value);
-    formData.append('load', '');
+    formData.append('load', 'true');
     formData.append('files_names', filesNamesInput.value);
     for (let file of filesInput.files) {
         formData.append('tests', file);

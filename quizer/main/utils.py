@@ -4,19 +4,21 @@ Some utils for views
 """
 import math
 from typing import List, Dict, Tuple, Any, Union
-import json
 
 import jwt
 import requests
-from bson import ObjectId
 
-from django.core.files.base import ContentFile
-from django.core.files.storage import default_storage
 from django.http import HttpRequest
 from django.conf import settings
 
 from .models import Test, Subject, Question
 from .mongo import get_conn, QuestionsStorage
+
+
+class EmptyOptionsError(Exception):
+    """
+    Handling exceptions during questions file parsing
+    """
 
 
 class InvalidFileFormatError(Exception):
@@ -112,58 +114,15 @@ def split_questions(questions: List[Dict[str, Any]]) -> List[Tuple[List[Dict[str
     return questions_list
 
 
-def get_question_from_request(request: HttpRequest, test: Test) -> Dict[str, Any]:
+def load_questions_list(request: HttpRequest, test_id: int) -> List[Dict[str, Any]]:
     """
-    Parse request with new question params to question dict
+    Parse request with loaded file with questions to questions list
 
     :param request: <HttpRequest>
-    :param test: <Test>
-    :return: question
+    :param test_id: id of <Test> instance
+    :return: list of questions
     """
-    with_images = request.POST['withImages'] == 'true'
-    question = {
-        '_id': ObjectId(),
-        'formulation': request.POST['formulation'],
-        'tasks_num': int(request.POST['tasksNum']),
-        'multiselect': request.POST['multiselect'] == 'true',
-        'type': Question.Type.WITH_IMAGES if with_images else Question.Type.REGULAR
-    }
-    """
-        request.POST:
-        - if not 'with_images':
-            - option_{i} = {option} - possible answer
-        - if 'multiselect':
-            - is_true_{i} = 'on' - if exists in request.POST then option_{i} is true
-        - if single answer:
-            - is_true = {i} -  option_{i} is true
-        request.FILES:
-        - if 'with_images':
-            - option_{i} - <InMemoryUploadedFile>(image option)
-    """
-    if not with_images:
-        question['options'] = json.loads(request.POST['options'])
-        if '' in [opt['option'] for opt in question['options']]:
-            raise InvalidFileFormatError('empty options are not allowed')
-    else:
-        options = []
-        for i, file_name in enumerate(request.FILES):
-            path = f'{test.subject.name}/{test.name}/{question["_id"]}/{i}.{file_name.split(".")[-1]}'
-            default_storage.save(path, ContentFile(request.FILES[file_name].read()))
-            options.append({
-                'option': path,
-                'is_true': request.POST[file_name] == 'true'
-            })
-        question['options'] = options
-    return question
-
-
-def parse_questions(content: str) -> List[Dict[str, Any]]:
-    """
-    Parsing string with questions to questions list
-
-    :param content: string with questions
-    :return: questions list
-    """
+    content = request.FILES['file'].read().decode('utf-8')
     questions_list = [question for question in content.replace('\r', '').split('\n\n') if question]
     parsed_questions_list = []
     numbers = set('0123456789')
@@ -222,6 +181,7 @@ def parse_questions(content: str) -> List[Dict[str, Any]]:
         if len(options) != len(options_set):
             raise InvalidFileFormatError(f'строка {cur_line} - повторяющиеся варианты ответов')
         parsed_questions_list.append({
+            'test_id': test_id,
             'formulation': formulation,
             'tasks_num': len(options),
             'multiselect': multiselect,
@@ -230,17 +190,6 @@ def parse_questions(content: str) -> List[Dict[str, Any]]:
         })
         cur_line += 1  # Empty string between questions
     return parsed_questions_list
-
-
-def get_questions_list(request: HttpRequest) -> List[Dict[str, Any]]:
-    """
-    Parse request with loaded file with questions to questions list
-
-    :param request: <HttpRequest>
-    :return: list of questions
-    """
-    content = request.FILES['file'].read().decode('utf-8')
-    return parse_questions(content)
 
 
 def get_test_result(request: HttpRequest, right_answers: dict, test_duration: int) -> Dict[str, Any]:

@@ -59,7 +59,14 @@
 	const socketPath = '{% url "main:available_tests" %}';
 	let socket = getRunningTestsWebSocket(socketPath);
 
-	renderAvailableTests(socket, "{% url 'api:tests_api' %}", '{% static_url %}', "{% url 'api:launch_test' 'test_id' %}", "{% url 'main:lecturer_run_test' 'test_id' %}", "{% url 'api:get_questions' 'test_id' %}");
+	const csrfToken = '{{ csrf_token }}';
+	const testsAPIUrl = "{% url 'api:tests_api' %}";
+	const staticUrl = '{% static_url %}';
+	const launchTestAPIUrl = "{% url 'api:launch_test' 'test_id' %}";
+	const runTestForLecturerUrl = "{% url 'main:lecturer_run_test' 'test_id' %}";
+	const questionsAPIUrl = "{% url 'api:questions_api' 'test_id' %}";
+
+	renderAvailableTests();
 </script>
 
 {% endblock %}

@@ -1,4 +1,5 @@
 import json
+import bson
 
 from django.contrib.auth.models import User
 
@@ -17,8 +18,7 @@ class SubjectView(APIView):
     permission_classes = [IsAuthenticated, IsLecturer]
 
     def get(self, _):
-        subjects = Subject.objects.all()
-        serializer = SubjectSerializer(subjects, many=True)
+        serializer = SubjectSerializer(Subject.objects.all(), many=True)
         for subject in serializer.data:
             subject['tests_count'] = Test.objects.filter(subject=subject['id']).count()
         return Response({
@@ -58,10 +58,7 @@ class SubjectView(APIView):
 
 
 class TestView(APIView):
-    authentication_classes = []
-    permission_classes = []
-
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request):
         state = request.query_params.get('state', None)
@@ -107,128 +104,92 @@ class TestView(APIView):
 class LaunchTestView(APIView):
     permission_classes = [IsAuthenticated, IsLecturer]
 
-    def get(self, request, pk):
-        test = get_object_or_404(Test.objects.all(), pk=pk)
-        storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())
-        questions = storage.get_many(test_id=test.id)
-        if len(questions) < test.tasks_num:
+    def put(self, request, test_id):
+        test = get_object_or_404(Test.objects.all(), pk=test_id)
+        if test.questions.count() < test.tasks_num:
             return Response({
                 'ok': False,
                 'message': "Тест %s не запущен, так как вопросов в базе меньше %d."
                            % (test.name, test.tasks_num)
             })
-        else:
-            storage = mongo.TestsResultsStorage.connect(db=mongo.get_conn())
-            storage.add_running_test(
-                test_id=test.id,
-                lecturer_id=request.user.id,
-                subject_id=test.subject.id)
-            message = "Тест '%s' запущен. Состояние его прохождения можно отследить во вкладке 'Запущенные тесты'."
-            return Response({
-                'ok': True,
-                'message': message % test.name
-            })
+        TestResult.objects.create(
+            test=test,
+            launched_lecturer=request.user,
+            subject=test.subject,
+            is_running=True,
+            comment=request.data.get('comment', ''),
+            results=[])
+        message = "Тест '%s' запущен. Состояние его прохождения можно отследить во вкладке 'Запущенные тесты'."
+        return Response({
+            'ok': True,
+            'message': message % test.name
+        })
 
 
 class QuestionView(APIView):
     permission_classes = [IsAuthenticated, IsLecturer]
 
-    def get(self, _, test_id):
-        test_questions = Question.objects.filter(test__id=test_id)
-        serializer = QuestionSerializer(instance=test_questions, many=True)
-        for question in serializer.data:
-            question['id'] = str(question.pop('_id'))
+    def get(self, request, test_id):
+        questions = Question.objects.filter(test__id=test_id)
+        serializer = QuestionSerializer(instance=questions, many=True)
         return Response({
             'questions': serializer.data
         })
 
-    def post(self, request, test_id, question_id):
-        test = get_object_or_404(Test.objects.all(), pk=test_id)
-        storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())
-
-        request_dict = dict(request.POST)
-        if len(request_dict) == 1 and not request.FILES:  # DELETE, only csrftoken passed
-            question = storage.get_one(
-                question_id=question_id,
-                test_id=int(test_id))
-            storage.delete_by_id(
-                question_id=question_id,
-                test_id=int(test_id))
-            message = "Вопрос '%s' по тесту '%s' был успешно удален."
+    def post(self, request, test_id):
+        serializer = QuestionSerializer()
+        try:
+            if request.POST.get('load'):
+                questions = utils.load_questions_list(request, test_id)
+                for question in questions:
+                    serializer.create(question)
+                message = "Вопросы к тесту в количестве %d успешно добавлены." % len(questions)
+                return Response({
+                    'success': message
+                })
+            question = serializer.create_from_request(request)
+            message = "Вопрос '%s' к тесту '%s' успешно добавлен."
             return Response({
-                'success': message % (question['formulation'], test.name)
+                'success': message % (question.formulation, question.test.name)
             })
-        elif question_id == 'new':  # POST
-            try:
-                question = utils.get_question_from_request(
-                    request=request,
-                    test=test)
-                storage.add_one(
-                    question=question,
-                    test_id=test.id)
-                message = "Вопрос '%s' к тесту '%s' успешно добавлен."
-                response = Response({
-                    'success': message % (question['formulation'], test.name)
-                })
-            except utils.InvalidFileFormatError:
-                response = Response({
-                    'error': f'Вопрос не был добавлен, так как присутствуют пустые варианты ответов.'
-                })
-            except Exception as e:
-                response = Response({
-                    'error': f'Вопрос не был добавлен: {e}.'
-                })
-            finally:
-                return response
-        elif question_id == 'load':  # POST
-            try:
-                questions_list = utils.get_questions_list(request)
-                storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())
-                for question in questions_list:
-                    storage.add_one(
-                        question=question,
-                        test_id=test.id)
-                message = "Вопросы к тесту '%s' в количестве %d успешно добавлены."
-                response = Response({
-                    'success': message % (test.name, len(questions_list))
-                })
-            except utils.InvalidFileFormatError as e:
-                response = Response({
-                    'error': f'Вопросы не были загружены: {e}'
-                })
-            finally:
-                return response
-        else:  # PUT
-            try:
-                with_images = json.loads(request_dict['withImages'][0])
-                formulation = request_dict['formulation'][0]
-                options = json.loads(request_dict['options'][0])
+        except utils.EmptyOptionsError:
+            return Response({
+                'error': f'Вопрос не был добавлен, так как присутствуют пустые варианты ответов.'
+            })
+        except utils.InvalidFileFormatError as e:
+            return Response({
+                'error': f'Вопросы не были загружены: {e}'
+            })
 
-                if '' in [opt['option'] for opt in options]:
-                    raise utils.InvalidFileFormatError('empty options are not allowed')
-                test = Test.objects.get(id=test_id)
+    def put(self, request, test_id, question_id):
+        try:
+            _id = bson.ObjectId(question_id)
+        except bson.errors.InvalidId:
+            return Response({
+                'error': 'Некорректный questions_id'
+            })
+        question = get_object_or_404(Question.objects.all(), _id=_id)
+        serializer = QuestionSerializer(instance=question, data=request.data, partial=True)
+        if serializer.is_valid(raise_exception=True):
+            updated_question = serializer.save()
+        message = "Вопрос '%s' по тесту '%s' был успешно отредактирован."
+        return Response({
+            'success': message % (updated_question.formulation, updated_question.test.name)
+        })
 
-                if with_images:
-                    storage.update_formulation(
-                        question_id=question_id,
-                        formulation=formulation
-                    )
-                else:
-                    storage.update(
-                        question_id=question_id,
-                        formulation=formulation,
-                        options=options
-                    )
-                message = "Вопрос '%s' по тесту '%s' был успешно отредактирован."
-                response = Response({
-                    'success': message % (formulation, test.name)
-                })
-            except utils.InvalidFileFormatError:
-                response = Response({
-                    'error': f'Вопрос не был отредактирован, так как в вопросе присутствовали пустые варинаты ответов.'
-                })
-            finally:
-                return response
+    def delete(self, request, test_id, question_id):
+        try:
+            _id = bson.ObjectId(question_id)
+        except bson.errors.InvalidId:
+            return Response({
+                'error': 'Некорректный questions_id'
+            })
+        question = get_object_or_404(Question.objects.all(), _id=_id)
+        message = "Вопрос '%s' по тесту '%s' был успешно удален." % (question.formulation, question.test.name)
+        question.delete()
+        return Response({
+            'success': message
+        })
 
 
 class TestsResultView(APIView):

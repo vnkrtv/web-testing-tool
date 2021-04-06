@@ -1,4 +1,4 @@
-function getTestContainer(socket, test, testsUrl, staticPath, launchTestAPIUrl, runTestForLecturerUrl, questionsAPIUrl) {
+function getTestContainer(test) {
     const container = document.createElement('div');
 
     const hr = document.createElement('hr');
@@ -14,9 +14,9 @@ function getTestContainer(socket, test, testsUrl, staticPath, launchTestAPIUrl, 
     description_p.innerHTML = `${test.description}`;
 
     const infoP = document.createElement('p');
-    infoP.innerHTML = `<img src='${staticPath}main/images/subject.svg'> Предмет: ${test.subject.name}<br>
-    <img src='${staticPath}main/images/research.svg'> Количество заданий в тесте: ${test.tasks_num}<br>
-    <img src='${staticPath}main/images/clock.svg'> Время на выполнение: ${test.duration} с`;
+    infoP.innerHTML = `<img src='${staticUrl}main/images/subject.svg'> Предмет: ${test.subject.name}<br>
+    <img src='${staticUrl}main/images/research.svg'> Количество заданий в тесте: ${test.tasks_num}<br>
+    <img src='${staticUrl}main/images/clock.svg'> Время на выполнение: ${test.duration} с`;
 
     const btnCont1 = document.createElement('div');
     btnCont1.className = "btn-group mr-1";
@@ -28,13 +28,13 @@ function getTestContainer(socket, test, testsUrl, staticPath, launchTestAPIUrl, 
 
     const launchBtn = document.createElement('button');
     launchBtn.className = "btn btn-primary";
-    launchBtn.innerHTML = `<img src='${staticPath}main/images/play.svg'> Запустить`;
-    launchBtn.setAttribute("onclick", `launchTest(socket, ${test.id}, "${testsUrl}", "${staticPath}", "${launchTestAPIUrl}", "${runTestForLecturerUrl}", "${questionsAPIUrl}")`);
+    launchBtn.innerHTML = `<img src='${staticUrl}main/images/play.svg'> Запустить`;
+    launchBtn.setAttribute("onclick", `launchTest(${test.id})`);
 
     const runTestBtn = document.createElement('button');
     runTestBtn.className = "btn btn-primary";
-    runTestBtn.innerHTML = `<img src='${staticPath}main/images/play.svg'> Пройти`;
-    runTestBtn.setAttribute("onclick", `runTest(${test.id}, ${test.tasks_num}, "${runTestForLecturerUrl}", "${questionsAPIUrl}")`);
+    runTestBtn.innerHTML = `<img src='${staticUrl}main/images/play.svg'> Пройти`;
+    runTestBtn.setAttribute("onclick", `runTest(${test.id}, ${test.tasks_num})`);
 
     btnCont1.appendChild(launchBtn);
     btnCont2.appendChild(runTestBtn);
@@ -51,26 +51,32 @@ function getTestContainer(socket, test, testsUrl, staticPath, launchTestAPIUrl, 
     return container;
 }
 
-function launchTest(socket, testID, testsUrl, staticPath, launchTestAPIUrl, runTestForLecturerUrl, questionsAPIUrl) {
-    $.get(launchTestAPIUrl.replace(/test_id/gi, testID)).done((response) => {
-        if (response.ok) {
-            renderInfoModalWindow("Тест запущен", response.message);
-            renderAvailableTests(socket, testsUrl, staticPath, launchTestAPIUrl, runTestForLecturerUrl, questionsAPIUrl);
+function launchTest(testID) {
+    $.ajax({
+        url: launchTestAPIUrl.replace('test_id', testID),
+        type: 'put',
+        contentType: false,
+        headers: {'X-CSRFToken': csrfToken},
+        success: (response) => {
+            if (response.ok) {
+                renderInfoModalWindow("Тест запущен", response.message);
+                renderAvailableTests();
 
-            let launchData = {
-                action: 'test was launched'
+                let launchData = {
+                    action: 'test was launched'
+                }
+                socket.send(JSON.stringify(launchData));
+            } else {
+                renderInfoModalWindow("Ошибка", response.message);
             }
-            socket.send(JSON.stringify(launchData));
-        } else {
-            renderInfoModalWindow("Ошибка", response.message);
         }
     });
 }
 
-function runTest(testID, testTasksCount, runTestForLecturerUrl, questionsAPIUrl) {
-    $.get(questionsAPIUrl.replace(/test_id/gi, testID)).done((response) => {
+function runTest(testID, testTasksCount) {
+    $.get(questionsAPIUrl.replace('test_id', testID)).done((response) => {
         if (response.questions.length >= testTasksCount) {
-            window.location.href = runTestForLecturerUrl.replace(/test_id/gi, testID);
+            window.location.href = runTestForLecturerUrl.replace('test_id', testID);
         } else {
             renderInfoModalWindow("Ошибка", `Тест не запущен, так как вопросов в базе меньше ${testTasksCount}.`);
         }
@@ -87,18 +93,18 @@ function getRunningTestsWebSocket(socketPath) {
     return new WebSocket(endpoint);
 }
 
-function renderAvailableTests(socket, testsUrl, staticPath, launchTestAPIUrl, runTestForLecturerUrl, questionsAPIUrl) {
+function renderAvailableTests() {
     const testsContainer = document.getElementById("tests_container");
     const subject = document.getElementById("subject");
     const nameFilter = document.getElementById("name_filter");
 
     let tests = [];
-    $.get(testsUrl).done((response) => {
+    $.get(testsAPIUrl + '?state=not_running').done((response) => {
         tests = response.tests;
         testsContainer.innerHTML = '';
         for (let test of tests) {
-            if (test.subject.id == subject.options[subject.selectedIndex].value) {
-                testsContainer.appendChild(getTestContainer(socket, test, testsUrl, staticPath, launchTestAPIUrl, runTestForLecturerUrl, questionsAPIUrl));
+            if (test.subject.id.toString() === subject.options[subject.selectedIndex].value) {
+                testsContainer.appendChild(getTestContainer(test));
             }
         }
         activateModalWindows();
@@ -108,15 +114,15 @@ function renderAvailableTests(socket, testsUrl, staticPath, launchTestAPIUrl, ru
         testsContainer.innerHTML = '';
         for (let test of tests) {
             if (test.name.toLowerCase().includes(nameFilter.value.toLowerCase())) {
-                if (test.subject.id == subject.options[subject.selectedIndex].value) {
-                    testsContainer.appendChild(getTestContainer(socket, test, testsUrl, staticPath, launchTestAPIUrl, runTestForLecturerUrl, questionsAPIUrl));
+                if (test.subject.id.toString() === subject.options[subject.selectedIndex].value) {
+                    testsContainer.appendChild(getTestContainer(test));
                 }
             }
         }
     };
 }
 
-function getAvailableTestDiv(test, refsDict) {
+function getAvailableTestDiv(test) {
     const container = document.createElement('div');
     container.classList.add('jumbotron');
 
@@ -145,17 +151,17 @@ function getAvailableTestDiv(test, refsDict) {
     return container;
 }
 
-function studentRenderAvailableTests(testsAPIUrl, runningTestsDiv, refsDict) {
+function studentRenderAvailableTests() {
     const noRunningTestsDiv = document.getElementById('noRunningTestsDiv');
     let runningTests = [];
-    $.get(testsAPIUrl + '?state=not_running')
+    $.get(testsAPIUrl + '?state=running')
         .done(function (response) {
             runningTests = response['tests'];
             runningTestsDiv.innerHTML = '';
             if (runningTests.length) {
                 noRunningTestsDiv.style.display = 'none';
                 for (let test of runningTests) {
-                    runningTestsDiv.appendChild(getAvailableTestDiv(test, refsDict));
+                    runningTestsDiv.appendChild(getAvailableTestDiv(test));
                 }
             } else {
                 noRunningTestsDiv.style.display = '';

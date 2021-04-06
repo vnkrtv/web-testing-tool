@@ -82,7 +82,7 @@
 <script type="text/javascript">
     const socketPath = '{% url "main:available_tests" %}';
     const testsResultsAPIUrl = "{% url 'api:get_tests_results' test_results_id %}";
-    const questionsAPIUrl = "{% url 'api:get_questions' test.id %}";
+    const questionsAPIUrl = "{% url 'api:questions_api' test.id %}";
 
     let socket = getRunningTestsWebSocket(socketPath);
     socket.onopen = (e) => {

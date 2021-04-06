@@ -31,7 +31,7 @@ function getResultsTable(finishedStudentsResults, idx) {
     return table;
 }
 
-function getRunningTestDiv(test, idx, refsDict) {
+function getRunningTestDiv(test, idx) {
     const container = document.createElement('div');
 
     const hr = document.createElement('hr');
@@ -79,15 +79,14 @@ function getRunningTestDiv(test, idx, refsDict) {
     return container;
 }
 
-function renderRunningTests(runningTestsAPIUrl, runningTestsDiv, refsDict)
-{
+function renderRunningTests(runningTestsAPIUrl, runningTestsDiv) {
     let runningTests = [];
     $.get(runningTestsAPIUrl)
         .done(function (response) {
             runningTests = response['tests'];
             runningTestsDiv.innerHTML = '';
             for (let i = 0; i < runningTests.length; i++) {
-                runningTestsDiv.appendChild(getRunningTestDiv(runningTests[i], i, refsDict));
+                runningTestsDiv.appendChild(getRunningTestDiv(runningTests[i], i));
             }
         });
 }

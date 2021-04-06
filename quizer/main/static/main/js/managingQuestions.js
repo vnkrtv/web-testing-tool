@@ -211,10 +211,8 @@ function fillQuestionModal(i) {
     multiselectInput.checked = (question.multiselect === true) ? 'checked' : '';
     hiddenMultiselectInput.value = (question.multiselect === true) ? 'on' : '';
 
-    const withImageInput = document.getElementById('question-with-images');
-    const hiddenWithImagesInput = document.getElementById('hidden-question-with-images');
-    withImageInput.checked = (question.type === 'image') ? 'checked' : '';
-    hiddenWithImagesInput.value = (question.type === 'image') ? 'on' : '';
+    const hiddenType = document.getElementById('hidden-question-type');
+    hiddenType.value = question.type;
 
     const optionsDiv = document.getElementById('options-div');
     optionsDiv.innerHTML = '';
@@ -238,10 +236,10 @@ function fillQuestionModal(i) {
         }
     }
     const qstnIDInput = document.getElementById('edit-question-id');
-    qstnIDInput.value = question.id;
+    qstnIDInput.value = question._id;
 
     const delQstnBtn = document.getElementById('delete-question-button');
-    delQstnBtn.setAttribute('onclick', `fillDeleteQuestionModal('${question.id}', ${question.test_id})`);
+    delQstnBtn.setAttribute('onclick', `fillDeleteQuestionModal('${question._id}', ${question.test_id})`);
 }
 
 function fillDeleteQuestionModal(qstnID, testID) {
@@ -262,14 +260,15 @@ function fillDeleteQuestionModal(qstnID, testID) {
     deleteModal.classList.toggle('active');
 }
 
-function renderQuestionsTable(questionsAPIUrl, questionsTbody) {
-    $.get(questionsAPIUrl
-    ).done(function (response) {
+function renderQuestionsTable() {
+    $.get(questionsAPIUrl).done(function (response) {
         questions = response['questions'];
         questionsTbody.innerHTML = '';
         const typesDict = {
             '': 'Обычный',
-            'image': 'Изображения'
+            'image': 'Изображения',
+            'sequence': 'Последовательность',
+            'sequence-image': 'Последовательность с изображениями'
         }
         for (let i = 0; i < questions.length; i++) {
             let question = questions[i];
@@ -296,14 +295,12 @@ function renderQuestionsTable(questionsAPIUrl, questionsTbody) {
     });
 }
 
-function editQuestion(questionsAPIUrl, questionsTbody, csrfToken) {
+function editQuestion() {
     const getValueById = (id) => {
         return document.getElementById(id).value;
     };
     const qstnID = getValueById("edit-question-id");
     const qstnFormulation = getValueById("question-formulation");
-    const withImages = ('on' === getValueById("hidden-question-with-images"));
-    const multiselect = ('on' === getValueById("hidden-question-multiselect"));
     const optionInputs = document.getElementsByClassName('option-input');
     const isTrueInputs = document.getElementsByClassName('is-true-input');
 
@@ -315,37 +312,41 @@ function editQuestion(questionsAPIUrl, questionsTbody, csrfToken) {
         });
     }
 
-    const params = {
-        withImages: withImages,
-        multiselect: multiselect,
-        formulation: qstnFormulation,
-        options: JSON.stringify(options),
-        csrfmiddlewaretoken: csrfToken
-    };
-    console.log(params);
-    $.post(`${questionsAPIUrl}/${qstnID}`, params)
-        .done((response) => {
-            renderQuestionsTable(questionsAPIUrl, questionsTbody);
+    let formData = new FormData();
+    formData.append('formulation', qstnFormulation);
+    formData.append('options', JSON.stringify(options));
+
+    $.ajax({
+        url: `${questionsAPIUrl}/${qstnID}`,
+        type: 'put',
+        data: formData,
+        contentType: false,
+        processData: false,
+        headers: {'X-CSRFToken': csrfToken},
+        success: (response) => {
+            renderQuestionsTable();
             if (response['success'] !== undefined) {
                 renderInfoModalWindow("Вопрос отредактирован", response['success']);
             } else {
                 renderInfoModalWindow("Ошибка", response['error']);
             }
-        });
+        }});
 }
 
-function deleteQuestion(questionsAPIUrl, questionsTbody, csrfToken) {
+function deleteQuestion() {
     const qstnID = document.getElementById("delete-question-id").value;
-    const params = {
-        csrfmiddlewaretoken: csrfToken
-    };
-    $.post(`${questionsAPIUrl}/${qstnID}`, params)
-        .done((response) => {
-            renderQuestionsTable(questionsAPIUrl, questionsTbody);
+    $.ajax({
+        url: `${questionsAPIUrl}/${qstnID}`,
+        type: 'delete',
+        contentType: false,
+        processData: false,
+        headers: {'X-CSRFToken': csrfToken},
+        success: (response) => {
+            renderQuestionsTable();
             if (response['success'] !== undefined) {
                 renderInfoModalWindow("Вопрос удален", response['success']);
             } else {
                 renderInfoModalWindow("Ошибка", response['error']);
             }
-        });
+        }});
 }

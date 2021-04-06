@@ -30,22 +30,29 @@
         teamIcon: '{% team_icon %}',
         stopIcon: '{% stop_icon %}'
     };
-	renderRunningTests(runningTestsAPIUrl, runningTestsDiv, refsDict)
+	renderRunningTests(runningTestsAPIUrl, runningTestsDiv)
 
 	const socketPath = '{% url "main:available_tests" %}';
     let socket = getRunningTestsWebSocket(socketPath);
     socket.onopen = (e) => {
-        console.log('open', e);
+        console.log('open socket: ', e);
     };
-    socket.onclose = socket.onerror = (e) => {
-        console.log('error', e);
+    socket.onerror = (e) => {
+        console.log('error on socket: ', e);
         const websocketErrorDiv = document.getElementById("websocketErrorDiv");
         websocketErrorDiv.style.display = '';
+    };
+    socket.onclose = (e) => {
+        console.log('close socket: ', e);
+        setTimeout(() => {
+            const websocketErrorDiv = document.getElementById("websocketErrorDiv");
+            websocketErrorDiv.style.display = '';
+        }, 500);
     };
     socket.onmessage = (e) => {
         let receivedData = JSON.parse(e.data);
         if (receivedData.action === 'test was passed') {
-        	renderRunningTests(runningTestsAPIUrl, runningTestsDiv, refsDict);
+        	renderRunningTests(runningTestsAPIUrl, runningTestsDiv);
 		}
     };
 </script>

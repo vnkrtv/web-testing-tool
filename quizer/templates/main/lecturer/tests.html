@@ -225,7 +225,7 @@
 <script type="text/javascript">
     const testsAPIUrl = "{% url 'api:tests_api' %}";
     const editTestsAPIUrl = "{% url 'api:edit_tests_api' 'test_id' %}";
-    const questionsAPIUrl = "{% url 'api:questions_api' 'test_id' 'action' %}";
+    const questionsAPIUrl = "{% url 'api:questions_api' 'test_id' %}";
     const questionsUrl = "{% url 'main:questions' 'test_id' %}";
     const staticUrl = '{% static_url %}';
     const csrfToken = "{{ csrf_token }}";

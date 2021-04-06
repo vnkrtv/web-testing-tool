@@ -245,33 +245,25 @@ function cleanUpAddQuestionModal() {
 
 }
 
-function addQuestion(questionsAPIUrl, testsAPIUrl, questionsUrl, staticUrl, csrfToken) {
+function addQuestion() {
     const getById = (id) => {
         return document.getElementById(id);
     };
     const qstnFormulation = getById("add-question-formulation").value;
-    const testID = parseInt(getById("add-question-test-id").value);
-    const tasksNum = parseInt(getById("add-question-tasks-num").value);
+    const testID = getById("add-question-test-id").value;
+    const tasksNum = getById("add-question-tasks-num").value;
     const withImages = getById("add-question-with-images").checked;
     const multiselect = getById("add-question-multiselect").checked;
     const optionInputs = document.getElementsByClassName('option-input');
     const isTrueInputs = document.getElementsByClassName('is-true-input');
 
-    console.log('withImages: ', withImages);
-    console.log('multiselect: ', multiselect);
+    let formData = new FormData();
+    formData.append('test_id', testID);
+    formData.append('multiselect', multiselect);
+    formData.append('with_images', withImages);
+    formData.append('formulation', qstnFormulation);
+    formData.append('tasks_num', tasksNum);
 
-    const apiUrl = questionsAPIUrl
-        .replace(/test_id/gi, testID)
-        .replace(/action/gi, 'new');
-    const onResponse = (response) => {
-        if (response['success'] !== undefined) {
-            cleanUpAddQuestionModal();
-            renderTests(testsAPIUrl, questionsUrl, staticUrl, csrfToken);
-            renderInfoModalWindow("Вопрос добавлен", response['success']);
-        } else {
-            renderInfoModalWindow("Ошибка", response['error']);
-        }
-    };
     if (!withImages) {
         let options = [];
         for (let i = 0; i < optionInputs.length; i++) {
@@ -280,43 +272,30 @@ function addQuestion(questionsAPIUrl, testsAPIUrl, questionsUrl, staticUrl, csrf
                 is_true: isTrueInputs[i].checked
             });
         }
-
-        const params = {
-            withImages: withImages,
-            multiselect: multiselect,
-            formulation: qstnFormulation,
-            tasksNum: tasksNum,
-            options: JSON.stringify(options),
-            csrfmiddlewaretoken: csrfToken
-        };
-        console.log(params);
-        $.post(apiUrl, params)
-            .done(onResponse);
+        formData.append('options', JSON.stringify(options));
     } else {
-        let formData = new FormData();
-        formData.append('csrfmiddlewaretoken', csrfToken);
-        formData.append('withImages', withImages);
-        formData.append('multiselect', multiselect);
-        formData.append('formulation', qstnFormulation);
-        formData.append('tasksNum', tasksNum);
-
         for (let i = 0; i < optionInputs.length; i++) {
             let file = optionInputs[i].files[0];
             formData.append(file.name, isTrueInputs[i].checked);
             formData.append(file.name, file);
         }
-
-        formData.forEach((key, val) => {
-            console.log(key, val);
-        });
-
-        $.ajax({
-            url: apiUrl,
-            type: 'post',
-            data: formData,
-            contentType: false,
-            processData: false,
-            success: onResponse
-        });
     }
+
+    $.ajax({
+        url: questionsAPIUrl.replace('test_id', testID.toString()),
+        type: 'post',
+        data: formData,
+        contentType: false,
+        processData: false,
+        headers: {'X-CSRFToken': csrfToken},
+        success: (response) => {
+            if (response['success'] !== undefined) {
+                cleanUpAddQuestionModal();
+                renderTests();
+                renderInfoModalWindow("Вопрос добавлен", response['success']);
+            } else {
+                renderInfoModalWindow("Ошибка", response['error']);
+            }
+        }
+    });
 }

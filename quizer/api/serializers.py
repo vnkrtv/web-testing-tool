@@ -1,3 +1,7 @@
+from bson import ObjectId
+
+from django.core.files.base import ContentFile
+from django.core.files.storage import default_storage
 from django.contrib.auth.models import User
 
 from rest_framework import serializers
@@ -64,30 +68,59 @@ class TestSerializer(serializers.Serializer):
 
 
 class QuestionSerializer(serializers.Serializer):
-    _id = serializers.ReadOnlyField()
-    test = serializers.IntegerField()
+    _id = serializers.CharField(max_length=100)
+    test_id = serializers.IntegerField()
     formulation = serializers.CharField(max_length=1_000)
     multiselect = serializers.BooleanField()
     tasks_num = serializers.IntegerField()
+    type = serializers.CharField(max_length=50)
     options = serializers.JSONField()
 
     def create(self, validated_data):
-        test = Test.objects.get(id=validated_data.get('test'))
+        test = Test.objects.get(id=validated_data.get('test_id'))
         return Question.objects.create(
             formulation=validated_data.get('formulation'),
             multiselect=validated_data.get('multiselect'),
             tasks_num=validated_data.get('tasks_num'),
+            type=validated_data.get('type'),
             options=Question.parse_options(validated_data.get('options')),
+            test=test)
+
+    @classmethod
+    def create_from_request(cls, request):
+        test = Test.objects.get(id=request.data.get('test_id'))
+        questions_id = ObjectId()
+        if request.data.get('with_images'):
+            questions_type = Question.Type.WITH_IMAGES
+            options = []
+            for i, file_name in enumerate(request.FILES):
+                path = f'{test.subject.name}/{test.name}/{questions_id}/{i}.{file_name.split(".")[-1]}'
+                default_storage.save(path, ContentFile(request.FILES[file_name].read()))
+                options.append({
+                    'option': path,
+                    'is_true': request.data.get(file_name) == 'true'
+                })
+        else:
+            questions_type = Question.Type.REGULAR
+            options = request.data.get('options')
+        return Question.objects.create(
+            _id=questions_id,
+            formulation=request.data.get('formulation'),
+            multiselect=request.data.get('multiselect'),
+            tasks_num=request.data.get('tasks_num'),
+            type=questions_type,
+            options=Question.parse_options(options),
             test=test)
 
     def update(self, instance, validated_data):
         instance.formulation = validated_data.get('formulation', instance.formulation)
+        instance.options = Question.parse_options(validated_data.get('options', instance.options))
         instance.save()
         return instance
 
     class Meta:
         model = Question
         read_only_fields = (
-            'id',
+            '_id',
             'test_id'
         )

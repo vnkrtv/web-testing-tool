@@ -110,7 +110,7 @@ function addTest() {
 function deleteTest() {
     const testID = document.getElementById("delete-test-id").value;
     $.ajax({
-        url: editTestsAPIUrl.replace('test_id', testID),
+        url: editTestsAPIUrl.replace('test_id', testID.toString()),
         type: 'delete',
         contentType: false,
         processData: false,
@@ -125,19 +125,18 @@ function loadQuestions() {
     const testID = document.getElementById("load-questions-test-id").value;
     const questionsFileInput = document.getElementById("file");
     let formData = new FormData();
-    formData.append('csrfmiddlewaretoken', csrfToken);
     formData.append('file', questionsFileInput.files[0]);
+    formData.append('load', 'true');
 
     $.ajax({
-        url: questionsAPIUrl
-            .replace(/test_id/gi, testID)
-            .replace(/action/gi, 'load'),
+        url: questionsAPIUrl.replace('test_id', testID.toString()),
         type: 'post',
         data: formData,
         contentType: false,
         processData: false,
+        headers: {'X-CSRFToken': csrfToken},
         success: (response) => {
-            renderTests(testsAPIUrl, questionsUrl, staticUrl, csrfToken);
+            renderTests();
             if (response['success'] !== undefined) {
                 renderInfoModalWindow("Вопросы загружены", response['success']);
             } else {

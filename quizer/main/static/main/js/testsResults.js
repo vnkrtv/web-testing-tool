@@ -5,7 +5,7 @@ function getTestOption(test) {
     return option
 }
 
-function getTrElement(counter, result, testsResultUrl) {
+function getTrElement(counter, result) {
     const tr = document.createElement('tr');
 
     const counterTd = document.createElement('td');
@@ -24,7 +24,7 @@ function getTrElement(counter, result, testsResultUrl) {
     const ref = document.createElement('a');
     ref.type = 'button';
     ref.className = 'btn btn-primary btn-sm';
-    ref.href = testsResultUrl + result.id;
+    ref.href = testsResultUrl + result['_id'];
     ref.innerHTML = 'Посмотреть детальный результат &raquo;';
     refTd.appendChild(ref);
 
@@ -36,7 +36,7 @@ function getTrElement(counter, result, testsResultUrl) {
     return tr;
 }
 
-function main(resultsUrl, testsUrl, testsResultUrl) {
+function renderTestResults() {
     const tableBody = document.getElementById("table_body");
     const subjectSelect = document.getElementById("subject");
     const lecturerSelect = document.getElementById("lecturer");
@@ -46,22 +46,22 @@ function main(resultsUrl, testsUrl, testsResultUrl) {
     let tests = [];
     let counter = 1;
 
-    $.get(resultsUrl)
+    $.get(testsResultsAPIUrl)
         .done(function(response) {
             results = response['results'];
-            $.get(testsUrl)
+            $.get(testsAPIUrl)
                 .done(function(response) {
                     tests = response['tests'];
                     for (const test of tests) {
-                        if (test.subject.id == subjectSelect.options[subjectSelect.selectedIndex].value) {
+                        if (test.subject.id.toString() === subjectSelect.options[subjectSelect.selectedIndex].value) {
                             testSelect.appendChild(getTestOption(test));
                         }
                     }
                     for (const result of results) {
-                        if (result.subject_id == subjectSelect.options[subjectSelect.selectedIndex].value) {
-                            if (result.launched_lecturer_id == lecturerSelect.options[lecturerSelect.selectedIndex].value) {
-                                if (result.test_id == testSelect.options[testSelect.selectedIndex].value) {
-                                    tableBody.appendChild(getTrElement(counter, result, testsResultUrl));
+                        if (result.subject_id.toString() === subjectSelect.options[subjectSelect.selectedIndex].value) {
+                            if (result.launched_lecturer_id.toString() === lecturerSelect.options[lecturerSelect.selectedIndex].value) {
+                                if (result.test_id.toString() === testSelect.options[testSelect.selectedIndex].value) {
+                                    tableBody.appendChild(getTrElement(counter, result));
                                     counter += 1;
                                 }
                             }
@@ -75,15 +75,15 @@ function main(resultsUrl, testsUrl, testsResultUrl) {
         testSelect.innerHTML = '';
         counter = 1;
         for (const test of tests) {
-            if (test.subject.id == subjectSelect.options[subjectSelect.selectedIndex].value) {
+            if (test.subject.id.toString() === subjectSelect.options[subjectSelect.selectedIndex].value) {
                 testSelect.appendChild(getTestOption(test));
             }
         }
         for (const result of results) {
-            if (result.subject_id == subjectSelect.options[subjectSelect.selectedIndex].value) {
-                if (result.launched_lecturer_id == lecturerSelect.options[lecturerSelect.selectedIndex].value) {
-                    if (result.test_id == testSelect.options[testSelect.selectedIndex].value) {
-                        tableBody.appendChild(getTrElement(counter, result, testsResultUrl));
+            if (result.subject_id.toString() === subjectSelect.options[subjectSelect.selectedIndex].value) {
+                if (result.launched_lecturer_id.toString() === lecturerSelect.options[lecturerSelect.selectedIndex].value) {
+                    if (result.test_id.toString() === testSelect.options[testSelect.selectedIndex].value) {
+                        tableBody.appendChild(getTrElement(counter, result));
                         counter += 1;
                     }
                 }
@@ -96,10 +96,10 @@ function main(resultsUrl, testsUrl, testsResultUrl) {
         tableBody.innerHTML = '';
         counter = 1;
         for (const result of results) {
-            if (result.subject_id == subjectSelect.options[subjectSelect.selectedIndex].value) {
-                if (result.launched_lecturer_id == lecturerSelect.options[lecturerSelect.selectedIndex].value) {
-                    if (result.test_id == testSelect.options[testSelect.selectedIndex].value) {
-                        tableBody.appendChild(getTrElement(counter, result, testsResultUrl));
+            if (result.subject_id.toString() === subjectSelect.options[subjectSelect.selectedIndex].value) {
+                if (result.launched_lecturer_id.toString() === lecturerSelect.options[lecturerSelect.selectedIndex].value) {
+                    if (result.test_id.toString() === testSelect.options[testSelect.selectedIndex].value) {
+                        tableBody.appendChild(getTrElement(counter, result));
                         counter += 1;
                     }
                 }

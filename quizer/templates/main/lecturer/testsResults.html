@@ -60,7 +60,7 @@
 <script src="{% static 'main/js/testsResults.js' %}"></script>
 <script src="{% static 'main/js/jquery-3.5.1.js' %}"></script>
 <script type="text/javascript">
-    const testsResultsAPIUrl = "{% url 'api:get_tests_results' 'all' %}";
+    const testsResultsAPIUrl = "{% url 'api:tests_results_api' %}";
     const testsAPIUrl = "{% url 'api:tests_api' %}";
     const testsResultUrl = "{% url 'main:tests_results' %}";
     const username = '{{ user.username }}';
@@ -71,7 +71,7 @@
             lecturerSelect.selectedIndex = i;
         }
     }
-    main(testsResultsAPIUrl, testsAPIUrl, testsResultUrl);
+    renderTestResults();
 </script>
 
 {% endblock %}

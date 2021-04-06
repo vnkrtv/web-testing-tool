@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 
 from rest_framework import serializers
 
-from main.models import Subject, Test, Question
+from main.models import Subject, Test, Question, TestResult, RunningTestsAnswers
 
 
 class SubjectSerializer(serializers.Serializer):
@@ -123,4 +123,42 @@ class QuestionSerializer(serializers.Serializer):
         read_only_fields = (
             '_id',
             'test_id'
+        )
+
+
+class TestResultSerializer(serializers.Serializer):
+    _id = serializers.CharField(max_length=100)
+    is_running = serializers.BooleanField()
+    comment = serializers.CharField(max_length=1_000)
+    date = serializers.DateTimeField(format="%H:%M:%S  %d-%m-%y")
+    test_id = serializers.IntegerField()
+    launched_lecturer_id = serializers.IntegerField()
+    subject_id = serializers.IntegerField()
+    results = serializers.JSONField()
+
+    def create(self, validated_data):
+        launched_lecturer = User.objects.get(id=validated_data.get('launched_lecturer_id'))
+        subject = Subject.objects.get(id=validated_data.get('subject_id'))
+        test = Test.objects.get(id=validated_data.get('test_id'))
+        return TestResult.objects.create(
+            is_running=validated_data.get('is_running'),
+            comment=validated_data.get('comment'),
+            date=validated_data.get('date'),
+            results=validated_data.get('results'),
+            launched_lecturer=launched_lecturer,
+            subject=subject,
+            test=test)
+
+    def update(self, instance, validated_data):
+        instance.formulation = validated_data.get('is_running')
+        instance.save()
+        return instance
+
+    class Meta:
+        model = Question
+        read_only_fields = (
+            '_id',
+            'test_id',
+            'launched_lecturer_id',
+            'subject_id'
         )

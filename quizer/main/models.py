@@ -126,16 +126,6 @@ class Question(models.Model):
     objects = models.DjongoManager()
 
     @classmethod
-    def from_dict(cls, question_dict: Dict[str, Any], test_id: int):
-        return cls(
-            formulation=question_dict['formulation'],
-            multiselect=question_dict['multiselect'],
-            tasks_num=question_dict['tasks_num'],
-            type=question_dict['type'],
-            test=Test.objects.get(id=test_id),
-            options=cls.parse_options(question_dict['options']))
-
-    @classmethod
     def parse_options(cls, options: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         return [
             {

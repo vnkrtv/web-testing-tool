@@ -1,7 +1,4 @@
-import json
 import bson
-
-from django.contrib.auth.models import User
 
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
@@ -10,7 +7,7 @@ from rest_framework.views import APIView
 
 from main.models import Subject, Test, Question, TestResult, RunningTestsAnswers
 from main import mongo, utils
-from .serializers import SubjectSerializer, TestSerializer, QuestionSerializer
+from .serializers import SubjectSerializer, TestSerializer, QuestionSerializer, TestResultSerializer
 from .permissions import IsLecturer
 
 
@@ -26,7 +23,7 @@ class SubjectView(APIView):
         })
 
     def post(self, request):
-        if request.POST.get('load'):
+        if request.data.get('load'):
             message = utils.add_subject_with_tests(request)
             return Response({
                 'success': message
@@ -195,15 +192,20 @@ class QuestionView(APIView):
 class TestsResultView(APIView):
     permission_classes = [IsAuthenticated, IsLecturer]
 
-    def get(self, _, state):
-        storage = mongo.TestsResultsStorage.connect(db=mongo.get_conn())
-        if state == 'all':
-            results = storage.get_all_tests_results()
+    def get(self, request):
+        test_results_id = request.query_params.get('id', None)
+        if test_results_id:
+            try:
+                _id = bson.ObjectId(test_results_id)
+            except bson.errors.InvalidId:
+                return Response({
+                    'error': 'Некорректный test_results_id'
+                })
+            serializer = TestResultSerializer(TestResult.objects.filter(_id=_id), many=True)
         else:
-            test_result = storage.get_test_result(_id=state)
-            results = [test_result] if test_result else []
+            serializer = TestResultSerializer(TestResult.objects.all(), many=True)
         return Response({
-            'results': results
+            'results': serializer.data
         })
 
 
@@ -211,22 +213,16 @@ class RunningTestView(APIView):
     permission_classes = [IsAuthenticated, IsLecturer]
 
     def get(self, request):
-        date_format = '%H:%M:%S %d.%m.%Y'
-        storage = mongo.TestsResultsStorage.connect(db=mongo.get_conn())
-        running_tests = storage.get_running_tests()
-        tests = []
-        for running_test in running_tests:
-            if running_test['launched_lecturer_id'] == request.user.id:
-                test = Test.objects.get(id=running_test['test_id']).to_dict()
-                test_results = storage.get_running_test_results(
-                    test_id=test['id'],
-                    lecturer_id=request.user.id)
+        running_tests = []
+        serializer = TestResultSerializer(TestResult.objects.filter(is_running=True), many=True)
+        for test_results in serializer.data:
+            if test_results.launched_lecturer.id == request.user.id:
                 results = test_results['results']
-                results.sort(key=lambda res: res['date'])
-                for result in results:
-                    result['date'] = result['date'].strftime(date_format)
-                test['finished_students_results'] = results
-                tests.append(test)
+                results.sort(key=lambda res: res.date)
+                running_tests.append({
+                    **test_results.test.to_dict(),
+                    'finished_students_results': results
+                })
         return Response({
-            'tests': tests
+            'tests': running_tests
         })

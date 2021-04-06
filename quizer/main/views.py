@@ -18,7 +18,7 @@ from django.views import View
 from . import mongo
 from . import utils
 from .decorators import unauthenticated_user, allowed_users, post_method
-from .models import Test, Subject, Question
+from .models import Test, Subject, Question, TestResult, RunningTestsAnswers
 from .forms import SubjectForm, TestForm
 
 

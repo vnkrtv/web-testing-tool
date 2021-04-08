@@ -2,8 +2,8 @@
 """Quizer backend"""
 import random
 import copy
-from datetime import datetime, timedelta
 
+import bson
 import requests
 from jwt import DecodeError
 
@@ -12,13 +12,12 @@ from django.contrib.auth import login, logout
 from django.shortcuts import render, redirect, reverse
 from django.utils.decorators import method_decorator
 from django.http import JsonResponse, HttpResponse, HttpRequest
-from django.conf import settings
 from django.views import View
+from django.utils import timezone
 
-from . import mongo
 from . import utils
 from .decorators import unauthenticated_user, allowed_users, post_method
-from .models import Test, Subject, Question, TestResult, RunningTestsAnswers
+from .models import Test, Subject, Question, TestResult, RunningTestsAnswers, TZ_TIMEDELTA
 from .forms import SubjectForm, TestForm
 
 
@@ -26,6 +25,8 @@ from .forms import SubjectForm, TestForm
 @allowed_users(allowed_roles=['lecturer'])
 def manage_questions(request: HttpRequest, test_id: int) -> HttpResponse:
     test = Test.objects.filter(id=test_id).first()
+    if not test:
+        return redirect(reverse('main:available_tests'))
     context = {
         'title': 'Вопросы',
         'test': test
@@ -37,8 +38,8 @@ def login_page(request: HttpRequest) -> HttpResponse:
     """Authorize user and redirect him to available_tests page"""
     logout(request)
     try:
-        # username, group = utils.get_auth_data(request)
-        username, group = 'ivan_korotaev', 'admin'
+        username, group = utils.get_auth_data(request)
+        # username, group = 'ivan_korotaev', 'admin'
     except DecodeError:
         return HttpResponse("JWT decode error: chet polomalos'")
 
@@ -91,10 +92,6 @@ def login_page(request: HttpRequest) -> HttpResponse:
     # костыль на время разработки
 
     login(request, user)
-    mongo.set_conn(
-        host=settings.DATABASES['default']['HOST'],
-        port=settings.DATABASES['default']['PORT'],
-        db_name=settings.DATABASES['default']['NAME'])
     return redirect(reverse('main:available_tests'))
 
 
@@ -102,37 +99,36 @@ def login_page(request: HttpRequest) -> HttpResponse:
 @allowed_users(allowed_roles=['lecturer'])
 def lecturer_run_test(request: HttpRequest, test_id: int) -> HttpResponse:
     """Running available test in test mode for lecturer"""
-    try:
-        test = Test.objects.get(id=test_id)
-    except Test.DoesNotExist or ValueError:
+    test = Test.objects.filter(id=test_id).first()
+    if not test:
         return redirect(reverse('main:available_tests'))
 
-    storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())
-    test_questions = storage.get_many(test_id=test.id)
+    test_questions = list(Question.objects.filter(test__id=test_id))
     if len(test_questions) < test.tasks_num:
         return redirect(reverse('main:available_tests'))
 
     test_questions = random.sample(test_questions, k=test.tasks_num)
     for question in test_questions:
-        random.shuffle(question['options'])
+        random.shuffle(question.options)
 
-    right_answers = {}
+    right_answers = []
     for i, question in enumerate(test_questions):
-        if question['type'] == Question.Type.SEQUENCE or question['type'] == Question.Type.SEQUENCE_WITH_IMAGES:
-            right_options = copy.deepcopy(question['options'])
+        if question.type == Question.Type.SEQUENCE or question.type == Question.Type.SEQUENCE_WITH_IMAGES:
+            right_options = copy.deepcopy(question.options)
             right_options.sort(key=lambda option: int(option['num']))
         else:
-            right_options = [option for option in question['options'] if option['is_true']]
-        right_answers[str(i + 1)] = {
-            'right_answers': right_options,
-            'id': str(question['_id'])
-        }
-    storage = mongo.RunningTestsAnswersStorage.connect(db=mongo.get_conn())
-    storage.cleanup(user_id=request.user.id)
-    storage.add(
+            right_options = [option for option in question.options if option['is_true']]
+        right_answers.append({
+            'question_num': i + 1,
+            'right_options': right_options,
+            'question_id': str(question.object_id)
+        })
+
+    RunningTestsAnswers.objects.filter(user__id=request.user.id).delete()
+    RunningTestsAnswers.objects.create(
         right_answers=right_answers,
-        test_id=test.id,
-        user_id=request.user.id,
+        test=test,
+        user=request.user,
         test_duration=test.duration)
     questions_list = utils.split_questions(test_questions)
     context = {
@@ -192,21 +188,12 @@ class AvailableTestsView(View):
 
     def lecturer_passed_test_result(self, request: HttpRequest) -> HttpResponse:
         """Test results"""
-        storage = mongo.RunningTestsAnswersStorage.connect(db=mongo.get_conn())
-        passed_test_answers = storage.get(user_id=request.user.id)
-
-        test_id = passed_test_answers['test_id']
-        storage.delete(user_id=request.user.id)
-
+        passed_test_answers = RunningTestsAnswers.objects.filter(user__id=request.user.id).first()
         result = utils.get_test_result(
             request=request,
-            right_answers=passed_test_answers['right_answers'],
-            test_duration=passed_test_answers['test_duration'])
-
-        storage = mongo.TestsResultsStorage.connect(db=mongo.get_conn())
-        storage.add_results_to_running_test(
-            test_result=result,
-            test_id=test_id)
+            right_answers=passed_test_answers.right_answers,
+            test_duration=passed_test_answers.test_duration)
+        passed_test_answers.delete()
 
         self.context = {
             'title': 'Доступные тесты',
@@ -282,22 +269,18 @@ class PassedTestView(View):
 
     def get_passed_test_results(self, request: HttpRequest) -> HttpResponse:
         """Test results"""
-        storage = mongo.RunningTestsAnswersStorage.connect(db=mongo.get_conn())
-        passed_test_answers = storage.get(user_id=request.user.id)
+        passed_test_answers = RunningTestsAnswers.objects.filter(user__id=request.user.id).first()
         if not passed_test_answers:
             return redirect(reverse('main:available_tests'))
-        test_id = passed_test_answers['test_id']
-        storage.delete(user_id=request.user.id)
-
         result = utils.get_test_result(
             request=request,
-            right_answers=passed_test_answers['right_answers'],
-            test_duration=passed_test_answers['test_duration'])
+            right_answers=passed_test_answers.right_answers,
+            test_duration=passed_test_answers.test_duration)
+        test_results = TestResult.objects.get(is_running=True, test__id=passed_test_answers.test.id)
+        passed_test_answers.delete()
 
-        storage = mongo.TestsResultsStorage.connect(db=mongo.get_conn())
-        storage.add_results_to_running_test(
-            test_result=result,
-            test_id=test_id)
+        test_results.results += result
+        test_results.save()
 
         self.context = {
             'title': 'Результаты тестирования',
@@ -323,21 +306,22 @@ def get_running_tests(request: HttpRequest) -> HttpResponse:
 def stop_running_test(request: HttpRequest) -> HttpResponse:
     """Displays page with results of passing stopped test"""
     test = Test.objects.get(id=int(request.POST['test_id']))
-    storage = mongo.TestsResultsStorage.connect(db=mongo.get_conn())
-    test_results = storage.get_running_test_results(
-        test_id=test.id,
-        lecturer_id=request.user.id)
-    storage.stop_running_test(
-        test_id=test.id,
-        lecturer_id=request.user.id)
-    results = test_results['results']
-    results.sort(key=lambda result: result['date'])
+
+    test_results = TestResult.objects.filter(
+        test__id=test.id,
+        launched_lecturer__id=request.user.id,
+        is_running=True)
+    test_results.is_running = False
+    test_results.save()
+
+    results = test_results.results
+    results.sort(key=lambda result: result.date)
     context = {
         'title': 'Результаты тестирования',
         'test': test,
-        'start_date': test_results['date'],
-        'end_date': datetime.now() + timedelta(hours=3),
-        'test_results_id': str(test_results['_id']),
+        'start_date': test_results.date,
+        'end_date': timezone.now() + TZ_TIMEDELTA,
+        'test_results_id': str(test_results.object_id),
         'results': results,
     }
     return render(request, 'main/lecturer/testingResults.html', context)
@@ -359,17 +343,17 @@ def tests_results(request: HttpRequest) -> HttpResponse:
 @allowed_users(allowed_roles=['lecturer'])
 def show_test_results(request: HttpRequest, test_results_id: str) -> HttpResponse:
     """Displays page with testing results"""
-    storage = mongo.TestsResultsStorage.connect(db=mongo.get_conn())
-    test_results = storage.get_test_result(_id=test_results_id)
-    if not test_results:
+    try:
+        _id = bson.ObjectId(test_results_id)
+        test_results = TestResult.objects.get(_id=_id)
+    except bson.errors.InvalidId or TestResult.DoesNotExist:
         return redirect(reverse('main:available_tests'))
-    test = Test.objects.get(id=test_results['test_id'])
-    results = test_results['results']
+    results = test_results.results
     results.sort(key=lambda result: result['date'])
     context = {
         'title': 'Результаты тестирования',
-        'test': test,
-        'start_date': test_results['date'],
+        'test': test_results.test,
+        'start_date': test_results.date,
         'test_results_id': test_results_id,
         'results': results,
     }
@@ -380,41 +364,46 @@ def show_test_results(request: HttpRequest, test_results_id: str) -> HttpRespons
 @allowed_users(allowed_roles=['student'])
 def student_run_test(request: HttpRequest) -> HttpResponse:
     """Run test for student"""
-    test = Test.objects.get(id=int(request.POST['test_id']))
-    storage = mongo.QuestionsStorage.connect(db=mongo.get_conn())
-    test_questions = storage.get_many(test_id=test.id)
+    test_id = int(request.POST['test_id'])
+    test = Test.objects.filter(id=test_id).first()
+    if not test:
+        return redirect(reverse('main:available_tests'))
+
+    test_questions = list(Question.objects.filter(test__id=test_id))
+    if len(test_questions) < test.tasks_num:
+        return redirect(reverse('main:available_tests'))
+
     test_questions = random.sample(test_questions, k=test.tasks_num)
-
     for question in test_questions:
-        random.shuffle(question['options'], random.random)
+        random.shuffle(question.options)
 
-    right_answers = {}
+    right_answers = []
     for i, question in enumerate(test_questions):
-        if question['type'] == Question.Type.SEQUENCE or question['type'] == Question.Type.SEQUENCE_WITH_IMAGES:
-            right_options = copy.deepcopy(question['options'])
+        if question.type == Question.Type.SEQUENCE or question.type == Question.Type.SEQUENCE_WITH_IMAGES:
+            right_options = copy.deepcopy(question.options)
             right_options.sort(key=lambda option: int(option['num']))
         else:
-            right_options = [option for option in question['options'] if option['is_true']]
-        right_answers[str(i + 1)] = {
-            'right_answers': right_options,
-            'id': str(question['_id'])
-        }
-    storage = mongo.RunningTestsAnswersStorage.connect(db=mongo.get_conn())
-    docs = storage.cleanup(user_id=request.user.id)
-    storage.add(
-        right_answers=right_answers,
-        test_id=test.id,
-        user_id=request.user.id,
-        test_duration=test.duration)
+            right_options = [option for option in question.options if option['is_true']]
+        right_answers.append({
+            'question_num': i + 1,
+            'right_options': right_options,
+            'question_id': str(question.object_id)
+        })
+    docs = RunningTestsAnswers.objects.filter(user__id=request.user.id)
     for test_answers in docs:
         result = utils.get_test_result(
             request=request,
-            right_answers=test_answers['right_answers'],
-            test_duration=test_answers['test_duration'])
-        storage = mongo.TestsResultsStorage.connect(db=mongo.get_conn())
-        storage.add_results_to_running_test(
-            test_result=result,
-            test_id=test.id)
+            right_answers=test_answers.right_answers,
+            test_duration=test_answers.test_duration)
+        test_results = TestResult.objects.get(is_running=True, test__id=test.id)
+        test_results.results += result
+        test_results.save()
+    docs.delete()
+    RunningTestsAnswers.objects.create(
+        right_answers=right_answers,
+        test=test,
+        user=request.user,
+        test_duration=test.duration)
     questions_list = utils.split_questions(test_questions)
     context = {
         'title': 'Тест',
@@ -430,8 +419,7 @@ def student_run_test(request: HttpRequest) -> HttpResponse:
 def get_left_time(request: HttpRequest) -> JsonResponse:
     """Return time that left for passing test"""
     if request.user.is_authenticated or request.method != 'POST':
-        storage = mongo.RunningTestsAnswersStorage.connect(db=mongo.get_conn())
-        time_left = storage.get_left_time(user_id=request.user.id)
-        if time_left is not None:
-            return JsonResponse({'time_left': time_left})
+        user_launched_test = RunningTestsAnswers.objects.filter(user__id=request.user.id).first()
+        if user_launched_test:
+            return JsonResponse({'time_left': user_launched_test.time_left})
     return JsonResponse({})

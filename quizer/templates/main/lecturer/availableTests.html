@@ -67,6 +67,9 @@
 	const questionsAPIUrl = "{% url 'api:questions_api' 'test_id' %}";
 
 	renderAvailableTests();
+	{% if info %}
+	    renderInfoModalWindow('{{ info.title }}', '{{ info.message }}');	
+	{% endif %}
 </script>
 
 {% endblock %}

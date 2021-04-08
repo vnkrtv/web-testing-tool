@@ -12,7 +12,6 @@ from django.http import HttpRequest
 from django.conf import settings
 
 from .models import Test, Subject, Question
-from .mongo import get_conn, QuestionsStorage
 
 
 class EmptyOptionsError(Exception):
@@ -117,12 +116,22 @@ def split_questions(questions: List[Dict[str, Any]]) -> List[Tuple[List[Dict[str
 def load_questions_list(request: HttpRequest, test_id: int) -> List[Dict[str, Any]]:
     """
     Parse request with loaded file with questions to questions list
-
+    :param test_id: <Test> id
     :param request: <HttpRequest>
-    :param test_id: id of <Test> instance
     :return: list of questions
     """
     content = request.FILES['file'].read().decode('utf-8')
+    return parse_questions(content, test_id)
+
+
+def parse_questions(content: str, test_id: int) -> List[Dict[str, Any]]:
+    """
+    Parse request with loaded file with questions to questions list
+
+    :param content: str with questions
+    :param test_id: id of <Test> instance
+    :return: list of questions
+    """
     questions_list = [question for question in content.replace('\r', '').split('\n\n') if question]
     parsed_questions_list = []
     numbers = set('0123456789')
@@ -192,19 +201,19 @@ def load_questions_list(request: HttpRequest, test_id: int) -> List[Dict[str, An
     return parsed_questions_list
 
 
-def get_test_result(request: HttpRequest, right_answers: dict, test_duration: int) -> Dict[str, Any]:
+def get_test_result(request: HttpRequest, right_answers: List[Dict[str, Any]], test_duration: int) -> Dict[str, Any]:
     """
     Get testing result from HttpRequest object
 
     :param request: <HttpRequest>
-    :param right_answers: dict with right_answers
+    :param right_answers: list of dicts with right answers
     :param test_duration: <int>< duration of passed test
     :return: dict with testing result
     """
     response = dict(request.POST)
-    response.pop('csrfmiddlewaretoken')
-    time = response.get('time', ['0'])[0]
+    time = int(response.get('time', ['0'])[0])
 
+    numbers = set('0123456789')
     answers = {}
     for key in response:
         """
@@ -212,28 +221,31 @@ def get_test_result(request: HttpRequest, right_answers: dict, test_duration: in
             'key' for single: {question_num}: ['{selected_option}']
         """
         buf = key.split('_')
-        if len(buf) == 1:
-            if len(response[key]) > 1:
-                answers[buf[0]] = response[key]
+        if buf[0] in numbers:
+            question_num = int(buf[0])
+            if len(buf) == 1:
+                if len(response[key]) > 1:
+                    answers[question_num] = response[key]
+                else:
+                    answers[question_num] = [response[key][0]]
             else:
-                answers[buf[0]] = [response[key][0]]
-        else:
-            option = '_'.join(buf[1:])
-            if buf[0] in answers:
-                answers[buf[0]].append(option)
-            else:
-                answers[buf[0]] = [option]
+                option = '_'.join(buf[1:])
+                if question_num in answers:
+                    answers[question_num].append(option)
+                else:
+                    answers[question_num] = [option]
 
     right_answers_count = 0
     questions = []
-    for question_num in right_answers:
+    for right_answer in right_answers:
+        question_num = right_answer['question_num']
         questions.append({
-            'id': right_answers[question_num]['id'],
-            'selected_answers': answers[question_num] if question_num in answers else [],
-            'right_answers': [item['option'] for item in right_answers[question_num]['right_answers']]
+            'question_id': right_answer['question_id'],
+            'selected_options': answers[question_num] if question_num in answers else [],
+            'right_options': [item['option'] for item in right_answer['right_options']]
         })
         if question_num in answers:
-            if [item['option'] for item in right_answers[question_num]['right_answers']] == answers[question_num]:
+            if [_['option'] for _ in right_answer['right_options']] == answers[question_num]:
                 right_answers_count += 1
                 questions[-1]['is_true'] = True
             else:
@@ -241,23 +253,11 @@ def get_test_result(request: HttpRequest, right_answers: dict, test_duration: in
     return {
         'user_id': request.user.id,
         'username': request.user.username,
-        'time': test_duration - int(time),
+        'time': test_duration - time,
         'tasks_num': len(right_answers),
         'right_answers_count': right_answers_count,
         'questions': questions
     }
-
-
-def parse_questions_file(file_name: str) -> List[Dict[str, Any]]:
-    """
-    Parse file with questions to questions list
-
-    :param file_name: name of file with questions
-    :return: list of questions
-    """
-    with open(file_name, 'r') as f:
-        content = f.read()
-    return parse_questions(content)
 
 
 def add_subject_with_tests(request: HttpRequest) -> str:
@@ -267,8 +267,6 @@ def add_subject_with_tests(request: HttpRequest) -> str:
     :param request: <HttpRequest>
     :return: str with results of loading
     """
-    storage = QuestionsStorage.connect(db=get_conn())
-
     short_name = request.POST['name']
     name = SubjectParser.get_name(short_name)
     subject = Subject(
@@ -290,9 +288,15 @@ def add_subject_with_tests(request: HttpRequest) -> str:
         test.save()
         tests_count += 1
         try:
-            questions_list = parse_questions(test_data.read().decode('utf-8'))
+            questions_list = parse_questions(test_data.read().decode('utf-8'), test_id=test.id)
             for question in questions_list:
-                storage.add_one(question=question, test_id=test.id)
+                Question.objects.create(
+                    formulation=question.get('formulation'),
+                    multiselect=question.get('multiselect'),
+                    tasks_num=question.get('tasks_num'),
+                    type=question.get('type'),
+                    options=Question.parse_options(question.get('options')),
+                    test=test)
             questions_count += len(questions_list)
         except UnicodeDecodeError as e:
             print('%s - ошибка при обработке файла с вопросами к тесту %s' % (e, test_name))

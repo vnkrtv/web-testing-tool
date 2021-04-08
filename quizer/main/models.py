@@ -3,10 +3,11 @@
 Models for working with MongoDB and objects stored in it
 """
 from typing import List, Dict, Any
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from djongo import models
 from django.conf import settings
+from django.utils import timezone
 
 DEFAULT_AUTHOR_ID = 1
 DEFAULT_TEST_ID = 0
@@ -125,6 +126,10 @@ class Question(models.Model):
     type = models.CharField('Тип вопроса', max_length=50)
     objects = models.DjongoManager()
 
+    @property
+    def object_id(self):
+        return self._id
+
     @classmethod
     def parse_options(cls, options: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         return [
@@ -150,10 +155,17 @@ class Question(models.Model):
         verbose_name_plural = 'Вопросы'
 
 
+class Option(models.Model):
+    option = models.CharField()
+
+    class Meta:
+        abstract = True
+
+
 class QuestionRightAnswer(models.Model):
-    question_id = models.ObjectIdField()
     question_num = models.IntegerField()
-    right_options = models.ArrayField(model_container=QuestionOption)
+    question_id = models.ObjectIdField()
+    right_options = models.ArrayField(model_container=Option)
 
     class Meta:
         abstract = True
@@ -162,7 +174,8 @@ class QuestionRightAnswer(models.Model):
 class RunningTestsAnswers(models.Model):
     _id = models.ObjectIdField()
     test_duration = models.IntegerField('Длительность теста')
-    start_date = models.DateTimeField('Время запуска теста')
+    start_date = models.DateTimeField('Время запуска теста',
+                                      default=lambda: timezone.now() + TZ_TIMEDELTA)
     test = models.ForeignKey(
         Test,
         null=True,
@@ -177,12 +190,12 @@ class RunningTestsAnswers(models.Model):
         related_name='right_answers',
         on_delete=models.SET_NULL,
         default=DEFAULT_AUTHOR_ID)
-    right_answers = models.EmbeddedField(model_container=QuestionRightAnswer)
+    right_answers = models.ArrayField(model_container=QuestionRightAnswer)
     objects = models.DjongoManager()
 
     @property
     def time_left(self) -> float:
-        delta = datetime.now() - self.start_date.scheduled_at.date() + TZ_TIMEDELTA
+        delta = timezone.now() - self.start_date + TZ_TIMEDELTA
         return self.test_duration - delta.total_seconds()
 
     class Meta:
@@ -191,20 +204,11 @@ class RunningTestsAnswers(models.Model):
         verbose_name_plural = 'Ответы за запущенные тесты'
 
 
-class Option(models.Model):
-    option = models.CharField(max_length=1_000)
-
-    class Meta:
-        abstract = True
-
-
 class UserQuestionAnswer(models.Model):
     question_id = models.ObjectIdField()
-    # selected_answers = models.JSONField()
-    # right_answers = models.JSONField()
     is_true = models.BooleanField(default=False)
-    selected_answers = models.ArrayField(model_container=Option)
-    right_answers = models.ArrayField(model_container=Option)
+    selected_options = models.ArrayField(model_container=Option)
+    right_options = models.ArrayField(model_container=Option)
 
     class Meta:
         abstract = True
@@ -228,7 +232,7 @@ class TestResult(models.Model):
     is_running = models.BooleanField('Тест еще запущен')
     comment = models.TextField('Комментарий преподавателя', default='')
     date = models.DateTimeField('Время запуска тестирования',
-                                default=lambda: datetime.now() + TZ_TIMEDELTA)
+                                default=lambda: timezone.now() + TZ_TIMEDELTA)
     launched_lecturer = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         null=True,
@@ -249,6 +253,10 @@ class TestResult(models.Model):
         on_delete=models.SET_NULL)
     results = models.ArrayField(model_container=UserResult)
     objects = models.DjongoManager()
+
+    @property
+    def object_id(self):
+        return self._id
 
     class Meta:
         db_table = 'tests_results'

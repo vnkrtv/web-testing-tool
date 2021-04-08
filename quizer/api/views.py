@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from main.models import Subject, Test, Question, TestResult, RunningTestsAnswers
-from main import mongo, utils
+from main import utils
 from .serializers import SubjectSerializer, TestSerializer, QuestionSerializer, TestResultSerializer
 from .permissions import IsLecturer
 

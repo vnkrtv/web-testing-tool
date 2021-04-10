@@ -181,6 +181,7 @@ class AdministrationView(View):
     def post(self, request: HttpRequest) -> HttpResponse:
         """Page with data administration tools"""
         try:
+
             file = request.FILES['dumpfile']
             if file.name == 'tests_results.json':
                 content = file.read().decode('utf-8')

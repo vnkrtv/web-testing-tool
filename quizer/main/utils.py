@@ -3,12 +3,17 @@
 Some utils for views
 """
 import math
+import os
+import pathlib
+from datetime import datetime
 from typing import List, Dict, Tuple, Any, Union
 
 import jwt
 import requests
 
+from django.core.management import call_command
 from django.http import HttpRequest
+from django.utils import timezone
 from django.conf import settings
 
 from .models import Test, Subject, Question
@@ -199,6 +204,20 @@ def parse_questions(content: str, test_id: int) -> List[Dict[str, Any]]:
         })
         cur_line += 1  # Empty string between questions
     return parsed_questions_list
+
+
+def make_database_dump() -> pathlib.Path:
+    """
+    Make database dump and return path to dump
+
+    :return: path to database dump file
+    """
+    dump_filename = pathlib.Path(f'{settings.DATABASE_DUMP_ROOT}/quizer_{timezone.now().strftime("%d-%m-%y_%H:%M:%S")}.json')
+    if not dump_filename.exists():
+        os.makedirs(dump_filename.parent, exist_ok=True)
+    with open(dump_filename, 'w') as dump_file:
+        call_command('dumpdata', format='json', indent=4, stdout=dump_file)
+    return dump_filename
 
 
 def get_test_result(request: HttpRequest, right_answers: List[Dict[str, Any]], test_duration: int) -> Dict[str, Any]:

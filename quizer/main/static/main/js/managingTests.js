@@ -49,6 +49,10 @@ function fillAddQuestionModal(testID) {
 }
 
 function fillLoadQuestionsModal(testID) {
+    const fileLabel = document.getElementById('fileLabel')
+    fileLabel.innerText = 'Выберите файл';
+    const loadQuestionsInput = document.getElementById('file');
+    loadQuestionsInput.value = '';
     const testIDInput = document.getElementById('load-questions-test-id');
     testIDInput.value = testID;
 }

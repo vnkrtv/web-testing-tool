@@ -1,10 +1,12 @@
 # pylint: disable=import-error, line-too-long, relative-beyond-top-level
 """Quizer backend"""
+import os
 import random
 import copy
 
 import bson
 import requests
+from django.utils.encoding import smart_str
 from jwt import DecodeError
 
 from django.contrib.auth.models import User
@@ -38,8 +40,8 @@ def login_page(request: HttpRequest) -> HttpResponse:
     """Authorize user and redirect him to available_tests page"""
     logout(request)
     try:
-        username, group = utils.get_auth_data(request)
-        # username, group = 'ivan_korotaev', 'admin'
+        # username, group = utils.get_auth_data(request)
+        username, group = 'ivan_korotaev', 'admin'
     except DecodeError:
         return HttpResponse("JWT decode error: chet polomalos'")
 
@@ -140,6 +142,43 @@ def lecturer_run_test(request: HttpRequest, test_id: int) -> HttpResponse:
         'right_answers': right_answers,
     }
     return render(request, 'main/lecturer/runTest.html', context)
+
+
+@unauthenticated_user
+@allowed_users(allowed_roles=['admin'])
+def get_db_dump(request: HttpRequest) -> HttpResponse:
+    filepath = utils.make_database_dump()
+    with open(filepath, 'r') as dump_file:
+        response = HttpResponse(dump_file, content_type='application/force-download')
+    response['Content-Disposition'] = 'attachment; filename=%s' % smart_str(filepath.name)
+    response['X-Sendfile'] = smart_str(filepath)
+    os.remove(filepath)
+    return response
+
+
+class AdministrationView(View):
+    """View for managing data import/export"""
+    template = 'main/admin/administration.html'
+    title = 'Данные системы'
+    context = {}
+    decorators = [unauthenticated_user, allowed_users(allowed_roles=['admin'])]
+
+    @method_decorator(decorators)
+    def get(self, request: HttpRequest) -> HttpResponse:
+        self.context = {
+            'title': self.title,
+            'tests_count': Test.objects.count(),
+            'subjects_count': Subject.objects.count(),
+            'questions_count': Question.objects.count(),
+            'tests_results_count': TestResult.objects.count(),
+            'running_tests_answers_count': RunningTestsAnswers.objects.count()
+        }
+        return render(request, self.template, self.context)
+
+    @method_decorator(decorators)
+    def post(self, request: HttpRequest) -> HttpResponse:
+        """Page with data administration tools"""
+        return self.get(request)
 
 
 class AvailableTestsView(View):

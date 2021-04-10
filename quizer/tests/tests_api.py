@@ -2,14 +2,14 @@
 """
 Main app tests, covered views.py, models.py and mongo.py
 """
-import os
 from unittest import mock, skip
+
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.auth.models import User, Group
-from django.conf import settings
-from quizer.main.models import Subject, Test, Question, QuestionOption
-from quizer.main import mongo
+
+from main.models import Subject, Test, Question, TestResult, RunningTestsAnswers
+from api.serializers import SubjectSerializer, TestSerializer, QuestionSerializer, TestResultSerializer
 
 QUESTIONS_FILE_DATA = """Как создать вопрос?
 + добавив верные ответы
@@ -93,30 +93,50 @@ class MainTest(TestCase):
                 {'option': 'True option', 'is_true': True}
             ])
         )
-        mongo.set_conn(
-            host=settings.DATABASES['default']['HOST'],
-            port=settings.DATABASES['default']['PORT'],
-            db_name=settings.DATABASES['default']['TEST']['NAME'])
-        self.running_tests_answers_storage = mongo.RunningTestsAnswersStorage.connect(
-            db=mongo.get_conn())
-        self.tests_results_storage = mongo.TestsResultsStorage.connect(
-            db=mongo.get_conn())
 
 
-class QuestionsStorageTest(MainTest):
+class SubjectAPITest(MainTest):
     """
-    Tests for QuestionsStorage class which provides work
-    with 'questions' collection in database
+    Tests for SubjectAPI
     """
 
-    def test_all(self):
-        self.assertEqual(1, Subject.objects.all().count())
-        self.assertEqual(1, Test.objects.all().count())
-        self.assertEqual(2, Question.objects.all().count())
-        Subject.objects.get(id=self.subject.id).delete()
-        self.assertEqual(0, Subject.objects.all().count())
-        self.assertEqual(0, Test.objects.all().count())
-        self.assertEqual(0, Question.objects.all().count())
+    def test_get_for_unauthenticated_user(self):
+        """
+        Test response code for unauthenticated user
+        """
+        client = Client()
+        client.logout()
+        response = client.get(reverse('api:subjects_api'))
+
+        self.assertEqual(response.status_code, 401)
+
+    def test_get_for_student(self):
+        """
+        Test response code for user from student group
+        """
+        client = Client()
+        client.login(
+            username=self.student.username,
+            password=''
+        )
+        response = client.get(reverse('api:subjects_api'))
+
+        self.assertEqual(response.status_code, 403)
+
+    def test_get_for_lecturer(self):
+        """
+        Test get method for user from lecturer group
+        """
+        client = Client()
+        client.login(
+            username=self.lecturer.username,
+            password=''
+        )
+        response = client.get(reverse('api:subjects_api'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, self.subject.name)
+
 
 #     def test_adding_and_getting_questions(self) -> None:
 #         """
@@ -170,87 +190,87 @@ class QuestionsStorageTest(MainTest):
 #         )
 #         updated_questions = self.questions_storage.get_many(test_id=self.test.id)
 #         self.assertEqual(0, len(updated_questions))
-
-
-class AuthorizationTest(MainTest):
-    """
-    Tests for authorization system in the application
-    """
-
-    @mock.patch('main.utils.get_auth_data')
-    def test_student_auth(self, get_auth_data) -> None:
-        """
-        Test for authorization of user belonging to 'student' group
-        """
-        get_auth_data.return_value = self.student.username, 'student'
-        client = Client()
-        client.logout()
-        response = client.get(reverse('main:login_page'), follow=True)
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Слушатель')
-
-    @mock.patch('main.utils.get_auth_data')
-    def test_lecturer_auth(self, get_auth_data) -> None:
-        """
-        Test for authorization of user belonging to 'lecturer' group
-        """
-        get_auth_data.return_value = self.lecturer.username, 'teacher'
-        client = Client()
-        client.logout()
-        response = client.get(reverse('main:login_page'), follow=True)
-
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Преподаватель')
-
-    @mock.patch('main.utils.get_auth_data')
-    def test_anonymous_auth(self, get_auth_data) -> None:
-        """
-        Test for authorization of a user not registered in the system
-        """
-        get_auth_data.return_value = 'anon', 'unknown'
-        client = Client()
-        client.logout()
-        response = client.get(reverse('main:login_page'), follow=True)
-
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Incorrect group.')
-
-    @mock.patch('main.utils.get_auth_data')
-    def test_anonymous_redirect(self, get_auth_data) -> None:
-        """
-        Test redirecting a logged-out user to the login page when trying to get to the home page
-        """
-        get_auth_data.return_value = '', ''
-        client = Client()
-        client.logout()
-        response = client.get(reverse('main:tests'), follow=True)
-
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Incorrect group.')
-
-
-class AccessRightsTest(MainTest):
-    """
-    Testing access rights of various user groups
-    """
-
-    def test_student_access(self) -> None:
-        """
-        Testing that user belonging to 'student' group does not
-        have permission to view 'lecturer' pages
-        """
-        client = Client()
-        client.login(
-            username=self.student.username,
-            password=''
-        )
-        response = client.post(reverse('main:tests'), {
-            'username': self.student.username,
-            'password': ''
-        }, follow=True)
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Слушатель')
-
+#
+#
+# class AuthorizationTest(MainTest):
+#     """
+#     Tests for authorization system in the application
+#     """
+#
+#     @mock.patch('main.utils.get_auth_data')
+#     def test_student_auth(self, get_auth_data) -> None:
+#         """
+#         Test for authorization of user belonging to 'student' group
+#         """
+#         get_auth_data.return_value = self.student.username, 'student'
+#         client = Client()
+#         client.logout()
+#         response = client.get(reverse('main:login_page'), follow=True)
+#         self.assertEqual(response.status_code, 200)
+#         self.assertContains(response, 'Слушатель')
+#
+#     @mock.patch('main.utils.get_auth_data')
+#     def test_lecturer_auth(self, get_auth_data) -> None:
+#         """
+#         Test for authorization of user belonging to 'lecturer' group
+#         """
+#         get_auth_data.return_value = self.lecturer.username, 'teacher'
+#         client = Client()
+#         client.logout()
+#         response = client.get(reverse('main:login_page'), follow=True)
+#
+#         self.assertEqual(response.status_code, 200)
+#         self.assertContains(response, 'Преподаватель')
+#
+#     @mock.patch('main.utils.get_auth_data')
+#     def test_anonymous_auth(self, get_auth_data) -> None:
+#         """
+#         Test for authorization of a user not registered in the system
+#         """
+#         get_auth_data.return_value = 'anon', 'unknown'
+#         client = Client()
+#         client.logout()
+#         response = client.get(reverse('main:login_page'), follow=True)
+#
+#         self.assertEqual(response.status_code, 200)
+#         self.assertContains(response, 'Incorrect group.')
+#
+#     @mock.patch('main.utils.get_auth_data')
+#     def test_anonymous_redirect(self, get_auth_data) -> None:
+#         """
+#         Test redirecting a logged-out user to the login page when trying to get to the home page
+#         """
+#         get_auth_data.return_value = '', ''
+#         client = Client()
+#         client.logout()
+#         response = client.get(reverse('main:tests'), follow=True)
+#
+#         self.assertEqual(response.status_code, 200)
+#         self.assertContains(response, 'Incorrect group.')
+#
+#
+# class AccessRightsTest(MainTest):
+#     """
+#     Testing access rights of various user groups
+#     """
+#
+#     def test_student_access(self) -> None:
+#         """
+#         Testing that user belonging to 'student' group does not
+#         have permission to view 'lecturer' pages
+#         """
+#         client = Client()
+#         client.login(
+#             username=self.student.username,
+#             password=''
+#         )
+#         response = client.post(reverse('main:tests'), {
+#             'username': self.student.username,
+#             'password': ''
+#         }, follow=True)
+#         self.assertEqual(response.status_code, 200)
+#         self.assertContains(response, 'Слушатель')
+#
 
 '''
 class TestAddingTest(MainTest):

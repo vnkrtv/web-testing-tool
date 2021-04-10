@@ -65,6 +65,14 @@
 	        <i aria-hidden="true"></i><img src='{% edit_icon %}'> Редактировать
 	      </a>
 	    </li>
+	    {% if user.is_superuser %}
+	    <li class="header">Администрирование</li>
+	    <li>
+	      <a href="{% url 'main:administration' %}">
+	        <i aria-hidden="true"></i><img src='{% db_icon %}'> Данные
+	      </a>
+	    </li>
+	    {% endif %}
 	  </ul>
 	</div>
 	<div class="content-container">

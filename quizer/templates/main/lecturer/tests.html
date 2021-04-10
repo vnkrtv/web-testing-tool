@@ -193,9 +193,13 @@
     <div class="form-row">
         <div class="col-md-4 mb-3">
             <div class="form-group">
-                <label for="file">Выберите файл</label>
-                <input type="file" class="form-control-file" id="file" name="file" required="required">
+                <div class="custom-file">
+                    <input id="file" type="file" name='file' class="custom-file-input" id="trainTextFile"
+                           aria-describedby="trainTextFile" required="required" onchange="document.getElementById('fileLabel').innerText = this.files[0].name;">
+                    <label id="fileLabel" class="custom-file-label" for="trainTextFile">Выберите файл</label>
+                </div>
             </div>
+
         </div>
     </div>
     <div class="modal-footer">

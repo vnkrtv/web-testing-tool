@@ -8,41 +8,15 @@
 <link rel="stylesheet" href="{% static 'main/css/modal-window.css' %}">
 
 <div class='jumbotron'>
-    <h2>Учебные предметы</h2><br>
+    <h2>Данные системы</h2><br>
     <p>Здесь отображаются учебные предметы, добавленные в систему.</p>
     <div class="btn-group mr-2">
-        <button class="btn btn-success js-open-modal" data-modal="add-modal" onclick='clearForms()'><img src='{% add_icon %}'> Добавить предмет</button>
+        <a class="btn btn-success js-open-modal" href="#" data-modal="add-modal" onclick='clearForms()'><img src='{% import_icon %}'> Импортировать данные</a>
     </div>
     <div class="btn-group mr-2">
-        <button class="btn btn-success js-open-modal" data-modal="load-modal" onclick='clearForms()'><img src='{% download_icon %}'> Загрузить предмет</button>
+        <a class="btn btn-success" href="{% url 'main:get_db_dump' %}"><img src='{% export_icon %}'>Экспортировать данные</a>
     </div>
     <div id="subjects-container"></div>
-</div>
-
-<div class="modal-window" data-modal="add-modal">
-   <img class="modal__cross js-modal-close" src="{% close_icon %}">
-   <h4>Новый предмет</h4>
-   <hr class="my hr4">
-    <div>
-        <div class="form-row">
-          <div class="col-md-4 mb-3">
-              <label for="{{ form.name.id_for_label }}">Название предмета<br>
-                {{ form.name }}
-              </label>
-          </div>
-        </div>
-        <div class="form-row">
-           <div class="col-md-4 mb-3">
-            <label for="{{ form.description.id_for_label }}">Описание<br>
-              {{ form.description }}
-            </label>
-          </div>
-        </div>
-    </div>
-   <div class="modal-footer">
-      <div class="btn btn-primary js-modal-close"><img src="{% cancel_icon %}"> Закрыть</div>
-      <button class="btn btn-success js-modal-close" onclick="addSubject()"><img src='{% add_icon %}'> Добавить</button>
-   </div>
 </div>
 
 <div class="modal-window" data-modal="load-modal">
@@ -50,13 +24,10 @@
    <h4>Загрузить предмет</h4>
    <hr class="my hr4">
       <div>
-        <div class="custom-file">
-            <input id="tests-files" type="file" name='tests' class="custom-file-input" id="trainTextFile"
-                   aria-describedby="trainTextFile" onchange="selectFolder(event)" required webkitdirectory mozdirectory msdirectory odirectory directory multiple>
-            <label id="fileLabel" class="custom-file-label" for="trainTextFile">Выберите папку с тестами по предмету</label>
-        </div>
-        <input type="hidden" name="files_names" id="files_names" value="">
-        <p id="selectedFiles"></p>
+       <div>Выберите папку с тестами к предмету:
+            <input type="file" id="tests-files" name='tests' onchange="selectFolder(event)" webkitdirectory mozdirectory msdirectory odirectory directory multiple />
+            <input type="hidden" name="files_names" id="files_names" value="">
+       </div>
         <hr>
           <div>
             {% csrf_token %} 
@@ -132,14 +103,10 @@
 
 <script src="{% static 'main/js/jquery-3.5.1.js' %}"></script>
 <script src="{% static 'main/js/modalWindow.js' %}"></script>
-<script src="{% static 'main/js/subjects.js' %}"></script>
 <script type="text/javascript">
     const csrfToken = "{{ csrf_token }}";
-    const editSubjectAPIUrl = "{% url 'api:edit_subjects_api' 'subject_id' %}";
-    const subjectAPIUrl = "{% url 'api:subjects_api' %}";
-    const dbIconUrl = "{% database_icon %}";
-    const editIconUrl = "{% edit_icon %}";
-    const delIconUrl = "{% delete_icon %}";
+    const exportIconUrl = "{% export_icon %}";
+    const importIconUrl = "{% import_icon %}";
     renderSubjects()
 </script>
 

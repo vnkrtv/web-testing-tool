@@ -151,6 +151,8 @@ STATICFILES_DIRS = [
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
+DATABASE_DUMP_ROOT = os.path.join(BASE_DIR, 'dumps')
+
 AUTH_URL = 'http://sms.gitwork.ru/auth/public_key/'
 
 REST_FRAMEWORK = {

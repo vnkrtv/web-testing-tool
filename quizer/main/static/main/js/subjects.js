@@ -1,4 +1,10 @@
 function clearForms(el) {
+    const selectedFilesP = document.getElementById('selectedFiles');
+    selectedFilesP.innerHTML = '';
+    const fileLabel = document.getElementById('fileLabel');
+    fileLabel.innerText = 'Выберите папку с тестами по предмету';
+    const testsFiles = document.getElementById('tests-files');
+    testsFiles.value = '';
     const elements = document.getElementsByClassName('form-control');
     for (const element of elements) {
         element.value = '';
@@ -6,16 +12,21 @@ function clearForms(el) {
 }
 
 function selectFolder(e) {
-    let theFiles = e.target.files;
-    let relativePath = theFiles[0].webkitRelativePath;
+    const selectedFilesP = document.getElementById('selectedFiles');
+
+    let uploadedFiles = e.target.files;
+    let relativePath = uploadedFiles[0].webkitRelativePath;
     let folder = relativePath.split("/");
     let filesStr = '';
-    for (let filePath of theFiles) {
-        filesStr += (filePath.name.split('.')[0] + '<separator>');
+
+    selectedFilesP.innerText = '\nФайлы с тестами:\n';
+    for (let file of uploadedFiles) {
+        filesStr += (file.name.split('.')[0] + '<separator>');
+        selectedFilesP.innerText += ` - ${file.name}\n`
     }
     document.getElementById('files_names').value = filesStr.substr(0, filesStr.length - 11);
     document.getElementById('load-subject-name-label').children[1].value = folder[0];
-
+    document.getElementById('fileLabel').innerText = folder[0];
 }
 
 function fillEditModal(subjectID) {

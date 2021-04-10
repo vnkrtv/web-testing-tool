@@ -45,6 +45,24 @@ def team_icon():
 
 
 @register.simple_tag
+def db_icon():
+    """Database icon source"""
+    return settings.STATIC_URL + 'main/images/server.svg'
+
+
+@register.simple_tag
+def export_icon():
+    """Export icon source"""
+    return settings.STATIC_URL + 'main/images/export.svg'
+
+
+@register.simple_tag
+def import_icon():
+    """Import icon source"""
+    return settings.STATIC_URL + 'main/images/import.svg'
+
+
+@register.simple_tag
 def clock_icon():
     """Clock icon source"""
     return settings.STATIC_URL + 'main/images/clock.svg'

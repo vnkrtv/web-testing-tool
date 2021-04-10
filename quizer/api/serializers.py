@@ -1,3 +1,4 @@
+import pathlib
 from bson import ObjectId
 
 from django.core.files.base import ContentFile
@@ -94,10 +95,10 @@ class QuestionSerializer(serializers.Serializer):
             questions_type = Question.Type.WITH_IMAGES
             options = []
             for i, file_name in enumerate(request.FILES):
-                path = f'{test.subject.name}/{test.name}/{questions_id}/{i}.{file_name.split(".")[-1]}'
+                path = pathlib.Path(f'{test.subject.name}/{test.name}/{questions_id}/{i}.{file_name.split(".")[-1]}')
                 default_storage.save(path, ContentFile(request.FILES[file_name].read()))
                 options.append({
-                    'option': path,
+                    'option': str(path),
                     'is_true': request.data.get(file_name) == 'true'
                 })
         else:

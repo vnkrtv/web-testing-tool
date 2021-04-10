@@ -6,7 +6,7 @@
   "media": "/usr/share/python3/quizer/media",
   "update_token": "f75316a4-fa3a-4cc4-80c5-782e01b5499e",
   "scope": "student",
-  "test_command": "/usr/share/python3/venv/bin/python /usr/share/python3/quizer/manage.py test main ",
+  "test_command": "cd /usr/share/python3/quizer && /usr/share/python3/venv/bin/python runtests.py",
   "app_port": 80,
   "developer": "ivan_korotaev",
   "curators": [
@@ -20,7 +20,7 @@
     "MONGO_DNNAME": "quizer",
     "URL_PREFIX": "quizer",
     "AUTH_URL": "http://gateway/auth/public_key/",
-    "WORKERS_NUM": 8
+    "WORKERS_NUM": 12
   },
   "database": {
     "name": "quizer_db",

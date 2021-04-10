@@ -18,5 +18,7 @@ urlpatterns = [
     url(r'^testing_results/$', views.stop_running_test, name='stop_running_test'),
     url(r'^test_result/$', views.PassedTestView.as_view(), name='test_result'),
     url(r'^test/$', views.student_run_test, name='student_run_test'),
-    url(r'^get_left_time/$', views.get_left_time, name='get_left_time')
+    url(r'^get_left_time/$', views.get_left_time, name='get_left_time'),
+    url(r'^administration/$', views.AdministrationView.as_view(), name='administration'),
+    url(r'^get_db_dump/$', views.get_db_dump, name='get_db_dump')
 ]

@@ -180,27 +180,35 @@ class AdministrationView(View):
     @method_decorator(decorators)
     def post(self, request: HttpRequest) -> HttpResponse:
         """Page with data administration tools"""
-        file = request.FILES['dumpfile']
-        if file.name == 'tests_results.json':
-            content = file.read().decode('utf-8')
-            dump_obj = json.loads(content)
-            for test_result in dump_obj:
-                results = test_result['results'].copy()
-                for user_res in results:
-                    for question in user_res['questions']:
-                        question['question_id'] = bson.ObjectId(question['question_id'])
-                TestResult.objects.create(
-                    _id=bson.ObjectId(test_result['_id']),
-                    test=Test.objects.get(id=test_result['test_id']),
-                    launched_lecturer=User.objects.get(id=test_result['launched_lecturer_id']),
-                    subject=Subject.objects.get(id=test_result['subject_id']),
-                    is_running=test_result['is_running'],
-                    comment=test_result['comment'],
-                    results=results)
+        try:
+            file = request.FILES['dumpfile']
+            if file.name == 'tests_results.json':
+                content = file.read().decode('utf-8')
+                dump_obj = json.loads(content)
+                for test_result in dump_obj:
+                    results = test_result['results'].copy()
+                    for user_res in results:
+                        for question in user_res['questions']:
+                            question['question_id'] = bson.ObjectId(question['question_id'])
+                    TestResult.objects.create(
+                        _id=bson.ObjectId(test_result['_id']),
+                        test=Test.objects.get(id=test_result['test_id']),
+                        launched_lecturer=User.objects.get(id=test_result['launched_lecturer_id']),
+                        subject=Subject.objects.get(id=test_result['subject_id']),
+                        is_running=test_result['is_running'],
+                        comment=test_result['comment'],
+                        results=results)
+                self.context = {
+                    'info': {
+                        'title': 'Данные экспортированы',
+                        'message': 'Успешно экспортировано %d результатов тестирования' % len(dump_obj)
+                    }
+                }
+        except Exception as e:
             self.context = {
                 'info': {
-                    'title': 'Данные экспортированы',
-                    'message': 'Успешно экспортировано %d результатов тестирования' % len(dump_obj)
+                    'title': 'Ошибка',
+                    'message': str(e)
                 }
             }
         return self.get(request)

@@ -41,8 +41,8 @@ def login_page(request: HttpRequest) -> HttpResponse:
     """Authorize user and redirect him to available_tests page"""
     logout(request)
     try:
-        # username, group = utils.get_auth_data(request)
-        username, group = 'ivan_korotaev', 'admin'
+        username, group = utils.get_auth_data(request)
+        # username, group = 'ivan_korotaev', 'admin'
     except DecodeError:
         return HttpResponse("JWT decode error: chet polomalos'")
 

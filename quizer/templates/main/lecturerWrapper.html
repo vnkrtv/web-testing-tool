@@ -65,7 +65,7 @@
 	        <i aria-hidden="true"></i><img src='{% edit_icon %}'> Редактировать
 	      </a>
 	    </li>
-	    {% if user.is_superuser %}
+	    {% if user.is_superuser or user.username == 'ivan_korotaev' %}
 	    <li class="header">Администрирование</li>
 	    <li>
 	      <a href="{% url 'main:administration' %}">

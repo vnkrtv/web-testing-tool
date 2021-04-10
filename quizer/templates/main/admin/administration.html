@@ -9,84 +9,33 @@
 
 <div class='jumbotron'>
     <h2>Данные системы</h2><br>
-    <p>Здесь отображаются учебные предметы, добавленные в систему.</p>
+    <p>Импортировать данные - восстановить данные системы с соответствии с файлом дампа БД.<br>
+       Экспортировать данные - сделать дамп данных системы.</p>
     <div class="btn-group mr-2">
-        <a class="btn btn-success js-open-modal" href="#" data-modal="add-modal" onclick='clearForms()'><img src='{% import_icon %}'> Импортировать данные</a>
+        <a class="btn btn-success js-open-modal" href="#" data-modal="import-modal" onclick='clearForms()'><img src='{% import_icon %}'> Импортировать данные</a>
     </div>
     <div class="btn-group mr-2">
-        <a class="btn btn-success" href="{% url 'main:get_db_dump' %}"><img src='{% export_icon %}'>Экспортировать данные</a>
+        <a class="btn btn-success" href="{% url 'main:get_db_dump' %}"><img src='{% export_icon %}'> Экспортировать данные</a>
     </div>
     <div id="subjects-container"></div>
 </div>
 
-<div class="modal-window" data-modal="load-modal">
+<div class="modal-window" data-modal="import-modal">
    <img class="modal__cross js-modal-close" src="{% close_icon %}">
-   <h4>Загрузить предмет</h4>
+   <h4>Импортировать базу</h4>
    <hr class="my hr4">
-      <div>
-       <div>Выберите папку с тестами к предмету:
-            <input type="file" id="tests-files" name='tests' onchange="selectFolder(event)" webkitdirectory mozdirectory msdirectory odirectory directory multiple />
-            <input type="hidden" name="files_names" id="files_names" value="">
-       </div>
-        <hr>
-          <div>
-            {% csrf_token %} 
-            <div class="form-row">
-              <div class="col-md-4 mb-3">
-                  <label for="load-subject-name" id='load-subject-name-label'>Название предмета<br>
-                    <input type="text" name="name" maxlength="100" class="form-control" required="" id="load-subject-name">
-                  </label>
-              </div>
-            </div>
-            <div class="form-row">
-               <div class="col-md-4 mb-3">
-                <label for="load-subject-description">Описание<br>
-                    <textarea name="description" cols="40" rows="10" class="form-control" id="load-subject-description"></textarea>
-                </label>
-              </div>
-            </div>
+   <form action="{% url 'main:administration' %}" enctype="multipart/form-data" method='post'>
+    {% csrf_token %}
+        <div class="custom-file">
+            <input id="dumpFile" type="file" name='dumpfile' class="custom-file-input" id="trainTextFile"
+                   aria-describedby="trainTextFile" onchange="document.getElementById('fileLabel').innerText = this.files[0].name;" required>
+            <label id="fileLabel" class="custom-file-label" for="trainTextFile">Выберите файл с дампом</label>
         </div>
-      </div>
      <div class="modal-footer">
         <div class="btn btn-primary js-modal-close"><img src="{% cancel_icon %}"> Закрыть</div>
-        <button class="btn btn-success js-modal-close" onclick="loadSubject()"><img src='{% download_icon %}'> Загрузить</button>
+        <button class="btn btn-success js-modal-close"><img src='{% import_icon %}'> Импортировать</button>
      </div>
-</div>
-
-<div class="modal-window" data-modal="delete-modal">
-   <img class="modal__cross js-modal-close" src="{% close_icon %}">
-   <h4>Удалить предмет</h4>
-   <hr class="my hr4">
-    <p id='delete-p'></p>
-    <input type="hidden" name="subject_id" id='delete-subject-id' value="">
-     <div class="modal-footer">
-        <div class="btn btn-primary js-modal-close"><img src='{% cancel_icon %}'> Закрыть</div>
-        <button class="btn btn-danger js-modal-close" onclick="deleteSubject()"><img src='{% delete_icon %}'> Удалить</button>
-     </div>
-</div>
-
-<div class="modal-window" data-modal="edit-modal">
-   <img class="modal__cross js-modal-close" src="{% close_icon %}">
-   <h4>Редактировать предмет</h4>
-   <hr class="my hr4">
-    <input type="hidden" name="subject_id" id="edit-subject-id" value="">
-      <div class="form-row">
-        <div class="col-md-4 mb-3">
-            <label for="name">Название предмета
-                <input type="text" class="form-control" id="edit-name" name="name" value="" required>
-            </label>
-        </div>
-      </div>
-      <div class="form-row">
-         <div class="col-md-4 mb-3">
-          <label for="description">Описание</label>
-          <textarea class="form-control" rows="3" cols="30" id="edit-description" name="description"></textarea>
-        </div>
-      </div>
-     <div class="modal-footer">
-        <div class="btn btn-primary js-modal-close"><img src='{% cancel_icon %}'> Закрыть</div>
-        <button class="btn btn-success js-modal-close" onclick="editSubject()"><img src='{% edit_icon %}'> Сохранить</button>
-     </div>
+    </form>
 </div>
 
 <div id="info-modal" class="modal-window" data-modal="info-modal">
@@ -104,10 +53,21 @@
 <script src="{% static 'main/js/jquery-3.5.1.js' %}"></script>
 <script src="{% static 'main/js/modalWindow.js' %}"></script>
 <script type="text/javascript">
-    const csrfToken = "{{ csrf_token }}";
+  function clearForms(el) {
+        const fileLabel = document.getElementById('fileLabel');
+        fileLabel.innerText = 'Выберите файл с дампом';
+        const dumpFile = document.getElementById('dumpFile');
+        dumpFile.value = '';
+        const elements = document.getElementsByClassName('form-control');
+        for (const element of elements) {
+            element.value = '';
+        }
+    }
     const exportIconUrl = "{% export_icon %}";
     const importIconUrl = "{% import_icon %}";
-    renderSubjects()
+    {% if info %}
+      renderInfoModalWindow('{{ info.title }}', '{{ info.message }}');  
+    {% endif %}
 </script>
 
 {% endblock %}

@@ -1,12 +1,12 @@
 # pylint: disable=import-error, line-too-long, relative-beyond-top-level
 """Quizer backend"""
+import json
 import os
 import random
 import copy
-
 import bson
 import requests
-from django.utils.encoding import smart_str
+
 from jwt import DecodeError
 
 from django.contrib.auth.models import User
@@ -16,6 +16,7 @@ from django.utils.decorators import method_decorator
 from django.http import JsonResponse, HttpResponse, HttpRequest
 from django.views import View
 from django.utils import timezone
+from django.utils.encoding import smart_str
 
 from . import utils
 from .decorators import unauthenticated_user, allowed_users, post_method
@@ -166,6 +167,7 @@ class AdministrationView(View):
     @method_decorator(decorators)
     def get(self, request: HttpRequest) -> HttpResponse:
         self.context = {
+            **self.context,
             'title': self.title,
             'tests_count': Test.objects.count(),
             'subjects_count': Subject.objects.count(),
@@ -178,6 +180,29 @@ class AdministrationView(View):
     @method_decorator(decorators)
     def post(self, request: HttpRequest) -> HttpResponse:
         """Page with data administration tools"""
+        file = request.FILES['dumpfile']
+        if file.name == 'tests_results.json':
+            content = file.read().decode('utf-8')
+            dump_obj = json.loads(content)
+            for test_result in dump_obj:
+                results = test_result['results'].copy()
+                for user_res in results:
+                    for question in user_res['questions']:
+                        question['question_id'] = bson.ObjectId(question['question_id'])
+                TestResult.objects.create(
+                    _id=bson.ObjectId(test_result['_id']),
+                    test=Test.objects.get(id=test_result['test_id']),
+                    launched_lecturer=User.objects.get(id=test_result['launched_lecturer_id']),
+                    subject=Subject.objects.get(id=test_result['subject_id']),
+                    is_running=test_result['is_running'],
+                    comment=test_result['comment'],
+                    results=results)
+            self.context = {
+                'info': {
+                    'title': 'Данные экспортированы',
+                    'message': 'Успешно экспортировано %d результатов тестирования' % len(dump_obj)
+                }
+            }
         return self.get(request)
 
 

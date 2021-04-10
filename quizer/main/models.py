@@ -199,7 +199,7 @@ class RunningTestsAnswers(models.Model):
         return self.test_duration - delta.total_seconds()
 
     class Meta:
-        db_table = 'running_tests_answers'
+        db_table = 'main_running_tests_answers'
         verbose_name = 'Ответы за запущенные тесты'
         verbose_name_plural = 'Ответы за запущенные тесты'
 
@@ -259,6 +259,6 @@ class TestResult(models.Model):
         return self._id
 
     class Meta:
-        db_table = 'tests_results'
+        db_table = 'main_tests_results'
         verbose_name = 'Результат тестирования'
         verbose_name_plural = 'Результаты тестирований'

@@ -212,7 +212,7 @@ def make_database_dump() -> pathlib.Path:
 
     :return: path to database dump file
     """
-    dump_filename = pathlib.Path(f'{settings.DATABASE_DUMP_ROOT}/quizer_{timezone.now().strftime("%d-%m-%y_%H:%M:%S")}.json')
+    dump_filename = pathlib.Path(f'{settings.DATABASE_DUMP_ROOT}/quizer_{timezone.now().strftime("%d-%m-%y_%H-%M")}.json')
     if not dump_filename.exists():
         os.makedirs(dump_filename.parent, exist_ok=True)
     with open(dump_filename, 'w') as dump_file:

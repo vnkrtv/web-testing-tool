@@ -122,6 +122,8 @@ STATICFILES_FINDERS = [
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
 ]
 
+DATABASE_DUMP_ROOT = os.path.join(BASE_DIR, 'dumps')
+
 AUTH_URL = '<AUTH_URL>'
 
 REST_FRAMEWORK = {

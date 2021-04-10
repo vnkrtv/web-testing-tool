@@ -6,7 +6,7 @@
   "media": "/usr/share/python3/quizer/media",
   "update_token": "f75316a4-fa3a-4cc4-80c5-782e01b5499e",
   "scope": "student",
-  "test_command": "echo 1",
+  "test_command": "cd /usr/share/python3/quizer && /usr/share/python3/venv/bin/python runtests.py",
   "app_port": 80,
   "developer": "ivan_korotaev",
   "curators": [

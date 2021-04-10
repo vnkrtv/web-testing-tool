@@ -33,4 +33,4 @@ jobs:
           ./deploy/build_for_linux < cfg
       - name: Running tests
         run: |
-          ./venv/bin/python ./quizer/manage.py test main
+          cd quizer && ../venv/bin/python runtests.py

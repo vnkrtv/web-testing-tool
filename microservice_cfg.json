@@ -20,7 +20,7 @@
     "MONGO_DNNAME": "quizer",
     "URL_PREFIX": "quizer",
     "AUTH_URL": "http://gateway/auth/public_key/",
-    "WORKERS_NUM": 12
+    "WORKERS_NUM": 4
   },
   "database": {
     "name": "quizer_db",

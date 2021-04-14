@@ -189,12 +189,13 @@ class AdministrationView(View):
             if file.name == 'tests_results.json':
                 content = file.read().decode('utf-8')
                 dump_obj = json.loads(content)
+                test_results = []
                 for test_result in dump_obj:
                     results = test_result['results'].copy()
                     for user_res in results:
                         for question in user_res['questions']:
                             question['question_id'] = bson.ObjectId(question['question_id'])
-                    TestResult.objects.create(
+                    obj = TestResult(
                         # _id=bson.ObjectId(test_result['_id']),
                         test=Test.objects.get(id=test_result['test_id']),
                         launched_lecturer=User.objects.get(id=test_result['launched_lecturer_id']),
@@ -202,6 +203,9 @@ class AdministrationView(View):
                         is_running=test_result['is_running'],
                         comment=test_result['comment'],
                         results=results)
+                    test_results.append(obj)
+                for obj in test_results:
+                    obj.save()
                 self.context = {
                     'info': {
                         'title': 'Данные экспортированы',
@@ -213,7 +217,8 @@ class AdministrationView(View):
             self.context = {
                 'info': {
                     'title': 'Ошибка',
-                    'message': repr(f'Error: {e}\n' + '\n'.join(traceback.format_exception(exc_type, exc_value, exc_traceback)))
+                    'message': repr(
+                        f'test_result: {test_result}\n\nError: {e}\n' + '\n'.join(traceback.format_exception(exc_type, exc_value, exc_traceback)))
                 }
             }
         return self.get(request)

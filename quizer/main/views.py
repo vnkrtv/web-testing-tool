@@ -387,7 +387,7 @@ def stop_running_test(request: HttpRequest) -> HttpResponse:
     test_results = TestResult.objects.filter(
         test__id=test.id,
         launched_lecturer__id=request.user.id,
-        is_running=True)
+        is_running=True).first()
     test_results.is_running = False
     test_results.save()
 

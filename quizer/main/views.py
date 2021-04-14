@@ -195,7 +195,7 @@ class AdministrationView(View):
                         for question in user_res['questions']:
                             question['question_id'] = bson.ObjectId(question['question_id'])
                     TestResult.objects.create(
-                        _id=bson.ObjectId(test_result['_id']),
+                        # _id=bson.ObjectId(test_result['_id']),
                         test=Test.objects.get(id=test_result['test_id']),
                         launched_lecturer=User.objects.get(id=test_result['launched_lecturer_id']),
                         subject=Subject.objects.get(id=test_result['subject_id']),

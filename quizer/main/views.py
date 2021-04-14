@@ -191,10 +191,10 @@ class AdministrationView(View):
                 dump_obj = json.loads(content)
                 test_results = []
                 for test_result in dump_obj:
-                    # results = test_result['results'].copy()
-                    # for user_res in results:
-                    #     for question in user_res['questions']:
-                    #         question['question_id'] = bson.ObjectId(question['question_id'])
+                    results = test_result['results'].copy()
+                    for user_res in results:
+                        for question in user_res['questions']:
+                            question['question_id'] = bson.ObjectId(question['question_id'])
                     obj = TestResult(
                         # _id=bson.ObjectId(test_result['_id']),
                         test=Test.objects.get(id=test_result['test_id']),
@@ -202,7 +202,7 @@ class AdministrationView(View):
                         subject=Subject.objects.get(id=test_result['subject_id']),
                         is_running=test_result['is_running'],
                         comment=test_result['comment'],
-                        results=test_result['results'])
+                        results=results)
                     test_results.append(obj)
                 for obj in test_results:
                     obj.save()

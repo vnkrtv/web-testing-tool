@@ -2,6 +2,7 @@
 """
 Some utils for views
 """
+import json
 import math
 import os
 import pathlib
@@ -216,11 +217,26 @@ def make_database_dump() -> pathlib.Path:
         f'{settings.DATABASE_DUMP_ROOT}/quizer_{timezone.now().strftime("%d-%m-%y_%H-%M")}.json')
     if not dump_filename.exists():
         os.makedirs(dump_filename.parent, exist_ok=True)
+
     with open(dump_filename, 'w') as dump_file:
-        call_command(command_name='dumpdata --exclude auth.permission --exclude contenttypes',
+        call_command(command_name='dumpdata',
                      format='json',
                      indent=4,
                      stdout=dump_file)
+
+    with open(dump_filename, 'r') as dump_file:
+        dump_obj = json.load(dump_file)
+        for obj in dump_obj:
+            if obj['model'] == 'main.question':
+                options = json.loads(obj['fields']['options'])
+                for option in options:
+                    option['is_true'] = (option['is_true'] == 'True')
+                    option['num'] = int(option['num']) if option['num'] != 'None' else None
+                obj['fields']['options'] = options
+
+    with open(dump_filename, 'w') as dump_file:
+        json.dump(dump_obj, dump_file, indent=4)
+
     return dump_filename
 
 

@@ -185,7 +185,7 @@ class Option(models.Model):
 
 class QuestionRightAnswer(models.Model):
     question_num = models.IntegerField()
-    question_id = models.ObjectIdField()
+    question_id = models.CharField()
     right_options = models.ArrayField(model_container=Option)
 
     class Meta:

@@ -220,11 +220,12 @@ class RunningTestView(APIView):
         running_tests = []
         serializer = TestResultSerializer(TestResult.objects.filter(is_running=True), many=True)
         for test_results in serializer.data:
-            if test_results.launched_lecturer.id == request.user.id:
+            if test_results['launched_lecturer_id'] == request.user.id:
                 results = test_results['results']
                 results.sort(key=lambda res: res.date)
+                test = Test.objects.get(id=test_results['test_id'])
                 running_tests.append({
-                    **test_results.test.to_dict(),
+                    **test.to_dict(),
                     'finished_students_results': results
                 })
         return Response({

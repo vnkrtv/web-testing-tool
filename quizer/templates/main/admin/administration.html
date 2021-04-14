@@ -26,10 +26,10 @@
    <hr class="my hr4">
    <form action="{% url 'main:administration' %}" enctype="multipart/form-data" method='post'>
     {% csrf_token %}
-        <div class="custom-file">
-            <input id="dumpFile" type="file" name='dumpfile' class="custom-file-input" id="trainTextFile"
-                   aria-describedby="trainTextFile" onchange="document.getElementById('fileLabel').innerText = this.files[0].name;" required>
-            <label id="fileLabel" class="custom-file-label" for="trainTextFile">Выберите файл с дампом</label>
+    <div class="custom-file">
+        <input id="dumpFile" type="file" name='dumpfile' class="custom-file-input" id="trainTextFile"
+               aria-describedby="trainTextFile" onchange="document.getElementById('fileLabel').innerText = this.files[0].name;" required>
+        <label id="fileLabel" class="custom-file-label" for="trainTextFile">Выберите файл с дампом</label>
     </div>
      <div class="modal-footer">
         <div class="btn btn-primary js-modal-close"><img src="{% cancel_icon %}"> Закрыть</div>

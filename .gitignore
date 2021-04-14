@@ -7,5 +7,7 @@ quizer/main/migrations/
 *.coverage
 prac*
 
+db.json
+
 !quizer/media/logo.png
 !quizer/main/static/favicon

@@ -5,13 +5,34 @@ Models for working with MongoDB and objects stored in it
 from typing import List, Dict, Any
 from datetime import timedelta
 
-from djongo import models
+from django.dispatch import receiver
+from django.contrib.auth.models import User
+from django.db.models.signals import post_save
 from django.conf import settings
 from django.utils import timezone
+from djongo import models
 
 DEFAULT_AUTHOR_ID = 1
 DEFAULT_TEST_ID = 0
 TZ_TIMEDELTA = timedelta(hours=3)
+
+
+# class Profile(models.Model):
+#     user = models.OneToOneField(User, on_delete=models.CASCADE)
+#     bio = models.TextField(max_length=500, blank=True)
+#     location = models.CharField(max_length=30, blank=True)
+#     birth_date = models.DateField(null=True, blank=True)
+#
+#
+# @receiver(post_save, sender=User)
+# def create_user_profile(sender, instance, created, **kwargs):
+#     if created:
+#         Profile.objects.create(user=instance)
+#
+#
+# @receiver(post_save, sender=User)
+# def save_user_profile(sender, instance, **kwargs):
+#     instance.profile.save()
 
 
 class Subject(models.Model):
@@ -105,7 +126,7 @@ class Test(models.Model):
 class QuestionOption(models.Model):
     option = models.CharField(max_length=1_000)
     is_true = models.BooleanField()
-    num = models.IntegerField(null=True)
+    num = models.IntegerField(null=True, blank=True)
 
     class Meta:
         abstract = True

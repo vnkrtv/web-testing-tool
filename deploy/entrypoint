@@ -15,21 +15,13 @@ echo yes | python manage.py collectstatic
 echo 'from django.contrib.auth.models import Group; l = Group(id=1, name="lecturer"); l.save()' | python manage.py shell
 echo 'from django.contrib.auth.models import Group; s = Group(id=2, name="student"); s.save()' | python manage.py shell
 
-SETTINGS="$(echo "$(cat ./quizer/settings.py)")"
-
-if [[ ! -z "${AUTH_URL}" ]]; then
-  AUTH_URL="${AUTH_URL}"
-else
-  AUTH_URL=http://sms.gitwork.ru/auth/public_key/
-fi
-
 if [[ ! -z "${WORKERS_NUM}" ]]; then
   WORKERS_NUM="${WORKERS_NUM}"
 else
-  WORKERS_NUM=8
+  WORKERS_NUM=4
 fi
 
-SETTINGS="${SETTINGS/<AUTH_URL>/${AUTH_URL}}"
+SETTINGS="$(echo "$(cat ./quizer/settings.py)")"
 
 if [[ ! -z "${URL_PREFIX}" ]]; then
   URLS="$(echo "$(cat ./quizer/urls.py)")"

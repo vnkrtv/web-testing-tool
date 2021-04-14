@@ -85,7 +85,6 @@ DATABASES = {
     }
 }
 
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -124,7 +123,7 @@ STATICFILES_FINDERS = [
 
 DATABASE_DUMP_ROOT = os.path.join(BASE_DIR, 'dumps')
 
-AUTH_URL = '<AUTH_URL>'
+AUTH_URL = os.getenv('AUTH_URL', 'http://sms.gitwork.ru/auth/public_key/')
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [

@@ -153,6 +153,10 @@ class QuestionView(APIView):
             return Response({
                 'error': f'Вопрос не был добавлен, так как присутствуют пустые варианты ответов.'
             })
+        except UnicodeDecodeError:
+            return Response({
+                'error': f'Файл некорректного формата.'
+            })
         except utils.InvalidFileFormatError as e:
             return Response({
                 'error': f'Вопросы не были загружены: {e}'

@@ -1,5 +1,5 @@
 FROM snakepacker/python:all as builder
-MAINTAINER LeadNess
+MAINTAINER vnkrtv
 
 COPY requirements.txt /mnt/
 RUN python3.7 -m venv /usr/share/python3/venv \
@@ -10,7 +10,7 @@ FROM snakepacker/python:3.7 as base
 
 COPY --from=builder /usr/share/python3/venv /usr/share/python3/venv
 COPY quizer /usr/share/python3/quizer
-COPY deploy/settings /usr/share/python3/quizer/quizer/settings.py
+COPY deploy/deploy_settings.py /usr/share/python3/quizer/quizer/settings.py
 
 COPY deploy/entrypoint /entrypoint
 ENTRYPOINT ["/entrypoint"]

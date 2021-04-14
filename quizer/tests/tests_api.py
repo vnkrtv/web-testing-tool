@@ -59,84 +59,84 @@ class MainTest(TestCase):
             name="student")
         self.student.groups.add(2)
 
-#         self.subject = Subject.objects.create(
-#             name='Subject',
-#             description='Description of subject')
-#         self.test = Test.objects.create(
-#             subject=self.subject,
-#             author=self.lecturer,
-#             name='Hard test',
-#             description='Description of hard test for Subject',
-#             tasks_num=2,
-#             duration=60)
-#
-#         Question.objects.create(
-#             formulation='First question with multiselect',
-#             multiselect=True,
-#             tasks_num=3,
-#             type=Question.Type.REGULAR,
-#             test=Test.objects.get(id=self.test.id),
-#             options=Question.parse_options([
-#                 {'option': 'First true option', 'is_true': True},
-#                 {'option': 'Second false option', 'is_true': False},
-#                 {'option': 'Third true option', 'is_true': True}
-#             ])
-#         )
-#         Question.objects.create(
-#             formulation='Second question with single answer',
-#             multiselect=True,
-#             tasks_num=2,
-#             type=Question.Type.REGULAR,
-#             test=Test.objects.get(id=self.test.id),
-#             options=Question.parse_options([
-#                 {'option': 'False option', 'is_true': False},
-#                 {'option': 'True option', 'is_true': True}
-#             ])
-#         )
-#
-#
-# class SubjectAPITest(MainTest):
-#     """
-#     Tests for SubjectAPI
-#     """
-#
-#     def test_get_for_unauthenticated_user(self):
-#         """
-#         Test response code for unauthenticated user
-#         """
-#         client = Client()
-#         client.logout()
-#         response = client.get(reverse('api:subjects_api'))
-#
-#         self.assertEqual(response.status_code, 401)
-#
-#     def test_get_for_student(self):
-#         """
-#         Test response code for user from student group
-#         """
-#         client = Client()
-#         client.login(
-#             username=self.student.username,
-#             password=''
-#         )
-#         response = client.get(reverse('api:subjects_api'))
-#
-#         self.assertEqual(response.status_code, 403)
-#
-#     def test_get_for_lecturer(self):
-#         """
-#         Test get method for user from lecturer group
-#         """
-#         client = Client()
-#         client.login(
-#             username=self.lecturer.username,
-#             password=''
-#         )
-#         response = client.get(reverse('api:subjects_api'))
-#
-#         self.assertEqual(response.status_code, 200)
-#         self.assertContains(response, self.subject.name)
-#
+        self.subject = Subject.objects.create(
+            name='Subject',
+            description='Description of subject')
+        self.test = Test.objects.create(
+            subject=self.subject,
+            author=self.lecturer,
+            name='Hard test',
+            description='Description of hard test for Subject',
+            tasks_num=2,
+            duration=60)
+
+        Question.objects.create(
+            formulation='First question with multiselect',
+            multiselect=True,
+            tasks_num=3,
+            type=Question.Type.REGULAR,
+            test=Test.objects.get(id=self.test.id),
+            options=Question.parse_options([
+                {'option': 'First true option', 'is_true': True},
+                {'option': 'Second false option', 'is_true': False},
+                {'option': 'Third true option', 'is_true': True}
+            ])
+        )
+        Question.objects.create(
+            formulation='Second question with single answer',
+            multiselect=True,
+            tasks_num=2,
+            type=Question.Type.REGULAR,
+            test=Test.objects.get(id=self.test.id),
+            options=Question.parse_options([
+                {'option': 'False option', 'is_true': False},
+                {'option': 'True option', 'is_true': True}
+            ])
+        )
+
+
+class SubjectAPITest(MainTest):
+    """
+    Tests for SubjectAPI
+    """
+
+    def test_get_for_unauthenticated_user(self):
+        """
+        Test response code for unauthenticated user
+        """
+        client = Client()
+        client.logout()
+        response = client.get(reverse('api:subjects_api'))
+
+        self.assertEqual(response.status_code, 401)
+
+    def test_get_for_student(self):
+        """
+        Test response code for user from student group
+        """
+        client = Client()
+        client.login(
+            username=self.student.username,
+            password=''
+        )
+        response = client.get(reverse('api:subjects_api'))
+
+        self.assertEqual(response.status_code, 403)
+
+    def test_get_for_lecturer(self):
+        """
+        Test get method for user from lecturer group
+        """
+        client = Client()
+        client.login(
+            username=self.lecturer.username,
+            password=''
+        )
+        response = client.get(reverse('api:subjects_api'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, self.subject.name)
+
 
 #     def test_adding_and_getting_questions(self) -> None:
 #         """

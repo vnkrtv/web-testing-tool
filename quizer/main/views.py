@@ -4,6 +4,9 @@ import json
 import os
 import random
 import copy
+import sys
+import traceback
+
 import bson
 import requests
 
@@ -41,8 +44,8 @@ def login_page(request: HttpRequest) -> HttpResponse:
     """Authorize user and redirect him to available_tests page"""
     logout(request)
     try:
-        username, group = utils.get_auth_data(request)
-        # username, group = 'ivan_korotaev', 'admin'
+        # username, group = utils.get_auth_data(request)
+        username, group = 'ivan_korotaev', 'admin'
     except DecodeError:
         return HttpResponse("JWT decode error: chet polomalos'")
 
@@ -206,10 +209,11 @@ class AdministrationView(View):
                     }
                 }
         except Exception as e:
+            exc_type, exc_value, exc_traceback = sys.exc_info()
             self.context = {
                 'info': {
                     'title': 'Ошибка',
-                    'message': str(e)
+                    'message': repr(f'Error: {e}\n' + '\n'.join(traceback.format_exception(exc_type, exc_value, exc_traceback)))
                 }
             }
         return self.get(request)

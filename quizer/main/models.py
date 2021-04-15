@@ -185,7 +185,7 @@ class Option(models.Model):
 
 class QuestionRightAnswer(models.Model):
     question_num = models.IntegerField()
-    question_id = models.ObjectIdField()
+    question_id = models.CharField()
     right_options = models.ArrayField(model_container=Option)
 
     class Meta:
@@ -228,8 +228,8 @@ class RunningTestsAnswers(models.Model):
 class UserQuestionAnswer(models.Model):
     question_id = models.ObjectIdField()
     is_true = models.BooleanField(default=False)
-    selected_options = models.ArrayField(model_container=Option)
-    right_options = models.ArrayField(model_container=Option)
+    selected_options = models.JSONField()
+    right_options = models.JSONField()
 
     class Meta:
         abstract = True

@@ -6,6 +6,7 @@ import random
 import copy
 import sys
 import traceback
+from datetime import datetime
 
 import bson
 import requests
@@ -44,8 +45,8 @@ def login_page(request: HttpRequest) -> HttpResponse:
     """Authorize user and redirect him to available_tests page"""
     logout(request)
     try:
-        # username, group = utils.get_auth_data(request)
-        username, group = 'ivan_korotaev', 'admin'
+        username, group = utils.get_auth_data(request)
+        # username, group = 'ivan_korotaev', 'admin'
     except DecodeError:
         return HttpResponse("JWT decode error: chet polomalos'")
 
@@ -183,44 +184,45 @@ class AdministrationView(View):
     @method_decorator(decorators)
     def post(self, request: HttpRequest) -> HttpResponse:
         """Page with data administration tools"""
-        try:
+        # try:
 
-            file = request.FILES['dumpfile']
-            if file.name == 'tests_results.json':
-                content = file.read().decode('utf-8')
-                dump_obj = json.loads(content)
-                test_results = []
-                for test_result in dump_obj:
-                    results = test_result['results'].copy()
-                    for user_res in results:
-                        for question in user_res['questions']:
-                            question['question_id'] = bson.ObjectId(question['question_id'])
-                    obj = TestResult(
-                        # _id=bson.ObjectId(test_result['_id']),
-                        test=Test.objects.get(id=test_result['test_id']),
-                        launched_lecturer=User.objects.get(id=test_result['launched_lecturer_id']),
-                        subject=Subject.objects.get(id=test_result['subject_id']),
-                        is_running=test_result['is_running'],
-                        comment=test_result['comment'],
-                        results=results)
-                    test_results.append(obj)
-                for obj in test_results:
-                    obj.save()
-                self.context = {
-                    'info': {
-                        'title': 'Данные экспортированы',
-                        'message': 'Успешно экспортировано %d результатов тестирования' % len(dump_obj)
-                    }
-                }
-        except Exception as e:
-            exc_type, exc_value, exc_traceback = sys.exc_info()
+        file = request.FILES['dumpfile']
+        if file.name == 'tests_results.json':
+            content = file.read().decode('utf-8')
+            dump_obj = json.loads(content)
+            test_results = []
+            for test_result in dump_obj:
+                results = test_result['results'].copy()
+                for user_res in results:
+                    user_res['date'] = datetime.strptime(user_res['date'], "%H:%M:%S  %d.%m.%y")
+                    # for question in user_res['questions']:
+                    #     question['question_id'] = bson.ObjectId(question['question_id'])
+                obj = TestResult(
+                    # _id=bson.ObjectId(test_result['_id']),
+                    test=Test.objects.get(id=test_result['test_id']),
+                    launched_lecturer=User.objects.get(id=test_result['launched_lecturer_id']),
+                    subject=Subject.objects.get(id=test_result['subject_id']),
+                    is_running=test_result['is_running'],
+                    comment=test_result['comment'],
+                    results=results)
+                test_results.append(obj)
+            for obj in test_results:
+                obj.save()
             self.context = {
                 'info': {
-                    'title': 'Ошибка',
-                    'message': repr(
-                        f'test_result: {test_result}\n\nError: {e}\n' + '\n'.join(traceback.format_exception(exc_type, exc_value, exc_traceback)))
+                    'title': 'Данные экспортированы',
+                    'message': 'Успешно экспортировано %d результатов тестирования' % len(dump_obj)
                 }
             }
+        # except Exception as e:
+        #     exc_type, exc_value, exc_traceback = sys.exc_info()
+        #     self.context = {
+        #         'info': {
+        #             'title': 'Ошибка',
+        #             'message': repr(
+        #                 f'test_result: {test_result}\n\nError: {e}\n' + '\n'.join(traceback.format_exception(exc_type, exc_value, exc_traceback)))
+        #         }
+        #     }
         return self.get(request)
 
 

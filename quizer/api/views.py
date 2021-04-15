@@ -219,7 +219,7 @@ class TestsResultView(APIView):
             exc_type, exc_value, exc_traceback = sys.exc_info()
             return Response({
                 'error': 'Error: {e}\n' + '\n'.join(traceback.format_exception(exc_type, exc_value, exc_traceback))
-            )
+            })
 
 
 class RunningTestView(APIView):

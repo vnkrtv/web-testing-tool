@@ -1,3 +1,6 @@
+import sys
+import traceback
+
 import bson
 
 from rest_framework.generics import get_object_or_404
@@ -197,20 +200,26 @@ class TestsResultView(APIView):
     permission_classes = [IsAuthenticated, IsLecturer]
 
     def get(self, request):
-        test_results_id = request.query_params.get('id', None)
-        if test_results_id:
-            try:
-                _id = bson.ObjectId(test_results_id)
-            except bson.errors.InvalidId:
-                return Response({
-                    'error': 'Некорректный test_results_id'
-                })
-            serializer = TestResultSerializer(TestResult.objects.filter(_id=_id), many=True)
-        else:
-            serializer = TestResultSerializer(TestResult.objects.all(), many=True)
-        return Response({
-            'results': serializer.data
-        })
+        try:
+            test_results_id = request.query_params.get('id', None)
+            if test_results_id:
+                try:
+                    _id = bson.ObjectId(test_results_id)
+                except bson.errors.InvalidId:
+                    return Response({
+                        'error': 'Некорректный test_results_id'
+                    })
+                serializer = TestResultSerializer(TestResult.objects.filter(_id=_id), many=True)
+            else:
+                serializer = TestResultSerializer(TestResult.objects.all(), many=True)
+            return Response({
+                'results': serializer.data
+            })
+        except Exception as e:
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            return Response({
+                'error': 'Error: {e}\n' + '\n'.join(traceback.format_exception(exc_type, exc_value, exc_traceback))
+            )
 
 
 class RunningTestView(APIView):

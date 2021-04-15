@@ -4,13 +4,10 @@ import json
 import os
 import random
 import copy
-import sys
-import traceback
 from datetime import datetime
-
 import bson
-import requests
 
+import requests
 from jwt import DecodeError
 
 from django.contrib.auth.models import User

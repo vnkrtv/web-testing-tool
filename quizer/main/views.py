@@ -8,6 +8,7 @@ from datetime import datetime
 import bson
 
 import requests
+from django.core.management import call_command
 from jwt import DecodeError
 
 from django.contrib.auth.models import User
@@ -182,41 +183,14 @@ class AdministrationView(View):
     @method_decorator(decorators)
     def post(self, request: HttpRequest) -> HttpResponse:
         """Page with data administration tools"""
-        # try:
-
-        file = request.FILES['dumpfile']
-        if file.name == 'tests_results.json':
-            content = file.read().decode('utf-8')
-            dump_obj = json.loads(content)
-            objs = []
-            for test_result in dump_obj:
-                results = test_result['results'].copy()
-                for user_res in results:
-                    user_res['date'] = datetime.strptime(user_res['date'], "%H:%M:%S  %d.%m.%y")
-                obj = TestResult(
-                    test=Test.objects.get(id=test_result['test_id']),
-                    launched_lecturer=User.objects.get(id=test_result['launched_lecturer_id']),
-                    subject=Subject.objects.get(id=test_result['subject_id']),
-                    is_running=test_result['is_running'],
-                    comment=test_result['comment'],
-                    results=results)
-                objs.append(obj)
-            TestResult.objects.bulk_create(objs)
-            self.context = {
-                'info': {
-                    'title': 'Данные экспортированы',
-                    'message': 'Успешно экспортировано %d результатов тестирования' % len(dump_obj)
-                }
+        dump_path = utils.save_database_dump(file=request.FILES['dumpfile'])
+        call_command('loaddata', dump_path)
+        self.context = {
+            'info': {
+                'title': 'Данные импортированы',
+                'message': 'Данные успешно импортированы.'
             }
-        # except Exception as e:
-        #     exc_type, exc_value, exc_traceback = sys.exc_info()
-        #     self.context = {
-        #         'info': {
-        #             'title': 'Ошибка',
-        #             'message': repr(
-        #                 f'test_result: {test_result}\n\nError: {e}\n' + '\n'.join(traceback.format_exception(exc_type, exc_value, exc_traceback)))
-        #         }
-        #     }
+        }
         return self.get(request)
 
 

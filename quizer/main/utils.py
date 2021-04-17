@@ -227,6 +227,7 @@ def make_database_dump() -> pathlib.Path:
     with open(dump_filename, 'r') as dump_file:
         dump_obj = json.load(dump_file)
         for obj in dump_obj:
+
             if obj['model'] == 'main.question':
                 options = json.loads(obj['fields']['options'])
                 for option in options:
@@ -234,9 +235,39 @@ def make_database_dump() -> pathlib.Path:
                     option['num'] = int(option['num']) if option['num'] != 'None' else None
                 obj['fields']['options'] = options
 
+            if obj['model'] == 'main.testresult':
+                results = json.loads(obj['fields']['results'])
+                for result in results:
+                    result['user_id'] = int(result['user_id'])
+                    result['time'] = int(result['time'])
+                    result['tasks_num'] = int(result['tasks_num'])
+                    result['right_answers_count'] = int(result['right_answers_count'])
+                    questions = json.loads(result['questions'])
+                    for question in questions:
+                        question['is_true'] = (question['is_true'] == 'True')
+                        question['selected_options'] = json.loads(question['selected_options'])
+                        question['right_options'] = json.loads(question['right_options'])
+                    result['questions'] = questions
+                obj['fields']['results'] = results
+
     with open(dump_filename, 'w') as dump_file:
         json.dump(dump_obj, dump_file, indent=4)
 
+    return dump_filename
+
+
+def save_database_dump(file) -> pathlib.Path:
+    """
+    Save loaded database dump and return path to dump
+
+    :return: path to database dump file
+    """
+    dump_filename = pathlib.Path(
+        f'{settings.DATABASE_DUMP_ROOT}/{file.name}')
+    if not dump_filename.exists():
+        os.makedirs(dump_filename.parent, exist_ok=True)
+    with open(dump_filename, 'wb') as dump_file:
+        dump_file.write(file.read())
     return dump_filename
 
 

@@ -114,7 +114,7 @@ function hideTable(searchInputID, tableID) {
     table.style.display = (table.style.display === "") ? "none" : "";
 }
 
-function fillErrorsModal(rowID, testResults, questionsMap, mediaUrl) {
+function fillErrorsModal(rowID) {
     const resultID = parseInt(rowID.split("_")[1]);
     const questions = testResults.results[resultID]['questions'];
 
@@ -125,7 +125,7 @@ function fillErrorsModal(rowID, testResults, questionsMap, mediaUrl) {
 
     for (let i in questions) {
         const questionLi = document.createElement("li");
-        let question = questionsMap.get(questions[i].id);
+        let question = questionsMap.get(questions[i].question_id);
         questionLi.className = "list-group-item borderless question";
         questionLi.innerText = `${1 + parseInt(i)}. ${question.formulation}`;
         questionLi.style = 'border: 2px solid #FFF; border-radius: 5px;';
@@ -149,7 +149,7 @@ function fillErrorsModal(rowID, testResults, questionsMap, mediaUrl) {
                 optionLi.appendChild(imgOption);
             }
             if (option.is_true) {
-                if (questions[i].selected_answers.indexOf(option.option) !== -1) {
+                if (questions[i].selected_options.indexOf(option.option) !== -1) {
                     optionLi.classList.add('list-group-item-success');
                     optionLi.title = 'Выбран правильный ответ';
                 } else {
@@ -157,7 +157,7 @@ function fillErrorsModal(rowID, testResults, questionsMap, mediaUrl) {
                     optionLi.title = 'Правильный ответ не выбран';
                 }
             } else {
-                if (questions[i].selected_answers.indexOf(option.option) !== -1) {
+                if (questions[i].selected_options.indexOf(option.option) !== -1) {
                     optionLi.classList.add('list-group-item-danger');
                     optionLi.title = 'Выбран неправильный ответ';
                 }

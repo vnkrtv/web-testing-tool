@@ -48,9 +48,6 @@ function renderTestResults() {
 
     $.get(testsResultsAPIUrl)
         .done(function(response) {
-            if (response['results'] === undefined) {
-                renderInfoModalWindow('Ошибка', response['error'])
-            }
             results = response['results'];
             $.get(testsAPIUrl)
                 .done(function(response) {

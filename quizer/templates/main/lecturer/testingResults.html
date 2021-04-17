@@ -41,7 +41,7 @@
             <td>{{ result.date }}</td>
             <td>
                 <button type="button" class="btn btn-primary btn-sm js-open-modal" data-modal="modal"
-                        onclick='fillErrorsModal("row_{{ forloop.counter0 }}", testResults, questionsMap, "{% media_url %}")'>
+                        onclick='fillErrorsModal("row_{{ forloop.counter0 }}")'>
                     <img src='{% search_icon %}'> Показать
                 </button>
             </td>
@@ -81,7 +81,8 @@
 <script src="{% static 'main/js/jquery-3.5.1.js' %}"></script>
 <script type="text/javascript">
     const socketPath = '{% url "main:available_tests" %}';
-    const testsResultsAPIUrl = "{% url 'api:tests_results_api' %}";
+    const mediaUrl = "{% media_url %}";
+    const testsResultsAPIUrl = "{% url 'api:tests_results_api' %}" + "?id=" + "{{ test_results_id }}";
     const questionsAPIUrl = "{% url 'api:questions_api' test.id %}";
 
     let socket = getRunningTestsWebSocket(socketPath);
@@ -97,12 +98,16 @@
     let questions = [];
     let questionsMap = new Map();
     $.get(testsResultsAPIUrl).done(function (response) {
-        testResults = response['results'][0];
+        if (response.error === undefined) {
+            testResults = response;
+        } else {
+            renderInfoModalWindow('Ошибка', response.error);
+        }
     });
     $.get(questionsAPIUrl).done(function (response) {
         questions = response['questions'];
         questions.forEach(function (question) {
-            questionsMap.set(question.id, question)
+            questionsMap.set(question._id, question)
         });
     });
     activateModalWindows();

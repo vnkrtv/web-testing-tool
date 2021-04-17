@@ -128,7 +128,7 @@ class QuestionSerializer(serializers.Serializer):
 
 
 class TestResultSerializer(serializers.Serializer):
-    _id = serializers.CharField(max_length=100)
+    _id = serializers.SerializerMethodField()
     is_running = serializers.BooleanField()
     comment = serializers.CharField(max_length=1_000)
     date = serializers.DateTimeField(format="%H:%M:%S  %d-%m-%y")
@@ -136,6 +136,9 @@ class TestResultSerializer(serializers.Serializer):
     launched_lecturer_id = serializers.IntegerField()
     subject_id = serializers.IntegerField()
     results = serializers.JSONField()
+
+    def get__id(self, obj):
+        return str(obj._id)
 
     def create(self, validated_data):
         launched_lecturer = User.objects.get(id=validated_data.get('launched_lecturer_id'))
@@ -156,9 +159,8 @@ class TestResultSerializer(serializers.Serializer):
         return instance
 
     class Meta:
-        model = Question
+        model = TestResult
         read_only_fields = (
-            '_id',
             'test_id',
             'launched_lecturer_id',
             'subject_id'

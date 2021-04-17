@@ -196,7 +196,7 @@ class RunningTestsAnswers(models.Model):
     _id = models.ObjectIdField()
     test_duration = models.IntegerField('Длительность теста')
     start_date = models.DateTimeField('Время запуска теста',
-                                      default=lambda: timezone.now() + TZ_TIMEDELTA)
+                                      default=timezone.now() + TZ_TIMEDELTA)
     test = models.ForeignKey(
         Test,
         null=True,
@@ -226,7 +226,7 @@ class RunningTestsAnswers(models.Model):
 
 
 class UserQuestionAnswer(models.Model):
-    question_id = models.ObjectIdField()
+    question_id = models.CharField()
     is_true = models.BooleanField(default=False)
     selected_options = models.JSONField()
     right_options = models.JSONField()
@@ -253,7 +253,7 @@ class TestResult(models.Model):
     is_running = models.BooleanField('Тест еще запущен')
     comment = models.TextField('Комментарий преподавателя', default='')
     date = models.DateTimeField('Время запуска тестирования',
-                                default=lambda: timezone.now() + TZ_TIMEDELTA)
+                                default=timezone.now() + TZ_TIMEDELTA)
     launched_lecturer = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         null=True,

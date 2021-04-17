@@ -47,7 +47,7 @@
         setTimeout(() => {
             const websocketErrorDiv = document.getElementById("websocketErrorDiv");
             websocketErrorDiv.style.display = '';
-        }, 500);
+        }, 2000);
     };
     socket.onmessage = (e) => {
         let receivedData = JSON.parse(e.data);

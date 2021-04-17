@@ -187,7 +187,7 @@ class AdministrationView(View):
         if file.name == 'tests_results.json':
             content = file.read().decode('utf-8')
             dump_obj = json.loads(content)
-            test_results = []
+            objs = []
             for test_result in dump_obj:
                 results = test_result['results'].copy()
                 for user_res in results:
@@ -202,9 +202,8 @@ class AdministrationView(View):
                     is_running=test_result['is_running'],
                     comment=test_result['comment'],
                     results=results)
-                test_results.append(obj)
-            for obj in test_results:
-                obj.save()
+                objs.append(obj)
+            TestResult.objects.bulk_create(objs)
             self.context = {
                 'info': {
                     'title': 'Данные экспортированы',

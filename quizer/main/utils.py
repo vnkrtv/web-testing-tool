@@ -2,6 +2,7 @@
 """
 Some utils for views
 """
+import ast
 import json
 import math
 import os
@@ -245,8 +246,8 @@ def make_database_dump() -> pathlib.Path:
                     questions = json.loads(result['questions'])
                     for question in questions:
                         question['is_true'] = (question['is_true'] == 'True')
-                        question['selected_options'] = json.loads(question['selected_options'])
-                        question['right_options'] = json.loads(question['right_options'])
+                        question['selected_options'] = ast.literal_eval(question['selected_options'])
+                        question['right_options'] = ast.literal_eval(question['right_options'])
                     result['questions'] = questions
                 obj['fields']['results'] = results
 

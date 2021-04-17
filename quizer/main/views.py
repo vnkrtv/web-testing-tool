@@ -185,6 +185,7 @@ class AdministrationView(View):
         """Page with data administration tools"""
         dump_path = utils.save_database_dump(file=request.FILES['dumpfile'])
         call_command('loaddata', dump_path)
+        os.remove(dump_path)
         self.context = {
             'info': {
                 'title': 'Данные импортированы',

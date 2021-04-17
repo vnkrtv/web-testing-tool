@@ -30,7 +30,7 @@
         teamIcon: '{% team_icon %}',
         stopIcon: '{% stop_icon %}'
     };
-	renderRunningTests(runningTestsAPIUrl, runningTestsDiv)
+	renderRunningTests()
 
 	const socketPath = '{% url "main:available_tests" %}';
     let socket = getRunningTestsWebSocket(socketPath);
@@ -52,7 +52,7 @@
     socket.onmessage = (e) => {
         let receivedData = JSON.parse(e.data);
         if (receivedData.action === 'test was passed') {
-        	renderRunningTests(runningTestsAPIUrl, runningTestsDiv);
+        	renderRunningTests();
 		}
     };
 </script>

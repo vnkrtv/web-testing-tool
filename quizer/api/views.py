@@ -16,8 +16,6 @@ class SubjectView(APIView):
 
     def get(self, _):
         serializer = SubjectSerializer(Subject.objects.all(), many=True)
-        for subject in serializer.data:
-            subject['tests_count'] = Test.objects.filter(subject=subject['id']).count()
         return Response({
             'subjects': serializer.data
         })
@@ -60,13 +58,14 @@ class TestView(APIView):
     def get(self, request):
         state = request.query_params.get('state', None)
         if state == 'running':
-            tests = Test.get_running_tests()
+            tests = Test.objects.get_running()
         elif state == 'not_running':
-            tests = Test.get_not_running_tests()
+            tests = Test.objects.get_not_running()
         else:
-            tests = Test.get_all()
+            tests = Test.objects.all()
+        serializer = TestSerializer(tests, many=True)
         return Response({
-            'tests': tests
+            'tests': serializer.data
         })
 
     def post(self, request):
@@ -127,8 +126,7 @@ class QuestionView(APIView):
     permission_classes = [IsAuthenticated, IsLecturer]
 
     def get(self, request, test_id):
-        questions = Question.objects.filter(test__id=test_id)
-        serializer = QuestionSerializer(instance=questions, many=True)
+        serializer = QuestionSerializer(Question.objects.filter(test__id=test_id), many=True)
         return Response({
             'questions': serializer.data
         })
@@ -217,17 +215,7 @@ class RunningTestView(APIView):
     permission_classes = [IsAuthenticated, IsLecturer]
 
     def get(self, request):
-        running_tests = []
         serializer = TestResultSerializer(TestResult.objects.filter(is_running=True), many=True)
-        for test_results in serializer.data:
-            if test_results['launched_lecturer_id'] == request.user.id:
-                results = test_results['results']
-                results.sort(key=lambda res: res.date)
-                test = Test.objects.get(id=test_results['test_id'])
-                running_tests.append({
-                    **test.to_dict(),
-                    'finished_students_results': results
-                })
         return Response({
-            'tests': running_tests
+            'tests': serializer.data
         })

@@ -31,7 +31,7 @@ function getResultsTable(finishedStudentsResults, idx) {
     return table;
 }
 
-function getRunningTestDiv(test, idx) {
+function getRunningTestDiv(testResult, idx) {
     const container = document.createElement('div');
 
     const hr = document.createElement('hr');
@@ -41,16 +41,16 @@ function getRunningTestDiv(test, idx) {
     label.setAttribute('htmlfor', 'test_name');
 
     const nameH3 = document.createElement('h3');
-    nameH3.innerText = test.name;
+    nameH3.innerText = testResult.test.name;
 
     const descP = document.createElement('p');
-    descP.innerText = test.description;
+    descP.innerText = testResult.test.description;
 
     const infoP = document.createElement('p');
-    infoP.innerHTML = `<img src='${refsDict.researchIcon}'> Количество заданий в тесте: ${test.tasks_num}<br>
-        <img src='${refsDict.clockIcon}'> Время на выполнение: ${test.duration} c<br>
+    infoP.innerHTML = `<img src='${refsDict.researchIcon}'> Количество заданий в тесте: ${testResult.test.tasks_num}<br>
+        <img src='${refsDict.clockIcon}'> Время на выполнение: ${testResult.test.duration} c<br>
         <span class="pointer" onclick='hideTable("search_${idx}", "table_${idx}")' title="Нажмите, чтобы скрыть результаты">
-              <img src='${refsDict.teamIcon}'> Выполнило слушателей: ${test.finished_students_results.length}
+              <img src='${refsDict.teamIcon}'> Выполнило слушателей: ${testResult.finished_students_results.length}
         </span>`;
 
     const searchInput = document.createElement('input');
@@ -60,11 +60,11 @@ function getRunningTestDiv(test, idx) {
     searchInput.setAttribute('id', `search_${idx}`);
     searchInput.setAttribute('onkeyup', `tableSearch("search_${idx}", "table_${idx}")`);
 
-    const resultsTable = getResultsTable(test.finished_students_results, idx);
+    const resultsTable = getResultsTable(testResult.finished_students_results, idx);
     const form = document.createElement('form');
     form.setAttribute('action', refsDict.formUrl);
     form.setAttribute('method', 'post');
-    form.innerHTML = refsDict.csrfToken + `<input type="hidden" name="test_id", value="${test.id}"> 
+    form.innerHTML = refsDict.csrfToken + `<input type="hidden" name="test_id", value="${testResult.test.id}"> 
         <button class="btn btn-danger"><img src='${refsDict.stopIcon}'> Оcтановить</button>`;
 
     label.appendChild(hr);
@@ -79,14 +79,14 @@ function getRunningTestDiv(test, idx) {
     return container;
 }
 
-function renderRunningTests(runningTestsAPIUrl, runningTestsDiv) {
-    let runningTests = [];
+function renderRunningTests() {
+    let runningTestsResults = [];
     $.get(runningTestsAPIUrl)
         .done(function (response) {
-            runningTests = response['tests'];
+            runningTestsResults = response['tests'];
             runningTestsDiv.innerHTML = '';
-            for (let i = 0; i < runningTests.length; i++) {
-                runningTestsDiv.appendChild(getRunningTestDiv(runningTests[i], i));
+            for (let i = 0; i < runningTestsResults.length; i++) {
+                runningTestsDiv.appendChild(getRunningTestDiv(runningTestsResults[i], i));
             }
         });
 }

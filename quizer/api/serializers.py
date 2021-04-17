@@ -10,10 +10,20 @@ from rest_framework import serializers
 from main.models import Subject, Test, Question, TestResult, RunningTestsAnswers
 
 
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('id', 'username')
+
+
 class SubjectSerializer(serializers.Serializer):
-    id = serializers.ReadOnlyField()
+    id = serializers.IntegerField()
     name = serializers.CharField(max_length=50)
     description = serializers.CharField(required=False)
+    tests_count = serializers.SerializerMethodField()
+
+    def get_tests_count(self, subject):
+        return subject.tests.count()
 
     def create(self, validated_data):
         return Subject.objects.create(**validated_data)
@@ -32,13 +42,17 @@ class SubjectSerializer(serializers.Serializer):
 
 
 class TestSerializer(serializers.Serializer):
-    id = serializers.ReadOnlyField()
-    subject = serializers.IntegerField()
-    author = serializers.IntegerField()
+    id = serializers.IntegerField()
+    subject = SubjectSerializer()
+    author = UserSerializer()
     name = serializers.CharField(max_length=200)
     description = serializers.CharField(default='')
     tasks_num = serializers.IntegerField()
     duration = serializers.IntegerField()
+    questions_num = serializers.SerializerMethodField()
+
+    def get_questions_num(self, test) -> int:
+        return test.questions.count()
 
     def create(self, validated_data):
         subject = Subject.objects.get(id=validated_data.get('subject'))
@@ -59,12 +73,20 @@ class TestSerializer(serializers.Serializer):
         instance.save()
         return instance
 
+    def to_representation(self, test):
+        representation = super().to_representation(test)
+        test_results = TestResult.objects.filter(is_running=True, test__id=test.id).first()
+        if test_results:
+            representation['launched_lecturer'] = {
+                'id': test_results.launched_lecturer.id,
+                'username': test_results.launched_lecturer.username
+            }
+        return representation
+
     class Meta:
         model = Test
         read_only_fields = (
-            'id',
-            'subject_id',
-            'author_id'
+            'id'
         )
 
 
@@ -132,13 +154,21 @@ class TestResultSerializer(serializers.Serializer):
     is_running = serializers.BooleanField()
     comment = serializers.CharField(max_length=1_000)
     date = serializers.DateTimeField(format="%H:%M:%S  %d-%m-%y")
-    test_id = serializers.IntegerField()
-    launched_lecturer_id = serializers.IntegerField()
-    subject_id = serializers.IntegerField()
+    test = TestSerializer()
+    launched_lecturer = UserSerializer()
+    subject = SubjectSerializer()
     results = serializers.JSONField()
 
     def get__id(self, obj):
         return str(obj._id)
+
+    def to_representation(self, test_results):
+        representation = super().to_representation(test_results)
+        if test_results.is_running:
+            results = representation['results']
+            results.sort(key=lambda res: res['date'])
+            representation['finished_students_results'] = results
+        return representation
 
     def create(self, validated_data):
         launched_lecturer = User.objects.get(id=validated_data.get('launched_lecturer_id'))
@@ -161,7 +191,5 @@ class TestResultSerializer(serializers.Serializer):
     class Meta:
         model = TestResult
         read_only_fields = (
-            'test_id',
-            'launched_lecturer_id',
-            'subject_id'
+            '_id'
         )

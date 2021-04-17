@@ -130,6 +130,7 @@ def lecturer_run_test(request: HttpRequest, test_id: int) -> HttpResponse:
 
     RunningTestsAnswers.objects.filter(user__id=request.user.id).delete()
     RunningTestsAnswers.objects.create(
+        start_date=timezone.now(),
         right_answers=right_answers,
         test=test,
         user=request.user,
@@ -192,10 +193,7 @@ class AdministrationView(View):
                 results = test_result['results'].copy()
                 for user_res in results:
                     user_res['date'] = datetime.strptime(user_res['date'], "%H:%M:%S  %d.%m.%y")
-                    # for question in user_res['questions']:
-                    #     question['question_id'] = bson.ObjectId(question['question_id'])
                 obj = TestResult(
-                    # _id=bson.ObjectId(test_result['_id']),
                     test=Test.objects.get(id=test_result['test_id']),
                     launched_lecturer=User.objects.get(id=test_result['launched_lecturer_id']),
                     subject=Subject.objects.get(id=test_result['subject_id']),
@@ -400,7 +398,7 @@ def stop_running_test(request: HttpRequest) -> HttpResponse:
         'title': 'Результаты тестирования',
         'test': test,
         'start_date': test_results.date,
-        'end_date': timezone.now() + TZ_TIMEDELTA,
+        'end_date': timezone.now(),
         'test_results_id': str(test_results.object_id),
         'results': results,
     }
@@ -480,6 +478,7 @@ def student_run_test(request: HttpRequest) -> HttpResponse:
         test_results.save()
     docs.delete()
     RunningTestsAnswers.objects.create(
+        start_date=timezone.now(),
         right_answers=right_answers,
         test=test,
         user=request.user,

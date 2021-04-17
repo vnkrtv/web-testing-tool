@@ -58,9 +58,9 @@ function renderTestResults() {
                         }
                     }
                     for (const result of results) {
-                        if (result.subject_id.toString() === subjectSelect.options[subjectSelect.selectedIndex].value) {
-                            if (result.launched_lecturer_id.toString() === lecturerSelect.options[lecturerSelect.selectedIndex].value) {
-                                if (result.test_id.toString() === testSelect.options[testSelect.selectedIndex].value) {
+                        if (result.subject.id.toString() === subjectSelect.options[subjectSelect.selectedIndex].value) {
+                            if (result.launched_lecturer.id.toString() === lecturerSelect.options[lecturerSelect.selectedIndex].value) {
+                                if (result.test.id.toString() === testSelect.options[testSelect.selectedIndex].value) {
                                     tableBody.appendChild(getTrElement(counter, result));
                                     counter += 1;
                                 }
@@ -80,9 +80,9 @@ function renderTestResults() {
             }
         }
         for (const result of results) {
-            if (result.subject_id.toString() === subjectSelect.options[subjectSelect.selectedIndex].value) {
-                if (result.launched_lecturer_id.toString() === lecturerSelect.options[lecturerSelect.selectedIndex].value) {
-                    if (result.test_id.toString() === testSelect.options[testSelect.selectedIndex].value) {
+            if (result.subject.id.toString() === subjectSelect.options[subjectSelect.selectedIndex].value) {
+                if (result.launched_lecturer.id.toString() === lecturerSelect.options[lecturerSelect.selectedIndex].value) {
+                    if (result.test.id.toString() === testSelect.options[testSelect.selectedIndex].value) {
                         tableBody.appendChild(getTrElement(counter, result));
                         counter += 1;
                     }
@@ -96,9 +96,9 @@ function renderTestResults() {
         tableBody.innerHTML = '';
         counter = 1;
         for (const result of results) {
-            if (result.subject_id.toString() === subjectSelect.options[subjectSelect.selectedIndex].value) {
-                if (result.launched_lecturer_id.toString() === lecturerSelect.options[lecturerSelect.selectedIndex].value) {
-                    if (result.test_id.toString() === testSelect.options[testSelect.selectedIndex].value) {
+            if (result.subject.id.toString() === subjectSelect.options[subjectSelect.selectedIndex].value) {
+                if (result.launched_lecturer.id.toString() === lecturerSelect.options[lecturerSelect.selectedIndex].value) {
+                    if (result.test.id.toString() === testSelect.options[testSelect.selectedIndex].value) {
                         tableBody.appendChild(getTrElement(counter, result));
                         counter += 1;
                     }

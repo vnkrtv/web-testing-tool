@@ -3,7 +3,7 @@
 Models for working with MongoDB and objects stored in it
 """
 from typing import List, Dict, Any
-from datetime import timedelta
+from datetime import datetime, timezone
 
 from django.dispatch import receiver
 from django.contrib.auth.models import User
@@ -14,7 +14,7 @@ from djongo import models
 
 DEFAULT_AUTHOR_ID = 1
 DEFAULT_TEST_ID = 0
-TZ_TIMEDELTA = timedelta(hours=3)
+TZ_TIMEDELTA = timezone.now() - datetime.now(timezone.utc)
 
 
 # class Profile(models.Model):
@@ -48,6 +48,16 @@ class Subject(models.Model):
         verbose_name_plural = 'Дисциплины'
 
 
+class TestManager(models.DjongoManager):
+
+    def get_running(self):
+        return super().get_queryset().filter(testing_results__is_running=True)
+
+    def get_not_running(self):
+        running_test_ids = [test.id for test in self.get_running()]
+        return super().get_queryset().exclude(id__in=running_test_ids)
+
+
 class Test(models.Model):
     subject = models.ForeignKey(
         Subject,
@@ -64,56 +74,7 @@ class Test(models.Model):
     description = models.TextField('Описание теста', default="")
     tasks_num = models.IntegerField('Количество заданий в тесте', default=0)
     duration = models.IntegerField('Длительность теста в секундах', default=300)
-    objects = models.DjongoManager()
-
-    def to_dict(self) -> Dict[str, Any]:
-        """
-        Test model representation as dictionary
-
-        :return: <dict>
-        """
-        return {
-            'id': self.id,
-            'name': self.name,
-            'description': self.description,
-            'tasks_num': self.tasks_num,
-            'duration': self.duration,
-            'subject': {
-                'id': self.subject.id,
-                'name': self.subject.name
-            },
-            'author': {
-                'id': self.author.id,
-                'username': self.author.username
-            }
-        }
-
-    @classmethod
-    def get_all(cls) -> List[Dict[str, Any]]:
-        return [test.to_dict() for test in Test.objects.all()]
-
-    @classmethod
-    def get_running_tests(cls) -> List[Dict[str, Any]]:
-        return [
-            {
-                **res.test.to_dict(),
-                'questions_num': res.test.questions.count(),
-                'launched_lecturer': {
-                    'id': res.launched_lecturer.id,
-                    'username': res.launched_lecturer.username
-                }
-            } for res in TestResult.objects.filter(is_running=True)
-        ]
-
-    @classmethod
-    def get_not_running_tests(cls) -> List[Dict[str, Any]]:
-        return [
-            {
-                **test.to_dict(),
-                'questions_num': test.questions.count()
-            } for test in Test.objects.all()
-            if test.id not in [_['id'] for _ in cls.get_running_tests()]
-        ]
+    objects = TestManager()
 
     def __str__(self):
         return self.name
@@ -195,8 +156,7 @@ class QuestionRightAnswer(models.Model):
 class RunningTestsAnswers(models.Model):
     _id = models.ObjectIdField()
     test_duration = models.IntegerField('Длительность теста')
-    start_date = models.DateTimeField('Время запуска теста',
-                                      default=timezone.now() + TZ_TIMEDELTA)
+    start_date = models.DateTimeField('Время запуска теста', default=timezone.now())
     test = models.ForeignKey(
         Test,
         null=True,
@@ -216,7 +176,7 @@ class RunningTestsAnswers(models.Model):
 
     @property
     def time_left(self) -> float:
-        delta = timezone.now() - self.start_date + TZ_TIMEDELTA
+        delta = timezone.now() - self.start_date
         return self.test_duration - delta.total_seconds()
 
     class Meta:
@@ -252,8 +212,7 @@ class TestResult(models.Model):
     _id = models.ObjectIdField()
     is_running = models.BooleanField('Тест еще запущен')
     comment = models.TextField('Комментарий преподавателя', default='')
-    date = models.DateTimeField('Время запуска тестирования',
-                                default=timezone.now() + TZ_TIMEDELTA)
+    date = models.DateTimeField('Время запуска тестирования', default=timezone.now())
     launched_lecturer = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         null=True,

@@ -12,27 +12,31 @@ from django.conf import settings
 from django.utils import timezone
 from djongo import models
 
-DEFAULT_AUTHOR_ID = 1
+DEFAULT_AUTHOR_ID = 0
 DEFAULT_TEST_ID = 0
 TZ_TIMEDELTA = timezone.now() - datetime.now(timezone.utc)
 
 
-# class Profile(models.Model):
-#     user = models.OneToOneField(User, on_delete=models.CASCADE)
-#     bio = models.TextField(max_length=500, blank=True)
-#     location = models.CharField(max_length=30, blank=True)
-#     birth_date = models.DateField(null=True, blank=True)
-#
-#
-# @receiver(post_save, sender=User)
-# def create_user_profile(sender, instance, created, **kwargs):
-#     if created:
-#         Profile.objects.create(user=instance)
-#
-#
-# @receiver(post_save, sender=User)
-# def save_user_profile(sender, instance, **kwargs):
-#     instance.profile.save()
+class Profile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField()
+    name = models.CharField(max_length=30)
+    web_url = models.URLField()
+    group = models.IntegerField()
+    admission_year = models.IntegerField()
+    number = models.IntegerField(default=0)
+    objects = models.DjongoManager()
+
+
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        Profile.objects.create(user=instance)
+
+
+@receiver(post_save, sender=User)
+def save_user_profile(sender, instance, **kwargs):
+    instance.profile.save()
 
 
 class Subject(models.Model):
@@ -137,17 +141,10 @@ class Question(models.Model):
         verbose_name_plural = 'Вопросы'
 
 
-class Option(models.Model):
-    option = models.CharField()
-
-    class Meta:
-        abstract = True
-
-
 class QuestionRightAnswer(models.Model):
     question_num = models.IntegerField()
     question_id = models.CharField()
-    right_options = models.ArrayField(model_container=Option)
+    right_options = models.JSONField()
 
     class Meta:
         abstract = True
@@ -185,29 +182,6 @@ class RunningTestsAnswers(models.Model):
         verbose_name_plural = 'Ответы за запущенные тесты'
 
 
-class UserQuestionAnswer(models.Model):
-    question_id = models.CharField()
-    is_true = models.BooleanField(default=False)
-    selected_options = models.JSONField()
-    right_options = models.JSONField()
-
-    class Meta:
-        abstract = True
-
-
-class UserResult(models.Model):
-    user_id = models.IntegerField()
-    username = models.CharField(max_length=50)
-    time = models.IntegerField()
-    tasks_num = models.IntegerField()
-    right_answers_count = models.IntegerField()
-    date = models.DateTimeField()
-    questions = models.ArrayField(model_container=UserQuestionAnswer)
-
-    class Meta:
-        abstract = True
-
-
 class TestResult(models.Model):
     _id = models.ObjectIdField()
     is_running = models.BooleanField('Тест еще запущен')
@@ -231,7 +205,6 @@ class TestResult(models.Model):
         verbose_name='Предмет',
         related_name='testing_results',
         on_delete=models.SET_NULL)
-    results = models.ArrayField(model_container=UserResult)
     objects = models.DjongoManager()
 
     @property
@@ -242,3 +215,41 @@ class TestResult(models.Model):
         db_table = 'main_tests_results'
         verbose_name = 'Результат тестирования'
         verbose_name_plural = 'Результаты тестирований'
+
+
+class UserQuestionAnswer(models.Model):
+    question_id = models.CharField()
+    is_true = models.BooleanField(default=False)
+    selected_options = models.JSONField()
+    right_options = models.JSONField()
+
+    class Meta:
+        abstract = True
+
+
+class UserResult(models.Model):
+    _id = models.ObjectIdField()
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        verbose_name='Прошедший тестирование',
+        related_name='results',
+        on_delete=models.SET_NULL)
+    testing_result = models.ForeignKey(
+        TestResult,
+        null=True,
+        verbose_name='Результаты тестирования',
+        related_name='results',
+        on_delete=models.SET_NULL)
+    username = models.CharField(max_length=50)
+    time = models.IntegerField('Продолжительность тестирования')
+    tasks_num = models.IntegerField('Число заданий в тесте')
+    right_answers_count = models.IntegerField('Число правильных ответов')
+    date = models.DateTimeField('Время прохождения тестирования')
+    questions = models.ArrayField(model_container=UserQuestionAnswer)
+    objects = models.DjongoManager()
+
+    class Meta:
+        db_table = 'main_user_results'
+        verbose_name = 'Персональный результат тестирования'
+        verbose_name_plural = 'Персональные результаты тестирований'

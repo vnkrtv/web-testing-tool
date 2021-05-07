@@ -9,13 +9,13 @@
 
 <div class='jumbotron'>
     <h2>Данные системы</h2><br>
-    <p>Импортировать данные - восстановить данные системы с соответствии с файлом дампа БД.<br>
-       Экспортировать данные - сделать дамп данных системы.</p>
+    <p>Восстановить данные - восстановить данные системы с соответствии с файлом дампа БД.<br>
+       Сделать дамп данных - сделать дамп данных системы.</p>
     <div class="btn-group mr-2">
-        <a class="btn btn-success js-open-modal" href="#" data-modal="import-modal" onclick='clearForms()'><img src='{% import_icon %}'> Импортировать данные</a>
+        <button class="btn btn-success js-open-modal" href="#" data-modal="import-modal" onclick='clearForms()'><img src='{% import_icon %}'> Восстановить данные из дампа</button>
     </div>
     <div class="btn-group mr-2">
-        <a class="btn btn-success" href="{% url 'main:get_db_dump' %}"><img src='{% export_icon %}'> Экспортировать данные</a>
+        <a class="btn btn-success" href="{% url 'main:get_db_dump' %}"><img src='{% export_icon %}'> Сделать дамп данных</a>
     </div>
     <div id="subjects-container"></div>
 </div>
@@ -26,6 +26,7 @@
    <hr class="my hr4">
    <form action="{% url 'main:administration' %}" enctype="multipart/form-data" method='post'>
     {% csrf_token %}
+    <div class="alert alert-warning">При восстановлении данных из дампа все актуальные данные будут <b>полностью заменены.</b></div>
     <div class="custom-file">
         <input id="dumpFile" type="file" name='dumpfile' class="custom-file-input" id="trainTextFile"
                aria-describedby="trainTextFile" onchange="document.getElementById('fileLabel').innerText = this.files[0].name;" required>
@@ -33,7 +34,7 @@
     </div>
      <div class="modal-footer">
         <div class="btn btn-primary js-modal-close"><img src="{% cancel_icon %}"> Закрыть</div>
-        <button class="btn btn-success js-modal-close"><img src='{% import_icon %}'> Импортировать</button>
+        <button class="btn btn-success js-modal-close"><img src='{% import_icon %}'> Восстановить</button>
      </div>
     </form>
 </div>

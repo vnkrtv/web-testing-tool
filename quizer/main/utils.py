@@ -103,6 +103,34 @@ def get_auth_data(request: HttpRequest) -> Tuple[str, str]:
     return username, group
 
 
+def get_profile_data(request: HttpRequest) -> Dict[str, Any]:
+    """
+    Get user's profile info using 'user_jqt' cookies
+
+    :param request: <HttpRequest>
+    :return: profile info dict
+    """
+    user_jwt = request.COOKIES.get('user_jwt', '')
+    # profile = requests.post(
+    #     url=settings.PROFILE_URL,
+    #     data={'user_jwt': user_jwt}
+    # ).json()
+    profile = {
+        'name': '2017-3-08-kor',
+        'created_at': '2018-09-13T08:16:44.431Z',
+        'web_url': 'https://gitwork.ru/ivan_korotaev',
+    }
+    admission_year, group, number, _ = profile['name'].split('-')
+    return {
+        'created_at': datetime.strptime(profile['created_at'], "%Y-%m-%dT%H:%M:%S.%fZ"),
+        'name': profile['name'],
+        'web_url': profile['web_url'],
+        'group': int(group),
+        'admission_year': int(admission_year),
+        'number': int(number)
+    }
+
+
 def split_questions(questions: List[Dict[str, Any]]) -> List[Tuple[List[Dict[str, Any]], Union[int, float]]]:
     """
     Split questions list into grouped list of questions lists

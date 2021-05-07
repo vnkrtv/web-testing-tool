@@ -22,7 +22,7 @@ from django.utils.encoding import smart_str
 
 from . import utils
 from .decorators import unauthenticated_user, allowed_users, post_method
-from .models import Test, Subject, Question, TestResult, RunningTestsAnswers, TZ_TIMEDELTA
+from .models import Profile, Test, Subject, Question, TestResult, RunningTestsAnswers
 from .forms import SubjectForm, TestForm
 
 
@@ -43,8 +43,8 @@ def login_page(request: HttpRequest) -> HttpResponse:
     """Authorize user and redirect him to available_tests page"""
     logout(request)
     try:
-        username, group = utils.get_auth_data(request)
-        # username, group = 'ivan_korotaev', 'admin'
+        # username, group = utils.get_auth_data(request)
+        username, group = 'ivan_korotaev', 'admin'
     except DecodeError:
         return HttpResponse("JWT decode error: chet polomalos'")
 
@@ -70,6 +70,17 @@ def login_page(request: HttpRequest) -> HttpResponse:
             return HttpResponse('Incorrect group.')
         user.save()
         user.groups.add(group2id[group])
+
+        profile = utils.get_profile_data(request)
+        user.profile = Profile.objects.create(
+            created_at=profile['created_at'],
+            name=profile['name'],
+            web_url=profile['web_url'],
+            group=profile['group'],
+            admission_year=profile['admission_year'],
+            number=profile['number']
+        )
+
     id2group = {
         1: 'lecturer',
         2: 'student'
@@ -95,8 +106,19 @@ def login_page(request: HttpRequest) -> HttpResponse:
     #         if not user.groups.filter(name='lecturer'):
     #             user.groups.add(1)
     # костыль на время разработки
-
-    login(request, user)
+    try:
+        login(request, user)
+    except User.profile.RelatedObjectDoesNotExist:
+        profile = utils.get_profile_data(request)
+        user.profile = Profile.objects.create(
+            created_at=profile['created_at'],
+            name=profile['name'],
+            web_url=profile['web_url'],
+            group=profile['group'],
+            admission_year=profile['admission_year'],
+            number=profile['number']
+        )
+        login(request, user)
     return redirect(reverse('main:available_tests'))
 
 

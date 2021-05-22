@@ -18,6 +18,7 @@ TZ_TIMEDELTA = timezone.now() - datetime.now(timezone.utc)
 
 
 class Profile(models.Model):
+    id = models.IntegerField(primary_key=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField()
     name = models.CharField(max_length=30)

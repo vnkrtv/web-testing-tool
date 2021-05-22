@@ -13,12 +13,13 @@ from typing import List, Dict, Tuple, Any, Union
 import jwt
 import requests
 
+from django.contrib.auth.models import User
 from django.core.management import call_command
 from django.http import HttpRequest
 from django.utils import timezone
 from django.conf import settings
 
-from .models import Test, Subject, Question
+from .models import Test, Subject, Question, Profile
 
 
 class EmptyOptionsError(Exception):
@@ -103,12 +104,13 @@ def get_auth_data(request: HttpRequest) -> Tuple[str, str]:
     return username, group
 
 
-def get_profile_data(request: HttpRequest) -> Dict[str, Any]:
+def get_new_profile(request: HttpRequest, user: User) -> Profile:
     """
     Get user's profile info using 'user_jqt' cookies
 
+    :param user: user which profile will be created
     :param request: <HttpRequest>
-    :return: profile info dict
+    :return: created profile
     """
     user_jwt = request.COOKIES.get('user_jwt', '')
     # profile = requests.post(
@@ -121,14 +123,14 @@ def get_profile_data(request: HttpRequest) -> Dict[str, Any]:
         'web_url': 'https://gitwork.ru/ivan_korotaev',
     }
     admission_year, group, number, _ = profile['name'].split('-')
-    return {
-        'created_at': datetime.strptime(profile['created_at'], "%Y-%m-%dT%H:%M:%S.%fZ"),
-        'name': profile['name'],
-        'web_url': profile['web_url'],
-        'group': int(group),
-        'admission_year': int(admission_year),
-        'number': int(number)
-    }
+    return Profile.objects.create(
+        id=user.id,
+        created_at=datetime.strptime(profile['created_at'], "%Y-%m-%dT%H:%M:%S.%fZ"),
+        name=profile['name'],
+        web_url=profile['web_url'],
+        group=int(group),
+        admission_year=int(admission_year),
+        number=int(number))
 
 
 def split_questions(questions: List[Dict[str, Any]]) -> List[Tuple[List[Dict[str, Any]], Union[int, float]]]:

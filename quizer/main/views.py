@@ -70,16 +70,7 @@ def login_page(request: HttpRequest) -> HttpResponse:
             return HttpResponse('Incorrect group.')
         user.save()
         user.groups.add(group2id[group])
-
-        profile = utils.get_profile_data(request)
-        user.profile = Profile.objects.create(
-            created_at=profile['created_at'],
-            name=profile['name'],
-            web_url=profile['web_url'],
-            group=profile['group'],
-            admission_year=profile['admission_year'],
-            number=profile['number']
-        )
+        user.profile = utils.get_new_profile(request, user)
 
     id2group = {
         1: 'lecturer',
@@ -109,15 +100,7 @@ def login_page(request: HttpRequest) -> HttpResponse:
     try:
         login(request, user)
     except User.profile.RelatedObjectDoesNotExist:
-        profile = utils.get_profile_data(request)
-        user.profile = Profile.objects.create(
-            created_at=profile['created_at'],
-            name=profile['name'],
-            web_url=profile['web_url'],
-            group=profile['group'],
-            admission_year=profile['admission_year'],
-            number=profile['number']
-        )
+        user.profile = utils.get_new_profile(request, user)
         login(request, user)
     return redirect(reverse('main:available_tests'))
 

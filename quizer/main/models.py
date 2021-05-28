@@ -185,6 +185,7 @@ class RunningTestsAnswers(models.Model):
 
 class TestResult(models.Model):
     _id = models.ObjectIdField()
+    id = models.IntegerField(primary_key=True)
     is_running = models.BooleanField('Тест еще запущен')
     comment = models.TextField('Комментарий преподавателя', default='')
     date = models.DateTimeField('Время запуска тестирования', default=timezone.now())
@@ -242,7 +243,6 @@ class UserResult(models.Model):
         verbose_name='Результаты тестирования',
         related_name='results',
         on_delete=models.SET_NULL)
-    username = models.CharField(max_length=50)
     time = models.IntegerField('Продолжительность тестирования')
     tasks_num = models.IntegerField('Число заданий в тесте')
     right_answers_count = models.IntegerField('Число правильных ответов')

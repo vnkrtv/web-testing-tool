@@ -1,4 +1,6 @@
 import pathlib
+from typing import List, Dict, Any
+
 from bson import ObjectId
 
 from django.core.files.base import ContentFile
@@ -7,7 +9,7 @@ from django.contrib.auth.models import User
 
 from rest_framework import serializers
 
-from main.models import Subject, Test, Question, TestResult, RunningTestsAnswers
+from main.models import Subject, Test, Question, TestResult, RunningTestsAnswers, UserResult
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -149,15 +151,52 @@ class QuestionSerializer(serializers.Serializer):
         )
 
 
+class UserResultSerializer(serializers.Serializer):
+    _id = serializers.SerializerMethodField()
+    user = UserSerializer()
+    testing_result_id = serializers.IntegerField()
+    time = serializers.IntegerField()
+    tasks_num = serializers.IntegerField()
+    right_answers_count = serializers.IntegerField()
+    date = serializers.DateTimeField(format="%H:%M:%S  %d-%m-%y")
+    questions = serializers.JSONField()
+
+    def get__id(self, obj):
+        return str(obj._id)
+
+    def create(self, validated_data):
+        user = User.objects.get(id=validated_data.get('user_id'))
+        testing_result = TestResult.objects.get(id=validated_data.get('testing_result_id'))
+        return UserResult.objects.create(
+            user=user,
+            testing_result=testing_result,
+            time=validated_data.get('time'),
+            tasks_num=validated_data.get('tasks_num'),
+            right_answers_count=validated_data.get('right_answers_count'),
+            date=validated_data.get('date'),
+            questions=validated_data.get('questions'))
+
+    def update(self, instance, validated_data):
+        return instance
+
+    class Meta:
+        model = UserResult
+        read_only_fields = (
+            '_id',
+            'testing_result_id'
+        )
+
+
 class TestResultSerializer(serializers.Serializer):
     _id = serializers.SerializerMethodField()
+    id = serializers.IntegerField()
     is_running = serializers.BooleanField()
     comment = serializers.CharField(max_length=1_000)
     date = serializers.DateTimeField(format="%H:%M:%S  %d-%m-%y")
     test = TestSerializer()
     launched_lecturer = UserSerializer()
     subject = SubjectSerializer()
-    results = serializers.JSONField()
+    results = serializers.SerializerMethodField()
 
     def get__id(self, obj):
         return str(obj._id)
@@ -169,6 +208,10 @@ class TestResultSerializer(serializers.Serializer):
             results.sort(key=lambda res: res['date'])
             representation['finished_students_results'] = results
         return representation
+
+    def get_results(self, test_results) -> List[Dict[str, Any]]:
+        serializer = UserResultSerializer(UserResult.objects.filter(test_results=test_results), many=True)
+        return serializer.data
 
     def create(self, validated_data):
         launched_lecturer = User.objects.get(id=validated_data.get('launched_lecturer_id'))
@@ -191,5 +234,6 @@ class TestResultSerializer(serializers.Serializer):
     class Meta:
         model = TestResult
         read_only_fields = (
-            '_id'
+            '_id',
+            'id'
         )

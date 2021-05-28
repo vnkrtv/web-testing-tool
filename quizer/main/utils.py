@@ -298,6 +298,7 @@ def save_database_dump(file) -> pathlib.Path:
     if not dump_filename.exists():
         os.makedirs(dump_filename.parent, exist_ok=True)
     with open(dump_filename, 'wb') as dump_file:
+        print(json.loads(file.read()))
         dump_file.write(file.read())
     return dump_filename
 

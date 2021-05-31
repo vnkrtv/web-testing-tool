@@ -1,3 +1,4 @@
+import json
 import pathlib
 from typing import List, Dict, Any
 
@@ -135,7 +136,7 @@ class QuestionSerializer(serializers.Serializer):
         return Question.objects.create(
             _id=questions_id,
             formulation=request.data.get('formulation'),
-            multiselect=request.data.get('multiselect'),
+            multiselect=json.loads(request.data.get('multiselect')),
             tasks_num=request.data.get('tasks_num'),
             type=questions_type,
             options=Question.parse_options(options),
@@ -143,7 +144,11 @@ class QuestionSerializer(serializers.Serializer):
 
     def update(self, instance, validated_data):
         instance.formulation = validated_data.get('formulation', instance.formulation)
-        instance.options = Question.parse_options(validated_data.get('options', instance.options))
+        options = validated_data.get('options')
+        if options:
+            for option in options:
+                option['is_true'] = ('true' == option['is_true']) or (option['is_true'] == True)
+            instance.options = Question.parse_options(options)
         instance.save()
         return instance
 

@@ -76,7 +76,7 @@ class MainTest(TestCase):
             tasks_num=2,
             duration=60)
 
-        Question.objects.create(
+        self.question = Question.objects.create(
             formulation='First question with multiselect',
             multiselect=True,
             tasks_num=3,
@@ -88,7 +88,7 @@ class MainTest(TestCase):
                 {'option': 'Third true option', 'is_true': True}
             ])
         )
-        Question.objects.create(
+        self.another_question = Question.objects.create(
             formulation='Second question with single answer',
             multiselect=True,
             tasks_num=2,
@@ -392,7 +392,7 @@ class QuestionAPITest(MainTest):
 
         self.assertEqual(response.status_code, 401)
 
-    def test_get_all_student(self):
+    def test_get_student(self):
         """
         Test for get method
         """
@@ -401,14 +401,10 @@ class QuestionAPITest(MainTest):
             username=self.student.username,
             password=''
         )
-        response = client.get(reverse('api:tests_api'))
+        response = client.get(reverse('api:questions_api', kwargs={'test_id': self.test.id}))
+        self.assertEqual(response.status_code, 403)
 
-        self.assertEqual(response.status_code, 200)
-        tests = json.dumps(TestSerializer(Test.objects.all(), many=True).data)
-        response_data = json.dumps(json.loads(response.content)['tests'])
-        self.assertEqual(tests, response_data)
-
-    def test_get_all_lecturer(self):
+    def test_get_lecturer(self):
         """
         Test for get method
         """
@@ -417,27 +413,12 @@ class QuestionAPITest(MainTest):
             username=self.lecturer.username,
             password=''
         )
-        response = client.get(reverse('api:tests_api'))
+        response = client.get(reverse('api:questions_api', kwargs={'test_id': self.test.id}))
 
         self.assertEqual(response.status_code, 200)
-        tests = json.dumps(TestSerializer(Test.objects.all(), many=True).data)
-        response_data = json.dumps(json.loads(response.content)['tests'])
-        self.assertEqual(tests, response_data)
-
-    def test_get_running(self):
-        """
-        Test for get method
-        """
-        client = APIClient()
-        client.login(
-            username=self.lecturer.username,
-            password=''
-        )
-        response = client.get(reverse('api:tests_api') + '?state=running')
-
-        self.assertEqual(response.status_code, 200)
-        running_tests = json.loads(response.content)['tests']
-        self.assertEqual([], running_tests)
+        questions = json.dumps(QuestionSerializer(Question.objects.filter(test__id=self.test.id), many=True).data)
+        response_data = json.dumps(json.loads(response.content)['questions'])
+        self.assertEqual(questions, response_data)
 
     def test_post(self):
         """
@@ -448,23 +429,29 @@ class QuestionAPITest(MainTest):
             username=self.lecturer.username,
             password=''
         )
-        new_test_data = {
-            'name': 'New test',
-            'description': 'New test description',
-            'tasks_num': '5',
-            'duration': '30',
-            'subject_id': self.subject.id,
-            'author_id': self.lecturer.id
+        old_questions_count = len(Question.objects.filter(test__id=self.test.id))
+        new_question = {
+            'test_id': self.test.id,
+            'formulation': 'New hard question',
+            'tasks_num': '3',
+            'with_images': 'false',
+            'multiselect': 'true',
+            'options': [
+                {'option': 'False option', 'is_true': 'false'},
+                {'option': 'True option!', 'is_true': 'true'},
+                {'option': 'Another true option', 'is_true': 'true'}
+            ]
         }
         response = client.post(
-            reverse('api:tests_api'),
-            json.dumps(new_test_data),
+            reverse('api:questions_api', kwargs={'test_id': self.test.id}),
+            json.dumps(new_question),
             content_type='application/json'
         )
+
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'success')
-        new_test = Test.objects.filter(name=new_test_data['name'])
-        self.assertEqual(1, len(new_test))
+        updated_questions = Question.objects.filter(test__id=self.test.id)
+        self.assertEqual(len(updated_questions), old_questions_count + 1)
 
     def test_put(self):
         """
@@ -476,19 +463,26 @@ class QuestionAPITest(MainTest):
             password=''
         )
 
-        old_name = self.test.name
-        updated_test_data = {
-            'name': 'Updated test',
-            'duration': self.test.duration * 2
+        old_formulation = self.question.formulation
+        old_options = self.question.options
+        updated_question_data = {
+            'test_id': self.test.id,
+            'formulation': 'New cool question formulation',
+            'options': [
+                {'option': 'New false option', 'is_true': 'false'},
+                {'option': 'New true option!', 'is_true': 'true'},
+                {'option': 'Another false option', 'is_true': 'false'}
+            ]
         }
         response = client.put(
-            reverse('api:edit_tests_api', kwargs={"test_id": self.test.id}),
-            json.dumps(updated_test_data),
+            reverse('api:edit_questions_api', kwargs={"test_id": self.test.id, "question_id": self.question.object_id}),
+            json.dumps(updated_question_data),
             content_type='application/json'
         )
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'success')
-        self.assertNotEqual(old_name, Test.objects.get(id=self.test.id).name)
+        self.assertNotEqual(old_formulation, Question.objects.get(_id=self.question._id).formulation)
+        self.assertNotEqual(old_options, Question.objects.get(_id=self.question._id).options)
 
     def test_delete(self):
         """
@@ -500,68 +494,15 @@ class QuestionAPITest(MainTest):
             password=''
         )
 
-        deleted_test_id = self.test.id
+        deleted_question_id = self.question._id
         response = client.delete(
-            reverse('api:edit_tests_api', kwargs={"test_id": self.test.id})
+            reverse('api:edit_questions_api', kwargs={"test_id": self.test.id, "question_id": self.question.object_id})
         )
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'success')
-        self.assertEqual(0, len(Test.objects.filter(id=deleted_test_id)))
+        self.assertEqual(0, len(Question.objects.filter(_id=deleted_question_id)))
 
 
-#     def test_adding_and_getting_questions(self) -> None:
-#         """
-#         Test for 'add_one' and 'get_many' QuestionsStorage methods
-#         """
-#         questions = self.questions_storage.get_many(test_id=self.test.id)
-#         question = {
-#             'formulation': 'Test question',
-#             'tasks_num': 2,
-#             'multiselect': False,
-#             'type': QuestionType.REGULAR,
-#             'options': [
-#                 {
-#                     'option': 'First true option',
-#                     'is_true': True
-#                 },
-#                 {
-#                     'option': 'Second false option',
-#                     'is_true': False
-#                 }
-#             ]
-#         }
-#         self.questions_storage.add_one(
-#             question=question,
-#             test_id=self.test.id
-#         )
-#         updated_questions = self.questions_storage.get_many(test_id=self.test.id)
-#         self.assertEqual(updated_questions, questions + [question])
-#
-#     def test_deleting_questions(self) -> None:
-#         """
-#         Test for 'delete_by_formulation' and 'get_many' QuestionsStorage methods
-#         """
-#         questions = self.questions_storage.get_many(test_id=self.test.id)
-#         self.questions_storage.delete_by_formulation(
-#             question_formulation='First question with multiselect',
-#             test_id=self.test.id
-#         )
-#         updated_questions = self.questions_storage.get_many(test_id=self.test.id)
-#         self.assertEqual(len(questions) - 1, len(updated_questions))
-#
-#     def test_deleting_all_questions(self) -> None:
-#         """
-#         Test for 'delete_many' and 'get_many' QuestionsStorage methods
-#         """
-#         questions = self.questions_storage.get_many(test_id=self.test.id)
-#         self.assertNotEqual(0, len(questions))
-#
-#         self.questions_storage.delete_many(
-#             test_id=self.test.id
-#         )
-#         updated_questions = self.questions_storage.get_many(test_id=self.test.id)
-#         self.assertEqual(0, len(updated_questions))
-#
 #
 # class AuthorizationTest(MainTest):
 #     """
@@ -644,122 +585,6 @@ class QuestionAPITest(MainTest):
 #
 
 '''
-class TestAddingTest(MainTest):
-    """
-    Tests adding tests using web interface
-    """
-
-    def test_adding_new_test(self) -> None:
-        """
-        Testing adding new test by using web interface
-        """
-        client = Client()
-        client.login(
-            username=self.lecturer.username,
-            password=''
-        )
-        self.assertEqual(len(Test.objects.all()), 1)
-        response = client.post(reverse('main:tests'), {
-            'add': '',
-            'subject': self.subject.id,
-            'name': 'Second test',
-            'description': 'Description of second test',
-            'tasks_num': 3,
-            'duration': 45
-        }, follow=True)
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Second test')
-        self.assertEqual(len(Test.objects.all()), 2)
-
-
-class TestEditingTest(MainTest):
-    """
-    Tests editing tests using web interface
-    """
-
-    def test_editing_test(self) -> None:
-        """
-        Testing editing test by web interface
-        """
-        client = Client()
-        client.login(
-            username=self.lecturer.username,
-            password=''
-        )
-
-        old_test = Test.objects.get(id=self.test.id)
-        updated_description = 'Updated description'
-        response = client.post(reverse('main:tests'), {
-            'edit': '',
-            'test_id': self.test.id,
-            'name': self.test.name,
-            'description': updated_description,
-            'tasks_num': self.test.tasks_num,
-            'duration': self.test.duration
-        }, follow=True)
-        updated_test = Test.objects.get(id=self.test.id)
-
-        self.assertEqual(response.status_code, 200)
-        self.assertNotEqual(old_test.description, updated_test.description)
-        self.assertEqual(updated_test.description, updated_description)
-
-    def test_deleting_test(self) -> None:
-        """
-        Testing deleting test using web interface
-        """
-        client = Client()
-        client.login(
-            username=self.lecturer.username,
-            password=''
-        )
-
-        response = client.post(reverse('main:tests'), {
-            'delete': '',
-            'test_id': self.test.id,
-            'del': 'on'
-        }, follow=True)
-
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, self.test.name)
-        self.assertEqual(len(Test.objects.filter(id=self.test.id)), 0)
-
-    @skip
-    def test_deleting_test_questions(self) -> None:
-        """
-        Testing deleting all test's questions using web interface
-        """
-        client = Client()
-        client.login(
-            username=self.lecturer.username,
-            password=''
-        )
-        response = client.post(reverse('main:tests'), {}, follow=True)
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Тесты')
-
-        response = client.post(reverse('main:edit_test_redirect'), {
-            f'test_name_{self.test.id}': 'del_qstn_btn'
-        }, follow=True)
-
-        questions = self.questions_storage.get_many(test_id=self.test.id)
-
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Вопросы к тесту")
-        self.assertContains(response, self.test.name)
-
-        response = client.post(reverse('main:delete_questions_result'), {
-            'test_id': self.test.id,
-            'csrfmiddlewaretoken': 'token',
-            **{question['formulation']: 'on' for question in questions}
-        }, follow=True)
-
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Результат удаления')
-        self.assertContains(response, self.test.name)
-
-        updated_questions = self.questions_storage.get_many(test_id=self.test.id)
-        self.assertEqual(len(updated_questions), 0)
-        self.assertNotEqual(len(updated_questions), len(questions))
 
 
 class LoadingQuestionsTest(MainTest):

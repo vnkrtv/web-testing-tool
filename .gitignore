@@ -1,6 +1,7 @@
 venv/
 .idea/
 quizer/media/
+quizer/dumps
 htmlcov/
 quizer/main/migrations/
 *.pyc

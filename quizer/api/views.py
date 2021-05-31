@@ -8,7 +8,7 @@ from rest_framework.views import APIView
 from main.models import Subject, Test, Question, TestResult, RunningTestsAnswers
 from main import utils
 from .serializers import SubjectSerializer, TestSerializer, QuestionSerializer, TestResultSerializer
-from .permissions import IsLecturer
+from .permissions import IsLecturer, TestAPIPermission
 
 
 class SubjectView(APIView):
@@ -53,7 +53,7 @@ class SubjectView(APIView):
 
 
 class TestView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, TestAPIPermission]
 
     def get(self, request):
         state = request.query_params.get('state', None)

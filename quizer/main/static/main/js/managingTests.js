@@ -95,8 +95,8 @@ function addTest() {
     formData.append('description', descriptionInput.value);
     formData.append('tasks_num', tasksNumInput.value);
     formData.append('duration', durationInput.value);
-    formData.append('subject', subjectSelect.options[subjectSelect.selectedIndex].value);
-    formData.append('author', userID);
+    formData.append('subject_id', subjectSelect.options[subjectSelect.selectedIndex].value);
+    formData.append('author_id', userID);
 
     $.ajax({
         url: testsAPIUrl,

@@ -45,20 +45,24 @@ class SubjectSerializer(serializers.Serializer):
 
 class TestSerializer(serializers.Serializer):
     id = serializers.ReadOnlyField()
-    subject = SubjectSerializer()
-    author = UserSerializer()
     name = serializers.CharField(max_length=200)
     description = serializers.CharField(default='')
     tasks_num = serializers.IntegerField()
     duration = serializers.IntegerField()
     questions_num = serializers.SerializerMethodField()
 
+    subject = SubjectSerializer(read_only=True)
+    author = UserSerializer(read_only=True)
+
+    subject_id = serializers.IntegerField(write_only=True)
+    author_id = serializers.IntegerField(write_only=True)
+
     def get_questions_num(self, test) -> int:
         return test.questions.count()
 
     def create(self, validated_data):
-        subject = Subject.objects.get(id=validated_data.get('subject'))
-        author = User.objects.get(id=validated_data.get('author'))
+        subject = Subject.objects.get(id=validated_data.get('subject_id'))
+        author = User.objects.get(id=validated_data.get('author_id'))
         return Test.objects.create(
             name=validated_data.get('name'),
             description=validated_data.get('description'),

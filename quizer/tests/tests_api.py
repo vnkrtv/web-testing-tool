@@ -210,6 +210,305 @@ class SubjectAPITest(MainTest):
         self.assertEqual(0, len(Subject.objects.filter(id=deleted_subject_id)))
 
 
+class TestAPITest(MainTest):
+    """
+    Tests for TestAPI
+    """
+
+    def test_get_for_unauthenticated_user(self):
+        """
+        Test response code for unauthenticated user
+        """
+        client = APIClient()
+        client.logout()
+        response = client.get(reverse('api:tests_api'))
+
+        self.assertEqual(response.status_code, 401)
+
+    def test_get_all_student(self):
+        """
+        Test for get method
+        """
+        client = APIClient()
+        client.login(
+            username=self.student.username,
+            password=''
+        )
+        response = client.get(reverse('api:tests_api'))
+
+        self.assertEqual(response.status_code, 200)
+        tests = json.dumps(TestSerializer(Test.objects.all(), many=True).data)
+        response_data = json.dumps(json.loads(response.content)['tests'])
+        self.assertEqual(tests, response_data)
+
+    def test_permissions_for_students(self):
+        """
+        Test permissions for students on TestAPI
+        """
+        client = APIClient()
+        client.login(
+            username=self.student.username,
+            password=''
+        )
+
+        new_test_data = {
+            'name': 'New test',
+            'description': 'New test description',
+            'tasks_num': '5',
+            'duration': '30',
+            'subject_id': self.subject.id,
+            'author_id': self.lecturer.id
+        }
+        response = client.post(
+            reverse('api:tests_api'),
+            json.dumps(new_test_data),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 403)
+
+        response = client.put(
+            reverse('api:edit_tests_api', kwargs={'test_id': self.test.id}),
+            json.dumps({'name': 'New name'}),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 403)
+
+        response = client.delete(reverse('api:edit_tests_api', kwargs={'test_id': self.test.id}))
+        self.assertEqual(response.status_code, 403)
+
+    def test_get_all_lecturer(self):
+        """
+        Test for get method
+        """
+        client = APIClient()
+        client.login(
+            username=self.lecturer.username,
+            password=''
+        )
+        response = client.get(reverse('api:tests_api'))
+
+        self.assertEqual(response.status_code, 200)
+        tests = json.dumps(TestSerializer(Test.objects.all(), many=True).data)
+        response_data = json.dumps(json.loads(response.content)['tests'])
+        self.assertEqual(tests, response_data)
+
+    def test_get_running(self):
+        """
+        Test for get method
+        """
+        client = APIClient()
+        client.login(
+            username=self.lecturer.username,
+            password=''
+        )
+        response = client.get(reverse('api:tests_api') + '?state=running')
+
+        self.assertEqual(response.status_code, 200)
+        running_tests = json.loads(response.content)['tests']
+        self.assertEqual([], running_tests)
+
+    def test_post(self):
+        """
+        Test post method for user from lecturer group
+        """
+        client = APIClient()
+        client.login(
+            username=self.lecturer.username,
+            password=''
+        )
+        new_test_data = {
+            'name': 'New test',
+            'description': 'New test description',
+            'tasks_num': '5',
+            'duration': '30',
+            'subject_id': self.subject.id,
+            'author_id': self.lecturer.id
+        }
+        response = client.post(
+            reverse('api:tests_api'),
+            json.dumps(new_test_data),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'success')
+        new_test = Test.objects.filter(name=new_test_data['name'])
+        self.assertEqual(1, len(new_test))
+
+    def test_put(self):
+        """
+        Test put method for user from lecturer group
+        """
+        client = APIClient()
+        client.login(
+            username=self.lecturer.username,
+            password=''
+        )
+
+        old_name = self.test.name
+        updated_test_data = {
+            'name': 'Updated test',
+            'duration': self.test.duration * 2
+        }
+        response = client.put(
+            reverse('api:edit_tests_api', kwargs={"test_id": self.test.id}),
+            json.dumps(updated_test_data),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'success')
+        self.assertNotEqual(old_name, Test.objects.get(id=self.test.id).name)
+
+    def test_delete(self):
+        """
+        Test delete method for user from lecturer group
+        """
+        client = APIClient()
+        client.login(
+            username=self.lecturer.username,
+            password=''
+        )
+
+        deleted_test_id = self.test.id
+        response = client.delete(
+            reverse('api:edit_tests_api', kwargs={"test_id": self.test.id})
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'success')
+        self.assertEqual(0, len(Test.objects.filter(id=deleted_test_id)))
+
+
+class QuestionAPITest(MainTest):
+    """
+    Tests for QuestionAPI
+    """
+
+    def test_get_for_unauthenticated_user(self):
+        """
+        Test response code for unauthenticated user
+        """
+        client = APIClient()
+        client.logout()
+        response = client.get(reverse('api:questions_api', kwargs={'test_id': self.test.id}))
+
+        self.assertEqual(response.status_code, 401)
+
+    def test_get_all_student(self):
+        """
+        Test for get method
+        """
+        client = APIClient()
+        client.login(
+            username=self.student.username,
+            password=''
+        )
+        response = client.get(reverse('api:tests_api'))
+
+        self.assertEqual(response.status_code, 200)
+        tests = json.dumps(TestSerializer(Test.objects.all(), many=True).data)
+        response_data = json.dumps(json.loads(response.content)['tests'])
+        self.assertEqual(tests, response_data)
+
+    def test_get_all_lecturer(self):
+        """
+        Test for get method
+        """
+        client = APIClient()
+        client.login(
+            username=self.lecturer.username,
+            password=''
+        )
+        response = client.get(reverse('api:tests_api'))
+
+        self.assertEqual(response.status_code, 200)
+        tests = json.dumps(TestSerializer(Test.objects.all(), many=True).data)
+        response_data = json.dumps(json.loads(response.content)['tests'])
+        self.assertEqual(tests, response_data)
+
+    def test_get_running(self):
+        """
+        Test for get method
+        """
+        client = APIClient()
+        client.login(
+            username=self.lecturer.username,
+            password=''
+        )
+        response = client.get(reverse('api:tests_api') + '?state=running')
+
+        self.assertEqual(response.status_code, 200)
+        running_tests = json.loads(response.content)['tests']
+        self.assertEqual([], running_tests)
+
+    def test_post(self):
+        """
+        Test post method for user from lecturer group
+        """
+        client = APIClient()
+        client.login(
+            username=self.lecturer.username,
+            password=''
+        )
+        new_test_data = {
+            'name': 'New test',
+            'description': 'New test description',
+            'tasks_num': '5',
+            'duration': '30',
+            'subject_id': self.subject.id,
+            'author_id': self.lecturer.id
+        }
+        response = client.post(
+            reverse('api:tests_api'),
+            json.dumps(new_test_data),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'success')
+        new_test = Test.objects.filter(name=new_test_data['name'])
+        self.assertEqual(1, len(new_test))
+
+    def test_put(self):
+        """
+        Test put method for user from lecturer group
+        """
+        client = APIClient()
+        client.login(
+            username=self.lecturer.username,
+            password=''
+        )
+
+        old_name = self.test.name
+        updated_test_data = {
+            'name': 'Updated test',
+            'duration': self.test.duration * 2
+        }
+        response = client.put(
+            reverse('api:edit_tests_api', kwargs={"test_id": self.test.id}),
+            json.dumps(updated_test_data),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'success')
+        self.assertNotEqual(old_name, Test.objects.get(id=self.test.id).name)
+
+    def test_delete(self):
+        """
+        Test delete method for user from lecturer group
+        """
+        client = APIClient()
+        client.login(
+            username=self.lecturer.username,
+            password=''
+        )
+
+        deleted_test_id = self.test.id
+        response = client.delete(
+            reverse('api:edit_tests_api', kwargs={"test_id": self.test.id})
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'success')
+        self.assertEqual(0, len(Test.objects.filter(id=deleted_test_id)))
+
+
 #     def test_adding_and_getting_questions(self) -> None:
 #         """
 #         Test for 'add_one' and 'get_many' QuestionsStorage methods

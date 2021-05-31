@@ -5,6 +5,7 @@ htmlcov/
 quizer/main/migrations/
 *.pyc
 *.coverage
+quizer/.coveragerc
 prac*
 
 db.json

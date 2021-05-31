@@ -19,7 +19,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class SubjectSerializer(serializers.Serializer):
-    id = serializers.IntegerField()
+    id = serializers.ReadOnlyField()
     name = serializers.CharField(max_length=50)
     description = serializers.CharField(required=False)
     tests_count = serializers.SerializerMethodField()
@@ -44,7 +44,7 @@ class SubjectSerializer(serializers.Serializer):
 
 
 class TestSerializer(serializers.Serializer):
-    id = serializers.IntegerField()
+    id = serializers.ReadOnlyField()
     subject = SubjectSerializer()
     author = UserSerializer()
     name = serializers.CharField(max_length=200)

@@ -2,11 +2,14 @@
 """
 Main app tests, covered views.py, models.py and mongo.py
 """
+import json
 from unittest import mock, skip
 
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.auth.models import User, Group
+
+from rest_framework.test import APIRequestFactory, APIClient, force_authenticate
 
 from main.models import Subject, Test, Question, TestResult, RunningTestsAnswers
 from api.serializers import SubjectSerializer, TestSerializer, QuestionSerializer, TestResultSerializer
@@ -62,6 +65,9 @@ class MainTest(TestCase):
         self.subject = Subject.objects.create(
             name='Subject',
             description='Description of subject')
+        self.another_subject = Subject.objects.create(
+            name='Another subject',
+            description='Description of another subject')
         self.test = Test.objects.create(
             subject=self.subject,
             author=self.lecturer,
@@ -104,7 +110,7 @@ class SubjectAPITest(MainTest):
         """
         Test response code for unauthenticated user
         """
-        client = Client()
+        client = APIClient()
         client.logout()
         response = client.get(reverse('api:subjects_api'))
 
@@ -114,7 +120,7 @@ class SubjectAPITest(MainTest):
         """
         Test response code for user from student group
         """
-        client = Client()
+        client = APIClient()
         client.login(
             username=self.student.username,
             password=''
@@ -123,11 +129,11 @@ class SubjectAPITest(MainTest):
 
         self.assertEqual(response.status_code, 403)
 
-    def test_get_for_lecturer(self):
+    def test_get(self):
         """
         Test get method for user from lecturer group
         """
-        client = Client()
+        client = APIClient()
         client.login(
             username=self.lecturer.username,
             password=''
@@ -135,7 +141,73 @@ class SubjectAPITest(MainTest):
         response = client.get(reverse('api:subjects_api'))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, self.subject.name)
+        subjects = json.dumps(SubjectSerializer(Subject.objects.all(), many=True).data)
+        response_data = json.dumps(json.loads(response.content)['subjects'])
+        self.assertEqual(subjects, response_data)
+
+    def test_post(self):
+        """
+        Test post method for user from lecturer group
+        """
+        client = APIClient()
+        client.login(
+            username=self.lecturer.username,
+            password=''
+        )
+        new_subject_data = {
+            'name': 'New subject',
+            'description': 'New subject description'
+        }
+        response = client.post(
+            reverse('api:subjects_api'),
+            json.dumps(new_subject_data),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'success')
+        new_subject = Subject.objects.filter(name=new_subject_data['name'])
+        self.assertEqual(1, len(new_subject))
+
+    def test_put(self):
+        """
+        Test put method for user from lecturer group
+        """
+        client = APIClient()
+        client.login(
+            username=self.lecturer.username,
+            password=''
+        )
+
+        old_name = self.subject.name
+        updated_subject_data = {
+            'name': 'Updated subject'
+        }
+        response = client.put(
+            reverse('api:edit_subjects_api', kwargs={"subject_id": self.subject.id}),
+            json.dumps(updated_subject_data),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'success')
+        self.assertNotEqual(old_name, Subject.objects.get(id=self.subject.id).name)
+
+    def test_delete(self):
+        """
+        Test delete method for user from lecturer group
+        """
+        client = APIClient()
+        client.login(
+            username=self.lecturer.username,
+            password=''
+        )
+
+        deleted_subject_id = self.subject.id
+        response = client.delete(
+            reverse('api:edit_subjects_api', kwargs={"subject_id": self.subject.id})
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'success')
+        self.assertEqual(0, len(Subject.objects.filter(id=deleted_subject_id)))
 
 
 #     def test_adding_and_getting_questions(self) -> None:

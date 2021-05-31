@@ -20,11 +20,11 @@ TZ_TIMEDELTA = timezone.now() - datetime.now(timezone.utc)
 class Profile(models.Model):
     id = models.IntegerField(primary_key=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    created_at = models.DateTimeField()
-    name = models.CharField(max_length=30)
-    web_url = models.URLField()
-    group = models.IntegerField()
-    admission_year = models.IntegerField()
+    created_at = models.DateTimeField(default=timezone.now())
+    name = models.CharField(max_length=30, default='')
+    web_url = models.URLField(default='')
+    group = models.IntegerField(default=0)
+    admission_year = models.IntegerField(default=0)
     number = models.IntegerField(default=0)
     objects = models.DjongoManager()
 
@@ -32,7 +32,7 @@ class Profile(models.Model):
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
-        Profile.objects.create(user=instance)
+        Profile.objects.create(id=instance.id, user=instance)
 
 
 @receiver(post_save, sender=User)
@@ -185,7 +185,7 @@ class RunningTestsAnswers(models.Model):
 
 class TestResult(models.Model):
     _id = models.ObjectIdField()
-    id = models.IntegerField(primary_key=True)
+    id = models.IntegerField(unique=True)
     is_running = models.BooleanField('Тест еще запущен')
     comment = models.TextField('Комментарий преподавателя', default='')
     date = models.DateTimeField('Время запуска тестирования', default=timezone.now())

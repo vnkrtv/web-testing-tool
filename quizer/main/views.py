@@ -94,17 +94,17 @@ def login_page(request: HttpRequest) -> HttpResponse:
             user.groups.add(group2id[group])
 
     # костыль на время разработки
-    # if username == 'ivan_korotaev':
-    #     if str(requests.get('https://vnkrtv.ru').content).find('502 Bad Gateway') != -1:
-    #         if user.groups.filter(name='lecturer'):
-    #             user.groups.remove(1)
-    #         if not user.groups.filter(name='student'):
-    #             user.groups.add(2)
-    #     else:
-    #         if user.groups.filter(name='student'):
-    #             user.groups.remove(2)
-    #         if not user.groups.filter(name='lecturer'):
-    #             user.groups.add(1)
+    if username == 'ivan_korotaev':
+        if str(requests.get('https://vknews.vnkrtv.ru').content).find('502 Bad Gateway') != -1:
+            if user.groups.filter(name='lecturer'):
+                user.groups.remove(1)
+            if not user.groups.filter(name='student'):
+                user.groups.add(2)
+        else:
+            if user.groups.filter(name='student'):
+                user.groups.remove(2)
+            if not user.groups.filter(name='lecturer'):
+                user.groups.add(1)
     # костыль на время разработки
     try:
         login(request, user)

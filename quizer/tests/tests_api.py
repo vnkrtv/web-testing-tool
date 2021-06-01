@@ -503,6 +503,125 @@ class QuestionAPITest(MainTest):
         self.assertEqual(0, len(Question.objects.filter(_id=deleted_question_id)))
 
 
+class TestPassingTest(MainTest):
+    """
+    Tests for tests passing
+    """
+
+    def test_launching_test(self):
+        """
+        Test response code for unauthenticated user
+        """
+        client = APIClient()
+        client.login(
+            username=self.lecturer.username,
+            password=''
+        )
+
+        response = client.get(reverse('api:tests_api') + '?state=running')
+        self.assertEqual(response.status_code, 200)
+        running_tests = json.loads(response.content)['tests']
+        self.assertEqual([], running_tests)
+
+        response = client.get(reverse('api:tests_api') + '?state=not_running')
+        self.assertEqual(response.status_code, 200)
+        not_running_tests = json.loads(response.content)['tests']
+        self.assertEqual(1, len(not_running_tests))
+
+        response = client.put(reverse('api:launch_test', kwargs={'test_id': self.test.id}))
+        self.assertEqual(True, json.loads(response.content)['ok'])
+
+        response = client.get(reverse('api:tests_api') + '?state=running')
+        self.assertEqual(response.status_code, 200)
+        running_tests = json.loads(response.content)['tests']
+        self.assertEqual(1, len(running_tests))
+
+        response = client.get(reverse('api:tests_api') + '?state=not_running')
+        self.assertEqual(response.status_code, 200)
+        not_running_tests = json.loads(response.content)['tests']
+        self.assertEqual(0, len(not_running_tests))
+
+    def test_rest_result_api(self):
+        """
+        Test for TestResultAPI
+        """
+        client = APIClient()
+        client.login(
+            username=self.lecturer.username,
+            password=''
+        )
+
+        test_results = TestResult.objects.all()
+        self.assertEqual(len(test_results), 0)
+
+        response = client.put(reverse('api:launch_test', kwargs={'test_id': self.test.id}))
+        self.assertEqual(True, json.loads(response.content)['ok'])
+
+        test_results = TestResult.objects.all()
+        self.assertEqual(len(test_results), 1)
+
+    def test_passing_test(self):
+        """
+        Test for TestResultAPI
+        """
+        lecturer_client = APIClient()
+        lecturer_client.login(
+            username=self.lecturer.username,
+            password=''
+        )
+
+        student_client = APIClient()
+        student_client.login(
+            username=self.student.username,
+            password=''
+        )
+
+        # Launching test
+        test_results = TestResult.objects.all()
+        self.assertEqual(len(test_results), 0)
+
+        response = lecturer_client.put(reverse('api:launch_test', kwargs={'test_id': self.test.id}))
+        self.assertEqual(True, json.loads(response.content)['ok'])
+
+        test_results = TestResult.objects.all()
+        self.assertEqual(len(test_results), 1)
+        self.assertEqual(len(test_results.first().results.all()), 0)
+
+        # Running test by student
+
+        self.assertEqual(0, RunningTestsAnswers.objects.all().count())
+        student_client.post(
+            reverse('main:student_run_test'),
+            {'test_id': self.test.id},
+            follow=True
+        )
+        running_tests_answers = RunningTestsAnswers.objects.all()
+        self.assertEqual(1, running_tests_answers.count())
+        right_answers = running_tests_answers.first().right_answers
+
+        answers = {}
+        for right_answer in right_answers:
+            question_num = right_answer['question_num']
+            if len(right_answer['right_options']) == 1:
+                answers[question_num] = right_answer['right_options'][0]['option']
+            else:
+                key = f'{question_num}_{right_answer["right_options"][0]["option"]}'
+                answers[key] = 'on'
+
+        response = student_client.post(reverse('main:test_result'), {
+            'test-passed': '',
+            'time': self.test.duration // 2,
+            'csrfmiddlewaretoken': 'token',
+            **answers
+        }, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Результат')
+
+        self.assertEqual(0, RunningTestsAnswers.objects.all().count())
+        test_results = TestResult.objects.all()
+        self.assertEqual(len(test_results), 1)
+        self.assertEqual(len(test_results.first().results.all()), 1)
+
 #
 # class AuthorizationTest(MainTest):
 #     """

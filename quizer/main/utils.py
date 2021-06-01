@@ -353,8 +353,7 @@ def get_test_result(request: HttpRequest, right_answers: List[Dict[str, Any]], t
             else:
                 questions[-1]['is_true'] = False
     return {
-        'user_id': request.user.id,
-        'username': request.user.username,
+        'user': request.user,
         'time': test_duration - time,
         'tasks_num': len(right_answers),
         'right_answers_count': right_answers_count,

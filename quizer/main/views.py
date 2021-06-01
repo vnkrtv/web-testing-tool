@@ -22,7 +22,7 @@ from django.utils.encoding import smart_str
 
 from . import utils
 from .decorators import unauthenticated_user, allowed_users, post_method
-from .models import Profile, Test, Subject, Question, TestResult, RunningTestsAnswers
+from .models import Profile, Test, Subject, Question, TestResult, RunningTestsAnswers, UserResult
 from .forms import SubjectForm, TestForm
 
 
@@ -43,6 +43,7 @@ def login_page(request: HttpRequest) -> HttpResponse:
     """Authorize user and redirect him to available_tests page"""
     logout(request)
     try:
+        # username, group = 'useruser', 'student'
         # username, group = utils.get_auth_data(request)
         username, group = 'ivan_korotaev', 'admin'
     except DecodeError:
@@ -335,11 +336,15 @@ class PassedTestView(View):
             right_answers=passed_test_answers.right_answers,
             test_duration=passed_test_answers.test_duration)
         test_results = TestResult.objects.get(is_running=True, test__id=passed_test_answers.test.id)
+        UserResult.objects.create(
+            testing_result=test_results,
+            user=result['user'],
+            time=result['time'],
+            tasks_num=result['tasks_num'],
+            right_answers_count=result['right_answers_count'],
+            questions=result['questions']
+        )
         passed_test_answers.delete()
-
-        test_results.results += result
-        test_results.save()
-
         self.context = {
             'title': 'Результаты тестирования',
             'message_title': 'Результат',
@@ -422,6 +427,9 @@ def show_test_results(request: HttpRequest, test_results_id: str) -> HttpRespons
 @allowed_users(allowed_roles=['student'])
 def student_run_test(request: HttpRequest) -> HttpResponse:
     """Run test for student"""
+    if request.method != 'POST':
+        return redirect(reverse('main:available_tests'))
+
     test_id = int(request.POST['test_id'])
     test = Test.objects.filter(id=test_id).first()
     if not test:

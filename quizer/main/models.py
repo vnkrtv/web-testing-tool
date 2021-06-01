@@ -20,7 +20,7 @@ TZ_TIMEDELTA = timezone.now() - datetime.now(timezone.utc)
 class Profile(models.Model):
     id = models.IntegerField(primary_key=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    created_at = models.DateTimeField(default=timezone.now())
+    created_at = models.DateTimeField(default=timezone.now)
     name = models.CharField(max_length=30, default='')
     web_url = models.URLField(default='')
     group = models.IntegerField(default=0)
@@ -154,7 +154,7 @@ class QuestionRightAnswer(models.Model):
 class RunningTestsAnswers(models.Model):
     _id = models.ObjectIdField()
     test_duration = models.IntegerField('Длительность теста')
-    start_date = models.DateTimeField('Время запуска теста', default=timezone.now())
+    start_date = models.DateTimeField('Время запуска теста', default=timezone.now)
     test = models.ForeignKey(
         Test,
         null=True,
@@ -188,7 +188,7 @@ class TestResult(models.Model):
     id = models.IntegerField(unique=True)
     is_running = models.BooleanField('Тест еще запущен')
     comment = models.TextField('Комментарий преподавателя', default='')
-    date = models.DateTimeField('Время запуска тестирования', default=timezone.now())
+    date = models.DateTimeField('Время запуска тестирования', default=timezone.now)
     launched_lecturer = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         null=True,
@@ -219,14 +219,14 @@ class TestResult(models.Model):
         verbose_name_plural = 'Результаты тестирований'
 
 
-class UserQuestionAnswer(models.Model):
-    question_id = models.CharField()
-    is_true = models.BooleanField(default=False)
-    selected_options = models.JSONField()
-    right_options = models.JSONField()
-
-    class Meta:
-        abstract = True
+# class UserQuestionAnswer(models.Model):
+#     question_id = models.CharField()
+#     is_true = models.BooleanField(default=False)
+#     selected_options = models.JSONField()
+#     right_options = models.JSONField()
+#
+#     class Meta:
+#         abstract = True
 
 
 class UserResult(models.Model):
@@ -246,8 +246,8 @@ class UserResult(models.Model):
     time = models.IntegerField('Продолжительность тестирования')
     tasks_num = models.IntegerField('Число заданий в тесте')
     right_answers_count = models.IntegerField('Число правильных ответов')
-    date = models.DateTimeField('Время прохождения тестирования')
-    questions = models.ArrayField(model_container=UserQuestionAnswer)
+    date = models.DateTimeField('Время прохождения тестирования', default=timezone.now)
+    questions = models.JSONField()
     objects = models.DjongoManager()
 
     class Meta:

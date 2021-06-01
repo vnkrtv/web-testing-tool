@@ -113,8 +113,7 @@ class LaunchTestView(APIView):
             launched_lecturer=request.user,
             subject=test.subject,
             is_running=True,
-            comment=request.data.get('comment', ''),
-            results=[])
+            comment=request.data.get('comment', ''))
         message = "Тест '%s' запущен. Состояние его прохождения можно отследить во вкладке 'Запущенные тесты'."
         return Response({
             'ok': True,

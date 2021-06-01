@@ -71,7 +71,7 @@ def login_page(request: HttpRequest) -> HttpResponse:
             return HttpResponse('Incorrect group.')
         user.save()
         user.groups.add(group2id[group])
-        user.profile = utils.get_new_profile(request, user)
+        user.profile = utils.create_profile(request, user)
 
     id2group = {
         1: 'lecturer',
@@ -100,10 +100,11 @@ def login_page(request: HttpRequest) -> HttpResponse:
     # костыль на время разработки
     try:
         if user.profile.group == 0:
-            user.profile = utils.get_new_profile(request, user)
+            user.profile.delete()
+            utils.create_profile(request, user)
         login(request, user)
     except User.profile.RelatedObjectDoesNotExist:
-        user.profile = utils.get_new_profile(request, user)
+        utils.create_profile(request, user)
         login(request, user)
     return redirect(reverse('main:available_tests'))
 
@@ -379,15 +380,14 @@ def stop_running_test(request: HttpRequest) -> HttpResponse:
     test_results.is_running = False
     test_results.save()
 
-    results = test_results.results
-    results.sort(key=lambda result: result.date)
+    results = test_results.results.all()
     context = {
         'title': 'Результаты тестирования',
         'test': test,
         'start_date': test_results.date,
         'end_date': timezone.now(),
         'test_results_id': str(test_results.object_id),
-        'results': results,
+        'results': test_results.results.all(),
     }
     return render(request, 'main/lecturer/testingResults.html', context)
 
@@ -413,14 +413,12 @@ def show_test_results(request: HttpRequest, test_results_id: str) -> HttpRespons
         test_results = TestResult.objects.get(_id=_id)
     except bson.errors.InvalidId or TestResult.DoesNotExist:
         return redirect(reverse('main:available_tests'))
-    results = [dict(_) for _ in test_results.results.all()]
-    results.sort(key=lambda result: result['date'])
     context = {
         'title': 'Результаты тестирования',
         'test': test_results.test,
         'start_date': test_results.date,
         'test_results_id': test_results_id,
-        'results': results,
+        'results': test_results.results.all(),
     }
     return render(request, 'main/lecturer/testingResults.html', context)
 

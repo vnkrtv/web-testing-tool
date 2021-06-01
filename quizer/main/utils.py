@@ -105,7 +105,7 @@ def get_auth_data(request: HttpRequest) -> Tuple[str, str]:
     return username, group
 
 
-def get_new_profile(request: HttpRequest, user: User) -> Profile:
+def create_profile(request: HttpRequest, user: User) -> Profile:
     """
     Get user's profile info using 'user_jqt' cookies
 

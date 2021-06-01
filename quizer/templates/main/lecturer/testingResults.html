@@ -35,7 +35,7 @@
         {% for result in results %}
         <tr id="row_{{ forloop.counter0 }}">
             <td scope="row"><strong>{{ forloop.counter }}</strong></td>
-            <td>{{ result.username }}</td>
+            <td>{{ result.user.username }}</td>
             <td>{{ result.right_answers_count }}/{{ result.tasks_num }}</td>
             <td>{{ result.time }} c</td>
             <td>{{ result.date }}</td>

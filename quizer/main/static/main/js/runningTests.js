@@ -50,7 +50,7 @@ function getRunningTestDiv(testResult, idx) {
     infoP.innerHTML = `<img src='${refsDict.researchIcon}'> Количество заданий в тесте: ${testResult.test.tasks_num}<br>
         <img src='${refsDict.clockIcon}'> Время на выполнение: ${testResult.test.duration} c<br>
         <span class="pointer" onclick='hideTable("search_${idx}", "table_${idx}")' title="Нажмите, чтобы скрыть результаты">
-              <img src='${refsDict.teamIcon}'> Выполнило слушателей: ${testResult.finished_students_results.length}
+              <img src='${refsDict.teamIcon}'> Выполнило слушателей: ${testResult.results.length}
         </span>`;
 
     const searchInput = document.createElement('input');
@@ -60,7 +60,7 @@ function getRunningTestDiv(testResult, idx) {
     searchInput.setAttribute('id', `search_${idx}`);
     searchInput.setAttribute('onkeyup', `tableSearch("search_${idx}", "table_${idx}")`);
 
-    const resultsTable = getResultsTable(testResult.finished_students_results, idx);
+    const resultsTable = getResultsTable(testResult.results, idx);
     const form = document.createElement('form');
     form.setAttribute('action', refsDict.formUrl);
     form.setAttribute('method', 'post');

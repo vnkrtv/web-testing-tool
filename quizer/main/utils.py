@@ -113,15 +113,15 @@ def get_new_profile(request: HttpRequest, user: User) -> Profile:
     :return: created profile
     """
     user_jwt = request.COOKIES.get('user_jwt', '')
-    # profile = requests.post(
-    #     url=settings.PROFILE_URL,
-    #     data={'user_jwt': user_jwt}
-    # ).json()
-    profile = {
-        'name': '2017-3-08-kor',
-        'created_at': '2018-09-13T08:16:44.431Z',
-        'web_url': 'https://gitwork.ru/ivan_korotaev',
-    }
+    profile = requests.post(
+        url=settings.PROFILE_URL,
+        data={'user_jwt': user_jwt}
+    ).json()
+    # profile = {
+    #     'name': '2017-3-08-kor',
+    #     'created_at': '2018-09-13T08:16:44.431Z',
+    #     'web_url': 'https://gitwork.ru/ivan_korotaev',
+    # }
     admission_year, group, number, _ = profile['name'].split('-')
     return Profile.objects.create(
         id=user.id,

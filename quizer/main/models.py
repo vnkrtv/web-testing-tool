@@ -185,7 +185,6 @@ class RunningTestsAnswers(models.Model):
 
 class TestResult(models.Model):
     _id = models.ObjectIdField()
-    id = models.IntegerField(unique=True)
     is_running = models.BooleanField('Тест еще запущен')
     comment = models.TextField('Комментарий преподавателя', default='')
     date = models.DateTimeField('Время запуска тестирования', default=timezone.now)

@@ -163,7 +163,7 @@ class QuestionSerializer(serializers.Serializer):
 class UserResultSerializer(serializers.Serializer):
     _id = serializers.SerializerMethodField()
     user = UserSerializer()
-    testing_result_id = serializers.IntegerField()
+    testing_result_id = serializers.CharField()
     time = serializers.IntegerField()
     tasks_num = serializers.IntegerField()
     right_answers_count = serializers.IntegerField()
@@ -175,7 +175,7 @@ class UserResultSerializer(serializers.Serializer):
 
     def create(self, validated_data):
         user = User.objects.get(id=validated_data.get('user_id'))
-        testing_result = TestResult.objects.get(id=validated_data.get('testing_result_id'))
+        testing_result = TestResult.objects.get(_id=validated_data.get('testing_result_id'))
         return UserResult.objects.create(
             user=user,
             testing_result=testing_result,
@@ -198,28 +198,29 @@ class UserResultSerializer(serializers.Serializer):
 
 class TestResultSerializer(serializers.Serializer):
     _id = serializers.SerializerMethodField()
-    id = serializers.IntegerField()
     is_running = serializers.BooleanField()
-    comment = serializers.CharField(max_length=1_000)
+    comment = serializers.CharField()
     date = serializers.DateTimeField(format="%H:%M:%S  %d-%m-%y")
+
     test = TestSerializer()
     launched_lecturer = UserSerializer()
     subject = SubjectSerializer()
     results = serializers.SerializerMethodField()
+
+    test_id = serializers.IntegerField(write_only=True)
+    launched_lecturer_id = serializers.IntegerField(write_only=True)
+    subject_id = serializers.IntegerField(write_only=True)
 
     def get__id(self, obj):
         return str(obj._id)
 
     def to_representation(self, test_results):
         representation = super().to_representation(test_results)
-        if test_results.is_running:
-            results = representation['results']
-            results.sort(key=lambda res: res['date'])
-            representation['finished_students_results'] = results
+        representation['results'].sort(key=lambda res: res['date'])
         return representation
 
     def get_results(self, test_results) -> List[Dict[str, Any]]:
-        serializer = UserResultSerializer(UserResult.objects.filter(test_results=test_results), many=True)
+        serializer = UserResultSerializer(UserResult.objects.filter(testing_result=test_results), many=True)
         return serializer.data
 
     def create(self, validated_data):
@@ -244,5 +245,7 @@ class TestResultSerializer(serializers.Serializer):
         model = TestResult
         read_only_fields = (
             '_id',
-            'id'
+            'launched_lecturer',
+            'subject',
+            'results'
         )

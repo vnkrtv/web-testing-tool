@@ -5,10 +5,13 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from main.models import Subject, Test, Question, TestResult, RunningTestsAnswers
 from main import utils
-from .serializers import SubjectSerializer, TestSerializer, QuestionSerializer, TestResultSerializer
-from .permissions import IsLecturer, TestAPIPermission
+from main.models import (
+    Subject, Test, Question, TestResult, RunningTestsAnswers, UserResult)
+from .serializers import (
+    SubjectSerializer, TestSerializer, QuestionSerializer, TestResultSerializer, UserResultSerializer)
+from .permissions import (
+    IsLecturer, TestAPIPermission)
 
 
 class SubjectView(APIView):
@@ -205,6 +208,16 @@ class TestsResultView(APIView):
             serializer = TestResultSerializer(TestResult.objects.get(_id=_id))
             return Response(serializer.data)
         serializer = TestResultSerializer(TestResult.objects.all(), many=True)
+        return Response({
+            'results': serializer.data
+        })
+
+
+class UserResultView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, user_id):
+        serializer = UserResultSerializer(UserResult.objects.filter(user__id=user_id), many=True)
         return Response({
             'results': serializer.data
         })

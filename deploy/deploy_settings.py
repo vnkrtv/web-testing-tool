@@ -124,6 +124,7 @@ STATICFILES_FINDERS = [
 DATABASE_DUMP_ROOT = os.path.join(BASE_DIR, 'dumps')
 
 AUTH_URL = os.getenv('AUTH_URL', 'http://sms.gitwork.ru/auth/public_key/')
+PROFILE_URL = AUTH_URL.replace('public_key/', 'profile')
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [

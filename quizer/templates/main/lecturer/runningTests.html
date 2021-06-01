@@ -20,6 +20,7 @@
 <script type="text/javascript">
 	const runningTestsAPIUrl = "{% url 'api:get_running_tests' %}";
 	const runningTestsDiv = document.getElementById("runningTests");
+    const userID = "{{ request.user.id }}";
 	const refsDict = {
         formUrl: "{% url 'main:stop_running_test' %}",
         csrfToken: '{% csrf_token %}',

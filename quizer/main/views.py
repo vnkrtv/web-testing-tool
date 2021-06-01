@@ -386,7 +386,6 @@ def stop_running_test(request: HttpRequest) -> HttpResponse:
     test_results.is_running = False
     test_results.save()
 
-    results = test_results.results.all()
     context = {
         'title': 'Результаты тестирования',
         'test': test,

@@ -74,7 +74,7 @@ function getRunningTestDiv(testResult, idx) {
     label.appendChild(searchInput);
     label.appendChild(resultsTable);
     label.appendChild(form);
-    
+
     container.appendChild(label)
     return container;
 }
@@ -86,7 +86,9 @@ function renderRunningTests() {
             runningTestsResults = response['tests'];
             runningTestsDiv.innerHTML = '';
             for (let i = 0; i < runningTestsResults.length; i++) {
-                runningTestsDiv.appendChild(getRunningTestDiv(runningTestsResults[i], i));
+                if (runningTestsResults[i].launched_lecturer.id === userID) {
+                    runningTestsDiv.appendChild(getRunningTestDiv(runningTestsResults[i], i));
+                }
             }
         });
 }

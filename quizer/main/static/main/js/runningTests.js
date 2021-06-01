@@ -19,7 +19,7 @@ function getResultsTable(finishedStudentsResults, idx) {
         let result = finishedStudentsResults[i];
         tr.innerHTML = `
             <td scope="row"><strong>${i + 1}</strong></td>
-            <td>${result.username}</td>
+            <td>${result.user.username}</td>
             <td>${result.right_answers_count}/${result.tasks_num}</td>
             <td>${result.time} c</td>
             <td>${result.date}</td>`;

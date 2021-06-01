@@ -37,7 +37,10 @@ def create_user_profile(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=User)
 def save_user_profile(sender, instance, **kwargs):
-    instance.profile.save()
+    try:
+        instance.profile.save()
+    except User.profile.RelatedObjectDoesNotExist:
+        Profile.objects.create(id=instance.id, user=instance)
 
 
 class Subject(models.Model):
@@ -216,16 +219,6 @@ class TestResult(models.Model):
         db_table = 'main_tests_results'
         verbose_name = 'Результат тестирования'
         verbose_name_plural = 'Результаты тестирований'
-
-
-# class UserQuestionAnswer(models.Model):
-#     question_id = models.CharField()
-#     is_true = models.BooleanField(default=False)
-#     selected_options = models.JSONField()
-#     right_options = models.JSONField()
-#
-#     class Meta:
-#         abstract = True
 
 
 class UserResult(models.Model):

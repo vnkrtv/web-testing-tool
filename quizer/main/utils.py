@@ -10,6 +10,7 @@ import pathlib
 from datetime import datetime
 from typing import List, Dict, Tuple, Any, Union
 
+import bson
 import jwt
 import requests
 
@@ -297,9 +298,55 @@ def save_database_dump(file) -> pathlib.Path:
         f'{settings.DATABASE_DUMP_ROOT}/{file.name}')
     if not dump_filename.exists():
         os.makedirs(dump_filename.parent, exist_ok=True)
-    with open(dump_filename, 'wb') as dump_file:
-        print(json.loads(file.read()))
-        dump_file.write(file.read())
+    with open(dump_filename, 'w') as dump_file:
+        user_profiles = []
+        user_results = []
+        data = []
+        for obj in json.loads(file.read()):
+            if obj['model'] == 'main.runningtestsanswers':
+                continue
+            elif obj['model'] == 'auth.user':
+                data.append({
+                    'model': 'main.profile',
+                    'pk': obj['pk'],
+                    'fields': {
+                        'admission_year': 0,
+                        'created_at': '2018-09-13T05:16:44.431Z',
+                        'group': 0,
+                        "id": obj['pk'],
+                        "name": "",
+                        "number": 0,
+                        "user_id": obj['pk'],
+                        "web_url": "https://gitwork.ru/"
+                    }
+                })
+            elif obj['model'] == 'main.testresult' and 'results' in obj['fields']:
+                results = obj['fields']['results']
+                obj['fields'] = {
+                    'is_running': obj['fields']['is_running'],
+                    'comment': obj['fields']['comment'],
+                    'date': obj['fields']['date'],
+                    'launched_lecturer_id': obj['fields']['launched_lecturer'],
+                    'subject_id': obj['fields']['subject'],
+                    'test_id': obj['fields']['test']
+                }
+                for result in results:
+                    data.append({
+                        'model': 'main.userresult',
+                        'pk': str(bson.ObjectId()),
+                        'fields': {
+                            'user_id': result['user_id'],
+                            'time': result['time'],
+                            'tasks_num': result['tasks_num'],
+                            'testing_result_id': obj['pk'],
+                            'right_answers_count': result['right_answers_count'],
+                            'date': result['date'],
+                            'questions': result['questions']
+                        }
+                    })
+            else:
+                data.append(obj)
+        json.dump(data, dump_file, indent=4)
     return dump_filename
 
 
@@ -350,8 +397,8 @@ def get_test_result(request: HttpRequest, right_answers: List[Dict[str, Any]], t
             if [_['option'] for _ in right_answer['right_options']] == answers[question_num]:
                 right_answers_count += 1
                 questions[-1]['is_true'] = True
-            else:
-                questions[-1]['is_true'] = False
+        else:
+            questions[-1]['is_true'] = False
     return {
         'user': request.user,
         'time': test_duration - time,

@@ -99,6 +99,8 @@ def login_page(request: HttpRequest) -> HttpResponse:
                 user.groups.add(1)
     # костыль на время разработки
     try:
+        if user.profile.group == 0:
+            user.profile = utils.get_new_profile(request, user)
         login(request, user)
     except User.profile.RelatedObjectDoesNotExist:
         user.profile = utils.get_new_profile(request, user)
@@ -411,7 +413,7 @@ def show_test_results(request: HttpRequest, test_results_id: str) -> HttpRespons
         test_results = TestResult.objects.get(_id=_id)
     except bson.errors.InvalidId or TestResult.DoesNotExist:
         return redirect(reverse('main:available_tests'))
-    results = test_results.results
+    results = [dict(_) for _ in test_results.results.all()]
     results.sort(key=lambda result: result['date'])
     context = {
         'title': 'Результаты тестирования',

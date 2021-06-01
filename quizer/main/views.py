@@ -1,6 +1,7 @@
 # pylint: disable=import-error, line-too-long, relative-beyond-top-level
 """Quizer backend"""
 import json
+import logging
 import os
 import random
 import copy
@@ -99,14 +100,17 @@ def login_page(request: HttpRequest) -> HttpResponse:
                 user.groups.add(1)
     # костыль на время разработки
     try:
-        if user.profile.group == 0:
-            user.profile.delete()
+        try:
+            if user.profile.group == 0:
+                user.profile.delete()
+                utils.create_profile(request, user)
+            login(request, user)
+        except User.profile.RelatedObjectDoesNotExist:
             utils.create_profile(request, user)
-        login(request, user)
-    except User.profile.RelatedObjectDoesNotExist:
-        utils.create_profile(request, user)
-        login(request, user)
-    return redirect(reverse('main:available_tests'))
+            login(request, user)
+        return redirect(reverse('main:available_tests'))
+    except Exception as e:
+        logging.error(e)
 
 
 @unauthenticated_user

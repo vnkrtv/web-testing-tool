@@ -111,6 +111,8 @@ def login_page(request: HttpRequest) -> HttpResponse:
         return redirect(reverse('main:available_tests'))
     except Exception as e:
         logging.error(e)
+        login(request, user)
+        return redirect(reverse('main:available_tests'))
 
 
 @unauthenticated_user

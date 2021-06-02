@@ -119,7 +119,7 @@ function fillErrorsModal(rowID) {
     const questions = testResults.results[resultID]['questions'];
 
     const errorModalHeader = document.getElementById("errorModalHeader");
-    errorModalHeader.innerText = `Результат ${testResults.results[resultID].username}`;
+    errorModalHeader.innerText = `Результат ${testResults.results[resultID].user.username}`;
     const container = document.getElementById('errors-container');
     container.innerHTML = "";
 

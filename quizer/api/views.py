@@ -197,6 +197,8 @@ class TestsResultView(APIView):
     permission_classes = [IsAuthenticated, IsLecturer]
 
     def get(self, request):
+        results = TestResult.objects.all()
+
         test_results_id = request.query_params.get('id', None)
         if test_results_id:
             try:
@@ -205,9 +207,23 @@ class TestsResultView(APIView):
                 return Response({
                     'error': 'Некорректный test_results_id'
                 })
-            serializer = TestResultSerializer(TestResult.objects.get(_id=_id))
+            serializer = TestResultSerializer(results.get(_id=_id))
             return Response(serializer.data)
-        serializer = TestResultSerializer(TestResult.objects.all(), many=True)
+
+        subject_id = request.query_params.get('subject_id', None)
+        if subject_id:
+            results = results.filter(subject__id=subject_id)
+
+        test_id = request.query_params.get('test_id', None)
+        if test_id:
+            results = results.filter(test__id=test_id)
+
+        serializer = TestResultSerializer(results, many=True)
+        results_count_only = request.query_params.get('results_count_only', None)
+        if results_count_only:
+            for res in serializer.data:
+                res['results_count'] = len(res['results'])
+                del res['results']
         return Response({
             'results': serializer.data
         })
@@ -216,8 +232,26 @@ class TestsResultView(APIView):
 class UserResultView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, user_id):
-        serializer = UserResultSerializer(UserResult.objects.filter(user__id=user_id), many=True)
+    def get(self, request):
+        results = UserResult.objects.all()
+
+        user_id = request.query_params.get('user_id', None)
+        if user_id:
+            results = results.filter(user__id=user_id)
+
+        group = request.query_params.get('group', None)
+        if group:
+            results = results.filter(user__profile__group=group)
+
+        subject_id = request.query_params.get('subject_id', None)
+        if subject_id:
+            results = results.filter(testing_result__subject__id=subject_id)
+
+        test_id = request.query_params.get('test_id', None)
+        if test_id:
+            results = results.filter(testing_result__test__id=test_id)
+
+        serializer = UserResultSerializer(results, many=True)
         return Response({
             'results': serializer.data
         })

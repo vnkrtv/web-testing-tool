@@ -202,7 +202,7 @@ class TestResultSerializer(serializers.Serializer):
     comment = serializers.CharField()
     date = serializers.DateTimeField(format="%H:%M:%S  %d-%m-%y")
 
-    test = TestSerializer()
+    test = serializers.SerializerMethodField()
     launched_lecturer = UserSerializer()
     subject = SubjectSerializer()
     results = serializers.SerializerMethodField()
@@ -213,6 +213,20 @@ class TestResultSerializer(serializers.Serializer):
 
     def get__id(self, obj):
         return str(obj._id)
+
+    def get_test(self, obj):
+        if obj.test_id:
+            test = Test.objects.get(id=obj.test_id)
+            return {
+                'id': test.id,
+                'name': test.name,
+                'description': test.description
+            }
+        return {
+            'id': 0,
+            'name': 'deleted',
+            'description': ''
+        }
 
     def to_representation(self, test_results):
         representation = super().to_representation(test_results)

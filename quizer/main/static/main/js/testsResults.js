@@ -18,7 +18,7 @@ function getTrElement(counter, result) {
     dateTd.innerHTML = result.date;
 
     const studentsCountTd = document.createElement('td');
-    studentsCountTd.innerHTML = result.results.length;
+    studentsCountTd.innerHTML = result.results_count;
 
     const refTd = document.createElement('td');
     const ref = document.createElement('a');
@@ -46,7 +46,7 @@ function renderTestResults() {
     let tests = [];
     let counter = 1;
 
-    $.get(testsResultsAPIUrl)
+    $.get(testsResultsAPIUrl + '?results_count_only=y')
         .done(function(response) {
             results = response['results'];
             $.get(testsAPIUrl)

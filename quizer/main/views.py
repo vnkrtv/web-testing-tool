@@ -181,12 +181,7 @@ class AdministrationView(View):
     def get(self, request: HttpRequest) -> HttpResponse:
         self.context = {
             **self.context,
-            'title': self.title,
-            'tests_count': Test.objects.count(),
-            'subjects_count': Subject.objects.count(),
-            'questions_count': Question.objects.count(),
-            'tests_results_count': TestResult.objects.count(),
-            'running_tests_answers_count': RunningTestsAnswers.objects.count()
+            'title': self.title
         }
         return render(request, self.template, self.context)
 

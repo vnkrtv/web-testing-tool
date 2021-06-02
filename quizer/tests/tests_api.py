@@ -681,7 +681,7 @@ class TestResultAPITest(MainTest):
         """
         Test for get method
         """
-        response = self.student_client.get(reverse('api:user_results_api', kwargs={'user_id': self.student.id}))
+        response = self.student_client.get(reverse('api:user_results_api') + f'?user_id={self.student.id}')
         results = json.loads(response.content)['results']
         self.assertEqual(1, len(results))
 

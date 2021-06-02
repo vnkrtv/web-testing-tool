@@ -114,9 +114,8 @@ def create_profile(request: HttpRequest, user: User) -> Profile:
     :return: created profile
     """
     user_jwt = request.COOKIES.get('user_jwt', '')
-    profile = requests.post(
-        url=settings.PROFILE_URL,
-        data={'user_jwt': user_jwt}
+    profile = requests.get(
+        url=settings.PROFILE_URL + '?user_jwt' + user_jwt
     ).json()
     # profile = {
     #     'name': '2017-3-08-kor',

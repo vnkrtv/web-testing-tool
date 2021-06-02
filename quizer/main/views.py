@@ -72,7 +72,7 @@ def login_page(request: HttpRequest) -> HttpResponse:
             return HttpResponse('Incorrect group.')
         user.save()
         user.groups.add(group2id[group])
-        user.profile = utils.create_profile(request, user)
+        utils.create_profile(request, user)
 
     id2group = {
         1: 'lecturer',
@@ -100,19 +100,14 @@ def login_page(request: HttpRequest) -> HttpResponse:
                 user.groups.add(1)
     # костыль на время разработки
     try:
-        try:
-            if user.profile.group == 0:
-                user.profile.delete()
-                utils.create_profile(request, user)
-            login(request, user)
-        except User.profile.RelatedObjectDoesNotExist:
+        if user.profile.group == 0:
+            Profile.objects.filter(user__id=user.id).delete()
             utils.create_profile(request, user)
-            login(request, user)
-        return redirect(reverse('main:available_tests'))
-    except Exception as e:
-        logging.error(e)
         login(request, user)
-        return redirect(reverse('main:available_tests'))
+    except User.profile.RelatedObjectDoesNotExist:
+        utils.create_profile(request, user)
+        login(request, user)
+    return redirect(reverse('main:available_tests'))
 
 
 @unauthenticated_user

@@ -7,11 +7,21 @@ from rest_framework.views import APIView
 
 from main import utils
 from main.models import (
-    Subject, Test, Question, TestResult, RunningTestsAnswers, UserResult)
+    Profile, Subject, Test, Question, TestResult, RunningTestsAnswers, UserResult)
 from .serializers import (
-    SubjectSerializer, TestSerializer, QuestionSerializer, TestResultSerializer, UserResultSerializer)
+    ProfileSerializer, SubjectSerializer, TestSerializer, QuestionSerializer, TestResultSerializer, UserResultSerializer)
 from .permissions import (
     IsLecturer, TestAPIPermission)
+
+
+class UserView(APIView):
+    permission_classes = [IsAuthenticated, IsLecturer]
+
+    def get(self, _):
+        serializer = ProfileSerializer(Profile.objects.all(), many=True)
+        return Response({
+            'users': serializer.data
+        })
 
 
 class SubjectView(APIView):

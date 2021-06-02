@@ -10,13 +10,25 @@ from django.contrib.auth.models import User
 
 from rest_framework import serializers
 
-from main.models import Subject, Test, Question, TestResult, RunningTestsAnswers, UserResult
+from main.models import Profile, Subject, Test, Question, TestResult, RunningTestsAnswers, UserResult
 
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'username')
+
+
+class ProfileSerializer(serializers.ModelSerializer):
+    username = serializers.SerializerMethodField()
+
+    def get_username(self, profile):
+        user = User.objects.get(id=profile.user_id)
+        return user.username
+
+    class Meta:
+        model = Profile
+        fields = ('id', 'username', 'created_at', 'name', 'web_url', 'group', 'admission_year', 'number')
 
 
 class SubjectSerializer(serializers.Serializer):

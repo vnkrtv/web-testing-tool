@@ -100,14 +100,18 @@ def login_page(request: HttpRequest) -> HttpResponse:
                 user.groups.add(1)
     # костыль на время разработки
     try:
-        if user.profile.group == 0:
-            Profile.objects.filter(user__id=user.id).delete()
+        try:
+            if user.profile.group == 0:
+                Profile.objects.filter(user__id=user.id).delete()
+                utils.create_profile(request, user)
+            login(request, user)
+        except User.profile.RelatedObjectDoesNotExist:
             utils.create_profile(request, user)
-        login(request, user)
-    except User.profile.RelatedObjectDoesNotExist:
-        utils.create_profile(request, user)
-        login(request, user)
-    return redirect(reverse('main:available_tests'))
+            login(request, user)
+    except Exception as e:
+        logging.error(e)
+    finally:
+        return redirect(reverse('main:available_tests'))
 
 
 @unauthenticated_user

@@ -23,8 +23,10 @@ class ProfileSerializer(serializers.ModelSerializer):
     username = serializers.SerializerMethodField()
 
     def get_username(self, profile):
-        user = User.objects.get(id=profile.user_id)
-        return user.username
+        try:
+            return profile.user.username
+        except User.DoesNotExist:
+            return ''
 
     class Meta:
         model = Profile

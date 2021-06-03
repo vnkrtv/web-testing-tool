@@ -45,8 +45,8 @@ def login_page(request: HttpRequest) -> HttpResponse:
     logout(request)
     try:
         # username, group = 'useruser', 'student'
-        username, group = utils.get_auth_data(request)
-        # username, group = 'ivan_korotaev', 'admin'
+        # username, group = utils.get_auth_data(request)
+        username, group = 'ivan_korotaev', 'admin'
     except DecodeError:
         return HttpResponse("JWT decode error: chet polomalos'")
 
@@ -395,7 +395,7 @@ def stop_running_test(request: HttpRequest) -> HttpResponse:
 
 @unauthenticated_user
 @allowed_users(allowed_roles=['lecturer'])
-def tests_results(request: HttpRequest) -> HttpResponse:
+def lecturer_all_tests_results(request: HttpRequest) -> HttpResponse:
     """Displays page with all tests results"""
     context = {
         'title': 'Результаты тестирований',
@@ -407,7 +407,7 @@ def tests_results(request: HttpRequest) -> HttpResponse:
 
 @unauthenticated_user
 @allowed_users(allowed_roles=['lecturer'])
-def show_test_results(request: HttpRequest, test_results_id: str) -> HttpResponse:
+def lecturer_current_test_results(request: HttpRequest, test_results_id: str) -> HttpResponse:
     """Displays page with testing results"""
     try:
         _id = bson.ObjectId(test_results_id)
@@ -482,6 +482,20 @@ def student_run_test(request: HttpRequest) -> HttpResponse:
         'right_answers': right_answers,
     }
     return render(request, 'main/student/runTest.html', context)
+
+
+@unauthenticated_user
+def student_tests_results(request: HttpRequest, user_id: int) -> HttpResponse:
+    is_lecturer = request.user.groups.filter(name='lecturer')
+    if is_lecturer or request.user.id == user_id:
+        user = User.objects.get(id=user_id)
+        context = {
+            'title': 'Результаты тестирований ' + user.username,
+            'results': UserResult.objects.filter(user__id=user_id)
+        }
+        template = f'main/{"lecturer" if is_lecturer else "student"}/userResults.html'
+        return render(request, template, context)
+    return redirect(reverse('main:available_tests'))
 
 
 def get_left_time(request: HttpRequest) -> JsonResponse:

@@ -28,6 +28,14 @@ class Profile(models.Model):
     number = models.IntegerField(default=0)
     objects = models.DjongoManager()
 
+    @property
+    def course(self) -> int:
+        now = datetime.now()
+        course = now.year - self.admission_year
+        if now.month >= 9:
+            course += 1
+        return course
+
 
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):

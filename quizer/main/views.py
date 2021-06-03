@@ -502,6 +502,13 @@ def student_tests_results(request: HttpRequest, user_id: int) -> HttpResponse:
     return redirect(reverse('main:available_tests'))
 
 
+@unauthenticated_user
+def game(request: HttpRequest) -> HttpResponse:
+    is_lecturer = request.user.groups.filter(name='lecturer')
+    template = f'main/{"lecturer" if is_lecturer else "student"}/game.html'
+    return render(request, template)
+
+
 def get_left_time(request: HttpRequest) -> JsonResponse:
     """Return time that left for passing test"""
     if request.user.is_authenticated or request.method != 'POST':

@@ -9,7 +9,7 @@
 </div>
 <script src="{% static 'main/js/availableTests.js' %}"></script>
 <script type="text/javascript">
-	const socketPath = '{% url "main:available_tests" %}';
+    const socketPath = '{% url "main:available_tests" %}';
     let socket = getRunningTestsWebSocket(socketPath);
     socket.onerror = (e) => {
         console.log('error', e);

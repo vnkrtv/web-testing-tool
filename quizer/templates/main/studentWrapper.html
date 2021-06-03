@@ -1,66 +1,71 @@
 <!doctype html>
 <html lang="en">
-  <head>
+<head>
 
-  	<!-- vnkrtv, 2020 -->
-  	<!-- https://github.com/vnkrtv/web-testing-tool -->
+    <!-- vnkrtv, 2020 -->
+    <!-- https://github.com/vnkrtv/web-testing-tool -->
 
-  	{% if title %}
-	<title>{{ title }} | Quizer</title>
-	{% else %}
-	<title>Quizer</title>
-	{% endif %}
+    {% if title %}
+    <title>{{ title }} | Quizer</title>
+    {% else %}
+    <title>Quizer</title>
+    {% endif %}
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-	{% load static %}
-	{% load main_extras %}
-	<link rel="stylesheet" href="{% static 'main/css/sidebar.css' %}">
-	<link rel="stylesheet" href="{% static 'main/css/bootstrap.min.css' %}">
+    {% load static %}
+    {% load main_extras %}
+    <link rel="stylesheet" href="{% static 'main/css/sidebar.css' %}">
+    <link rel="stylesheet" href="{% static 'main/css/bootstrap.min.css' %}">
 
     <link rel="icon" type="image/png" sizes="32x32" href="{% static 'favicon/favicon-32x32.png' %}">
     <link rel="icon" type="image/png" sizes="96x96" href="{% static 'favicon/favicon-96x96.png' %}">
     <link rel="icon" type="image/png" sizes="16x16" href="{% static 'favicon/favicon-16x16.png' %}">
 
-  </head>
-  <body>
-	<div class="sidebar-container">
-	  <div class="sidebar-logo" href='/'>
-	    Quizer <img src="{% static 'favicon/favicon-32x32.png' %}" width="25" length="25">
-	  </div>
-	  <ul class="sidebar-navigation">
-	  	<li class="header">Слушатель</li>
-	  	<li>
-	      <a href="{% url 'main:available_tests' %}">
-	        <i aria-hidden="true"></i><img src='{% person_icon %}'> {{ user.username }}
-	      </a>
-	    </li>
-	    <!--li>
-	      <a href="{% url 'main:login_page' %}">
-	        <i aria-hidden="true"></i><img src='{% logout_icon %}'> Выйти
-	      </a>
-	    </li-->
-	    <li class="header">Тесты</li>
-	    <li>
-	      <a href="{% url 'main:available_tests' %}">
-	        <i aria-hidden="true"></i><img src='{% task_icon %}'> Тесты
-	      </a>
-	    </li>
-	    <li>
-	      <a href="{% url 'main:user_results' request.user.id %}">
-	        <i aria-hidden="true"></i><img src='{% add_test_icon %}'> Результаты
-	      </a>
-	    </li>
-	  </ul>
-	</div>
+</head>
+<body>
+<div class="sidebar-container">
+    <div class="sidebar-logo" href='/'>
+        Quizer <img src="{% static 'favicon/favicon-32x32.png' %}" width="25" length="25">
+    </div>
+    <ul class="sidebar-navigation">
+        <li class="header">Слушатель</li>
+        <li>
+            <a href="{% url 'main:available_tests' %}">
+                <i aria-hidden="true"></i><img src='{% person_icon %}'> {{ user.username }}
+            </a>
+        </li>
+        <!--li>
+          <a href="{% url 'main:login_page' %}">
+            <i aria-hidden="true"></i><img src='{% logout_icon %}'> Выйти
+          </a>
+        </li-->
+        <li class="header">Тесты</li>
+        <li>
+            <a href="{% url 'main:available_tests' %}">
+                <i aria-hidden="true"></i><img src='{% task_icon %}'> Тесты
+            </a>
+        </li>
+        <li>
+            <a href="{% url 'main:user_results' request.user.id %}">
+                <i aria-hidden="true"></i><img src='{% add_test_icon %}'> Результаты
+            </a>
+        </li>
+        <li>
+        	<a href="{% url 'main:game' %}">
+                <i aria-hidden="true"></i><img src='{% wait_icon %}'> Комната ожидания
+            </a>
+        </li>
+    </ul>
+</div>
 
-	<div class="content-container">
+<div class="content-container">
 
-	  <div class="container-fluid">
+    <div class="container-fluid">
 
-	    {% block content %}
-		{% endblock %}
+        {% block content %}
+        {% endblock %}
 
-	  </div>
-	</div>
-  </body>
+    </div>
+</div>
+</body>
 </html>

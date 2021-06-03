@@ -117,7 +117,10 @@ def create_profile(request: HttpRequest, user: User) -> Profile:
         url=settings.PROFILE_URL,
         cookies=request.COOKIES
     ).json()
-    admission_year, group, number, _ = profile['name'].split('-')
+    if user.groups.filter(name='lecturer'):
+        admission_year, group, number = 0, 0, 0
+    else:
+        admission_year, group, number, _ = profile['name'].split('-')
     return Profile.objects.create(
         id=user.id,
         user=user,

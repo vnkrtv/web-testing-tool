@@ -103,14 +103,12 @@ def login_page(request: HttpRequest) -> HttpResponse:
     try:
         try:
             if user.profile.group == 0:
-                create_new_profile = True
-        except Exception:
-            create_new_profile = True
-        # Profile.MultipleObjectsReturned User.profile.RelatedObjectDoesNotExist:
-        finally:
-            if create_new_profile:
                 Profile.objects.filter(user__id=user.id).delete()
                 utils.create_profile(request, user)
+        except Exception:
+            Profile.objects.filter(user__id=user.id).delete()
+            utils.create_profile(request, user)
+        # Profile.MultipleObjectsReturned User.profile.RelatedObjectDoesNotExist:
 
         try:
             login(request, user)

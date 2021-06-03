@@ -39,6 +39,12 @@ def sort_icon():
 
 
 @register.simple_tag
+def users_icon():
+    """Users icon source"""
+    return settings.STATIC_URL + 'main/images/users.svg'
+
+
+@register.simple_tag
 def team_icon():
     """Team icon source"""
     return settings.STATIC_URL + 'main/images/team.svg'

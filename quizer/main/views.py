@@ -429,6 +429,16 @@ def lecturer_current_test_results(request: HttpRequest, test_results_id: str) ->
 
 
 @unauthenticated_user
+@allowed_users(allowed_roles=['lecturer'])
+def lecturer_students_list(request: HttpRequest) -> HttpResponse:
+    """Displays page with all students"""
+    context = {
+        'title': 'Слушатели'
+    }
+    return render(request, 'main/lecturer/students.html', context)
+
+
+@unauthenticated_user
 @allowed_users(allowed_roles=['student'])
 def student_run_test(request: HttpRequest) -> HttpResponse:
     """Run test for student"""
@@ -490,11 +500,14 @@ def student_run_test(request: HttpRequest) -> HttpResponse:
 
 @unauthenticated_user
 def student_tests_results(request: HttpRequest, user_id: int) -> HttpResponse:
+    """All students tests results"""
     is_lecturer = request.user.groups.filter(name='lecturer')
     user_query = User.objects.filter(id=user_id)
     if (is_lecturer or request.user.id == user_id) and user_query:
+        user = user_query.first()
         context = {
-            'title': 'Результаты тестирований ' + user_query.first().username,
+            'title': 'Результаты тестирований ' + user.username,
+            'user': user,
             'results': UserResult.objects.filter(user__id=user_id)
         }
         template = f'main/{"lecturer" if is_lecturer else "student"}/userResults.html'
@@ -504,6 +517,7 @@ def student_tests_results(request: HttpRequest, user_id: int) -> HttpResponse:
 
 @unauthenticated_user
 def game(request: HttpRequest) -> HttpResponse:
+    """Rest room"""
     is_lecturer = request.user.groups.filter(name='lecturer')
     template = f'main/{"lecturer" if is_lecturer else "student"}/game.html'
     return render(request, template)

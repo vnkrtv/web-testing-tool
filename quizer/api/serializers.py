@@ -21,6 +21,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 class ProfileSerializer(serializers.ModelSerializer):
     username = serializers.SerializerMethodField()
+    course = serializers.IntegerField()
 
     def get_username(self, profile):
         try:
@@ -30,7 +31,7 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Profile
-        fields = ('id', 'username', 'created_at', 'name', 'web_url', 'group', 'admission_year', 'number')
+        fields = ('id', 'username', 'course', 'created_at', 'name', 'web_url', 'group', 'admission_year', 'number')
 
 
 class SubjectSerializer(serializers.Serializer):

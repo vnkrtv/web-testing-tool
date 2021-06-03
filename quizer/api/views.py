@@ -17,8 +17,14 @@ from .permissions import (
 class UserView(APIView):
     permission_classes = [IsAuthenticated, IsLecturer]
 
-    def get(self, _):
-        serializer = ProfileSerializer(Profile.objects.all(), many=True)
+    def get(self, request):
+        users = Profile.objects.all()
+
+        group = request.query_params.get('group', None)
+        if group:
+            users = users.filter(user__groups__name=group)
+
+        serializer = ProfileSerializer(users, many=True)
         return Response({
             'users': serializer.data
         })

@@ -34,6 +34,8 @@ class Profile(models.Model):
         course = now.year - self.admission_year
         if now.month >= 9:
             course += 1
+        if course > 2000:
+            course = 0
         return course
 
 

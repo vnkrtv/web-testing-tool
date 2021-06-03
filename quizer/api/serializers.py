@@ -235,7 +235,9 @@ class TestResultSerializer(serializers.Serializer):
             return {
                 'id': test.id,
                 'name': test.name,
-                'description': test.description
+                'description': test.description,
+                'duration': test.duration,
+                'tasks_num': test.tasks_num
             }
         return {
             'id': 0,

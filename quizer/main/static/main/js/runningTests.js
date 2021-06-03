@@ -86,7 +86,7 @@ function renderRunningTests() {
             runningTestsResults = response['tests'];
             runningTestsDiv.innerHTML = '';
             for (let i = 0; i < runningTestsResults.length; i++) {
-                if (runningTestsResults[i].launched_lecturer.id == userID) {
+                if (runningTestsResults[i].launched_lecturer.id.toString() === userID) {
                     runningTestsDiv.appendChild(getRunningTestDiv(runningTestsResults[i], i));
                 }
             }

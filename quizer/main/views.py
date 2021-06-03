@@ -101,23 +101,26 @@ def login_page(request: HttpRequest) -> HttpResponse:
     # костыль на время разработки
 
     try:
-        if user.profile.group == 0:
+        try:
+            if user.profile.group == 0:
+                create_new_profile = True
+        except Profile.MultipleObjectsReturned:
             create_new_profile = True
-    except Profile.MultipleObjectsReturned:
-        create_new_profile = True
-    except User.profile.RelatedObjectDoesNotExist:
-        create_new_profile = True
-    finally:
-        if create_new_profile:
-            Profile.objects.filter(user__id=user.id).delete()
-            utils.create_profile(request, user)
+        except User.profile.RelatedObjectDoesNotExist:
+            create_new_profile = True
+        finally:
+            if create_new_profile:
+                Profile.objects.filter(user__id=user.id).delete()
+                utils.create_profile(request, user)
 
-    try:
-        login(request, user)
+        try:
+            login(request, user)
+        except Exception as e:
+            logging.error(e)
+        finally:
+            return redirect(reverse('main:available_tests'))
     except Exception as e:
         logging.error(e)
-    finally:
-        return redirect(reverse('main:available_tests'))
 
 
 @unauthenticated_user

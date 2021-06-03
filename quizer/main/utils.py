@@ -113,10 +113,15 @@ def create_profile(request: HttpRequest, user: User) -> Profile:
     :param request: <HttpRequest>
     :return: created profile
     """
-    profile = requests.get(
-        url=settings.PROFILE_URL,
-        cookies=request.COOKIES
-    ).json()
+    # profile = requests.get(
+    #     url=settings.PROFILE_URL,
+    #     cookies=request.COOKIES
+    # ).json()
+    profile = {
+        'created_at': '2018-09-13T08:16:44.431Z',
+        'name': '2017-3-08-kor',
+        'web_url': 'https://gitwork.ru/ivan_korotaev'
+    }
     if user.groups.filter(name='lecturer'):
         admission_year, group, number = 0, 732, 0
     else:

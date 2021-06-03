@@ -46,7 +46,7 @@
 	      </a>
 	    </li>
 	    <li>
-	      <a href="{% url 'main:available_tests' %}">
+	      <a href="{% url 'main:user_results' request.user.id %}">
 	        <i aria-hidden="true"></i><img src='{% add_test_icon %}'> Результаты
 	      </a>
 	    </li>

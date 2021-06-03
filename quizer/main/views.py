@@ -491,10 +491,10 @@ def student_run_test(request: HttpRequest) -> HttpResponse:
 @unauthenticated_user
 def student_tests_results(request: HttpRequest, user_id: int) -> HttpResponse:
     is_lecturer = request.user.groups.filter(name='lecturer')
-    if is_lecturer or request.user.id == user_id:
-        user = User.objects.get(id=user_id)
+    user_query = User.objects.filter(id=user_id)
+    if (is_lecturer or request.user.id == user_id) and user_query:
         context = {
-            'title': 'Результаты тестирований ' + user.username,
+            'title': 'Результаты тестирований ' + user_query.first().username,
             'results': UserResult.objects.filter(user__id=user_id)
         }
         template = f'main/{"lecturer" if is_lecturer else "student"}/userResults.html'

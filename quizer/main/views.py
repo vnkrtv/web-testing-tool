@@ -45,8 +45,8 @@ def login_page(request: HttpRequest) -> HttpResponse:
     logout(request)
     try:
         # username, group = 'useruser', 'student'
-        # username, group = utils.get_auth_data(request)
-        username, group = 'ivan_korotaev', 'admin'
+        username, group = utils.get_auth_data(request)
+        # username, group = 'ivan_korotaev', 'admin'
     except DecodeError:
         return HttpResponse("JWT decode error: chet polomalos'")
 

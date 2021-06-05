@@ -12,7 +12,7 @@
     <table id="table" class="table table-hover">
         <thead>
         <tr>
-            <th><img class="pointer" src='{% sort_icon %}' onclick="sortTableByNums('table', 0, true)"></th>
+            <th><img class="pointer" src='{% sort_icon %}' onclick="sortTable('table', 0, (s) => { return Number(s.match(/>(.*?)</)[1]);})"></th>
             <th><img class="pointer" src='{% sort_icon %}' onclick="sortTable('table', 1)"> Предмет</th>
             <th><img class="pointer" src='{% sort_icon %}' onclick="sortTable('table', 2)"> Тест</th>
             <th><img class="pointer" src='{% sort_icon %}' onclick="sortTable('table', 3, (s) => {return Number(s.match(/(.*?)\//)[1]);})"> Результат</th>
@@ -28,7 +28,7 @@
             <td>{{ testing_result.subject.name }}</td>
             <td>{{ testing_result.test.name }}</td>
             <td>{{ result.right_answers_count }}/{{ result.tasks_num }}</td>
-            <td>{{ result.time }} c</td>
+            <td>{{ result.time }} с</td>
             <td>{{ result.date }}</td>
             {% endwith %}
         </tr>

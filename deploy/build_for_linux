@@ -17,7 +17,7 @@ rm -r quizer
 cp -r tmp/quizer quizer
 rm -r tmp
 
-SETTINGS="$(echo "$(cat ./deploy/settings)")"
+SETTINGS="$(echo "$(cat ./deploy/deploy_settings.py)")"
 SETTINGS="${SETTINGS/GENERATED_SECRET_KEY/${SECRET_KEY}}"
 
 echo "===========================================Initialized django app==============================================="

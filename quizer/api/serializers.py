@@ -242,7 +242,9 @@ class TestResultSerializer(serializers.Serializer):
         return {
             'id': 0,
             'name': 'deleted',
-            'description': ''
+            'description': '',
+            'duration': 0,
+            'tasks_num': 0
         }
 
     def to_representation(self, test_results):

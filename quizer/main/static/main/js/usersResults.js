@@ -42,4 +42,27 @@ function renderUsers() {
     for (let i = 0; i < users.length; i++) {
         tableBody.appendChild(getUserTableRow(i + 1, users[i]));
     }
+
+    const checkGroup = (user) => {
+        let selectedGroup = groupSelect.options[groupSelect.selectedIndex].value;
+        if (selectedGroup === 'Все')
+            return true;
+        return user.group.toString() === selectedGroup;
+    };
+
+    const checkCourse = (user) => {
+        let selectedCourse = courseSelect.options[courseSelect.selectedIndex].value;
+        if (selectedCourse === 'Все')
+            return true;
+        return user.course.toString() === selectedCourse;
+    };
+
+    courseSelect.onchange = groupSelect.onchange = () => {
+        tableBody.innerHTML = '';
+        for (let i = 0; i < users.length; i++) {
+            if (checkGroup(users[i]) && checkCourse(users[i])) {
+                tableBody.appendChild(getUserTableRow(i + 1, users[i]));
+            }
+        }
+    }
 }

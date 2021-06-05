@@ -25,8 +25,8 @@
         <tr>
             <th><img class="pointer" src='{% sort_icon %}' onclick="sortTableByNums('table', 0, true)"></th>
             <th><img class="pointer" src='{% sort_icon %}' onclick="sortTable('table', 1)"> Слушатель</th>
-            <th><img class="pointer" src='{% sort_icon %}' onclick="sortTable('table', 2)"> Результат</th>
-            <th><img class="pointer" src='{% sort_icon %}' onclick="sortTable('table', 3)"> Время прохождения</th>
+            <th><img class="pointer" src='{% sort_icon %}' onclick="sortTable('table', 2, (s) => {return Number(s.match(/(.*?)\//)[1]);})"> Результат</th>
+            <th><img class="pointer" src='{% sort_icon %}' onclick="sortTable('table', 3, (s) => {return Number(s.match(/(.*?) с/)[1]);})"> Время прохождения</th>
             <th><img class="pointer" src='{% sort_icon %}' onclick="sortTable('table', 4)"> Время завершения</th>
             <th>Детальный результат</th>
         </tr>
@@ -37,7 +37,7 @@
             <td scope="row"><strong>{{ forloop.counter }}</strong></td>
             <td>{{ result.user.username }}</td>
             <td>{{ result.right_answers_count }}/{{ result.tasks_num }}</td>
-            <td>{{ result.time }} c</td>
+            <td>{{ result.time }} с</td>
             <td>{{ result.date }}</td>
             <td>
                 <button type="button" class="btn btn-primary btn-sm js-open-modal" data-modal="modal"

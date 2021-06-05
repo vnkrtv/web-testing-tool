@@ -17,7 +17,7 @@ function tableSearch(searchInputID, tableID) {
     }
 }
 
-function sortTableByNums(tableID, columnNum, hasChild) {
+function sortTableByNums(tableID, columnNum, hasChild = false) {
     const table = document.getElementById(tableID);
     let shouldSwitch;
     let i = 0;
@@ -65,7 +65,7 @@ function sortTableByNums(tableID, columnNum, hasChild) {
     }
 }
 
-function sortTable(tableID, columnNum) {
+function sortTable(tableID, columnNum, func = (v) => {return v.toLowerCase();}) {
     const table = document.getElementById(tableID);
     let shouldSwitch;
     let i = 0;
@@ -83,12 +83,12 @@ function sortTable(tableID, columnNum) {
             let x = rows[i].getElementsByTagName("TD")[columnNum];
             let y = rows[i + 1].getElementsByTagName("TD")[columnNum];
             if (dir === "asc") {
-                if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+                if (func(x.innerHTML) > func(y.innerHTML)) {
                   shouldSwitch = true;
                   break;
                 }
             } else if (dir === "desc") {
-            if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+            if (func(x.innerHTML) < func(y.innerHTML)) {
                 shouldSwitch = true;
                 break;
                 }

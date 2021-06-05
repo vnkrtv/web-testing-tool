@@ -14,7 +14,7 @@ from .permissions import (
     IsLecturer, TestAPIPermission)
 
 
-class UserView(APIView):
+class UserAPI(APIView):
     permission_classes = [IsAuthenticated, IsLecturer]
 
     def get(self, request):
@@ -30,7 +30,7 @@ class UserView(APIView):
         })
 
 
-class SubjectView(APIView):
+class SubjectAPI(APIView):
     permission_classes = [IsAuthenticated, IsLecturer]
 
     def get(self, _):
@@ -71,7 +71,7 @@ class SubjectView(APIView):
         })
 
 
-class TestView(APIView):
+class TestAPI(APIView):
     permission_classes = [IsAuthenticated, TestAPIPermission]
 
     def get(self, request):
@@ -116,7 +116,7 @@ class TestView(APIView):
         })
 
 
-class LaunchTestView(APIView):
+class LaunchTestAPI(APIView):
     permission_classes = [IsAuthenticated, IsLecturer]
 
     def put(self, request, test_id):
@@ -140,7 +140,7 @@ class LaunchTestView(APIView):
         })
 
 
-class QuestionView(APIView):
+class QuestionAPI(APIView):
     permission_classes = [IsAuthenticated, IsLecturer]
 
     def get(self, request, test_id):
@@ -209,7 +209,7 @@ class QuestionView(APIView):
         })
 
 
-class TestsResultView(APIView):
+class TestsResultAPI(APIView):
     permission_classes = [IsAuthenticated, IsLecturer]
 
     def get(self, request):
@@ -245,7 +245,7 @@ class TestsResultView(APIView):
         })
 
 
-class UserResultView(APIView):
+class UserResultAPI(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -273,11 +273,48 @@ class UserResultView(APIView):
         })
 
 
-class RunningTestView(APIView):
+class RunningTestAPI(APIView):
     permission_classes = [IsAuthenticated, IsLecturer]
 
     def get(self, request):
         serializer = TestResultSerializer(TestResult.objects.filter(is_running=True), many=True)
         return Response({
             'tests': serializer.data
+        })
+
+
+class QuestionAnalysisAPI(APIView):
+    # permission_classes = [IsAuthenticated, IsLecturer]
+
+    def get(self, request):
+        results = UserResult.objects.filter(right_answers_count__gt=0)
+
+        zero_results = request.query_params.get('zero_results', None)
+        if zero_results:
+            results = UserResult.objects.all()
+
+        subject_id = request.query_params.get('subject_id', None)
+        if subject_id:
+            results = results.filter(testing_result__subject__id=subject_id)
+
+        test_id = request.query_params.get('test_id', None)
+        if test_id:
+            results = results.filter(testing_result__test__id=test_id)
+
+        stats = {}
+        for result in results.values('questions'):
+            for question in result['questions']:
+                q_id, is_true = question['question_id'], question['is_true']
+                if q_id not in stats:
+                    stats[q_id] = {
+                        'true': 0,
+                        'false': 0
+                    }
+                if is_true:
+                    stats[q_id]['true'] += 1
+                else:
+                    stats[q_id]['false'] += 1
+
+        return Response({
+            'stats': stats
         })

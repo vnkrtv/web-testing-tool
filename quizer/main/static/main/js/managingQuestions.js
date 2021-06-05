@@ -261,37 +261,52 @@ function fillDeleteQuestionModal(qstnID, testID) {
 }
 
 function renderQuestionsTable() {
-    $.get(questionsAPIUrl).done(function (response) {
-        questions = response['questions'];
-        questionsTbody.innerHTML = '';
-        const typesDict = {
-            '': 'Обычный',
-            'image': 'Изображения',
-            'sequence': 'Последовательность',
-            'sequence-image': 'Последовательность с изображениями'
-        }
-        for (let i = 0; i < questions.length; i++) {
-            let question = questions[i];
-            const tr = document.createElement('tr');
-            tr.setAttribute('id', `row_${i}`);
-            tr.setAttribute('class', 'js-open-modal pointer');
-            tr.setAttribute('onclick', `fillQuestionModal(${i})`);
-            tr.setAttribute('data-modal', "question-modal");
-            tr.innerHTML = `
+    $.get(questionsAPIUrl).done((response) => {
+        $.get(questionsAnalysisAPIUrl).done((innerResponse) => {
+            questions = response['questions'];
+            questionsStats = innerResponse['stats'];
+            console.log(innerResponse);
+            questionsTbody.innerHTML = '';
+            const typesDict = {
+                '': 'Обычный',
+                'image': 'Изображения',
+                'sequence': 'Последовательность',
+                'sequence-image': 'Последовательность с изображениями'
+            }
+            const getStat = (question) => {
+                if (!(question._id in questionsStats)) {
+                    return '-';
+                }
+                let stat = questionsStats[question._id];
+                let aswCount = stat.true + stat.false;
+                return `${((stat.true  * 100) / (aswCount)).toFixed(2)}% (${stat.true}/${aswCount})`;
+            };
+            for (let i = 0; i < questions.length; i++) {
+                let question = questions[i];
+                const tr = document.createElement('tr');
+                tr.setAttribute('id', `row_${i}`);
+                tr.setAttribute('class', 'js-open-modal pointer');
+                tr.setAttribute('onclick', `fillQuestionModal(${i})`);
+                tr.setAttribute('data-modal', "question-modal");
+                tr.innerHTML = `
                 <td scope="row"><strong>${i + 1}</strong></td>
                 <td>${question.formulation}</td>
                 <td>${question.tasks_num}</td>
                 <td>${question.multiselect ? '+' : '-'}</td>
-                <td>${typesDict[question.type]}</td>`;
-            let trTitle = `${question.formulation}\n\n`;
-            for (let idx = 0; idx < question.options.length; idx++) {
-                let isTrue = question.options[idx].is_true ? '+' : '-';
-                trTitle += `${isTrue} ${question.options[idx].option}\n`;
+                <td>${typesDict[question.type]}</td>
+                <td style="text-overflow: ellipsis; white-space: nowrap;">${getStat(question)}</td>`;
+
+                let trTitle = `${question.formulation}\n\n`;
+                for (let idx = 0; idx < question.options.length; idx++) {
+                    let isTrue = question.options[idx].is_true ? '+' : '-';
+                    trTitle += `${isTrue} ${question.options[idx].option}\n`;
+                }
+                tr.setAttribute('title', trTitle);
+                questionsTbody.appendChild(tr);
             }
-            tr.setAttribute('title', trTitle);
-            questionsTbody.appendChild(tr);
-        }
-        activateModalWindows();
+            activateModalWindows();
+
+        });
     });
 }
 
@@ -330,7 +345,8 @@ function editQuestion() {
             } else {
                 renderInfoModalWindow("Ошибка", response['error']);
             }
-        }});
+        }
+    });
 }
 
 function deleteQuestion() {
@@ -348,5 +364,6 @@ function deleteQuestion() {
             } else {
                 renderInfoModalWindow("Ошибка", response['error']);
             }
-        }});
+        }
+    });
 }

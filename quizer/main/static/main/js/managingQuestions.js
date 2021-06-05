@@ -265,7 +265,6 @@ function renderQuestionsTable() {
         $.get(questionsAnalysisAPIUrl).done((innerResponse) => {
             questions = response['questions'];
             questionsStats = innerResponse['stats'];
-            console.log(innerResponse);
             questionsTbody.innerHTML = '';
             const typesDict = {
                 '': 'Обычный',

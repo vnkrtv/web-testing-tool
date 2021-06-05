@@ -17,54 +17,6 @@ function tableSearch(searchInputID, tableID) {
     }
 }
 
-function sortTableByNums(tableID, columnNum, hasChild = false) {
-    const table = document.getElementById(tableID);
-    let shouldSwitch;
-    let i = 0;
-    let switchCount = 0;
-    let switching = true;
-    let dir = "asc";
-
-    while (switching) {
-        switching = false;
-        let rows = table.rows;
-
-        for (i = 1; i < (rows.length - 1); i++) {
-            shouldSwitch = false;
-
-            let x = rows[i].getElementsByTagName("TD")[columnNum];
-            if (hasChild) {
-                x = x.firstChild;
-            }
-            let y = rows[i + 1].getElementsByTagName("TD")[columnNum];
-            if (hasChild) {
-                y = y.firstChild;
-            }
-            if (dir === "asc") {
-                if (Number(x.innerHTML) > Number(y.innerHTML)) {
-                    shouldSwitch = true;
-                    break;
-                }
-            } else if (dir === "desc") {
-                if (Number(x.innerHTML) < Number(y.innerHTML)) {
-                    shouldSwitch = true;
-                    break;
-                }
-            }
-        }
-        if (shouldSwitch) {
-            rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-            switching = true;
-            switchCount ++;
-        } else {
-            if (switchCount === 0 && dir === "asc") {
-                dir = "desc";
-                switching = true;
-            }
-        }
-    }
-}
-
 function sortTable(tableID, columnNum, func = (v) => {return v.toLowerCase();}) {
     const table = document.getElementById(tableID);
     let shouldSwitch;

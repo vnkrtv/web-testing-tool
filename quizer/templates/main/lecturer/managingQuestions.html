@@ -22,14 +22,13 @@
     <table id="table" class="table table-hover">
         <thead>
         <tr>
-            <th><img class="pointer" src='{% sort_icon %}' onclick="sortTable('table', 0, (s) => {return Number(s);} )"></th>
+            <th><img class="pointer" src='{% sort_icon %}' onclick="sortTable('table', 0, (s) => { return Number(s.match(/>(.*?)</)[1]);})"></th>
             <th><img class="pointer" src='{% sort_icon %}' onclick="sortTable('table', 1)"> Формулировка</th>
-            <th><img class="pointer" src='{% sort_icon %}' onclick="sortTable('table', 2, (s) => {return Number(s);} )"> Вариантов
-                ответов
+            <th><img class="pointer" src='{% sort_icon %}' onclick="sortTable('table', 2, (s) => {return Number(s);} )"> Вариантов ответов
             </th>
             <th><img class="pointer" src='{% sort_icon %}' onclick="sortTable('table', 3)"> Мультивыбор</th>
             <th><img class="pointer" src='{% sort_icon %}' onclick="sortTable('table', 4)"> Тип</th>
-            <th><img class="pointer" src='{% sort_icon %}' onclick="sortTable('table', 5, (s) => {return Number(s.match(/(.*?)%/)[1]);} )"> Ремаемость</th>
+            <th><img class="pointer" src='{% sort_icon %}' onclick="sortTable('table', 5, (s) => {if (s === '-') return 0; return Number(s.match(/(.*?)%/)[1]);} )"> Ремаемость</th>
         </tr>
         </thead>
         <tbody id='questionsTbody'></tbody>

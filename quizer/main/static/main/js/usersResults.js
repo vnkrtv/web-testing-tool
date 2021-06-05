@@ -13,11 +13,14 @@ function getUserTableRow(counter, user) {
     const fullnameTd = document.createElement('td');
     fullnameTd.innerHTML = user.name;
 
+    const courceTd = document.createElement('td');
+    courceTd.innerHTML = user.course;
+
     const groupTd = document.createElement('td');
     groupTd.innerHTML = user.group;
 
-    const courceTd = document.createElement('td');
-    courceTd.innerHTML = user.course;
+    const numberTd = document.createElement('td');
+    numberTd.innerHTML = user.number;
 
     const refTd = document.createElement('td');
     const ref = document.createElement('a');
@@ -30,8 +33,9 @@ function getUserTableRow(counter, user) {
     tr.appendChild(counterTd);
     tr.appendChild(usernameTd);
     tr.appendChild(fullnameTd);
-    tr.appendChild(groupTd);
     tr.appendChild(courceTd);
+    tr.appendChild(groupTd);
+    tr.appendChild(numberTd);
     tr.appendChild(refTd);
 
     return tr;

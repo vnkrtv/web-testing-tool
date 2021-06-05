@@ -16,7 +16,7 @@
             <div class="col-sm">
                 <label class="my-1 mr-2">Курс
                     <select class="custom-select my-1 mr-sm-2" id="course" required="required">
-                        <option value="0" selected>Все</option>
+                        <option value="Все" selected>Все</option>
                     </select>
                 </label>
             </div>
@@ -25,7 +25,7 @@
             <div class="col-sm">
                 <label class="my-1 mr-2">Группа
                     <select class="custom-select my-1 mr-sm-2" id="group" required="required">
-                        <option value="0" selected>Все</option>
+                        <option value="Все" selected>Все</option>
                     </select>
                 </label>
             </div>
@@ -40,8 +40,9 @@
             <th><img class="pointer" src='{% sort_icon %}' onclick="sortTableByNums('table', 0, true)"></th>
             <th><img class="pointer" src='{% sort_icon %}' onclick="sortTable('table', 1)"> Имя</th>
             <th><img class="pointer" src='{% sort_icon %}' onclick="sortTable('table', 2)"> Полное имя</th>
-            <th><img class="pointer" src='{% sort_icon %}' onclick="sortTable('table', 3)"> Группа</th>
-            <th><img class="pointer" src='{% sort_icon %}' onclick="sortTable('table', 4)"> Курс</th>
+            <th><img class="pointer" src='{% sort_icon %}' onclick="sortTable('table', 3)"> Курс</th>
+            <th><img class="pointer" src='{% sort_icon %}' onclick="sortTable('table', 4)"> Группа</th>
+            <th><img class="pointer" src='{% sort_icon %}' onclick="sortTable('table', 5)"> Номер по списку</th>
             <th>Результаты тестирований</th>
         </tr>
         </thead>

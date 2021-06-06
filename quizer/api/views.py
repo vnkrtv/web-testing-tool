@@ -284,7 +284,7 @@ class RunningTestAPI(APIView):
 
 
 class QuestionAnalysisAPI(APIView):
-    # permission_classes = [IsAuthenticated, IsLecturer]
+    permission_classes = [IsAuthenticated, IsLecturer]
 
     def get(self, request):
         results = UserResult.objects.filter(right_answers_count__gt=0)

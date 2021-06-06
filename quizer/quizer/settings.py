@@ -1,5 +1,3 @@
-
-
 import os
 import sys
 
@@ -22,6 +20,7 @@ INSTALLED_APPS = [
 
     'rest_framework',
     'channels',
+    'rest_framework_swagger',
 
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -132,5 +131,6 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
         'rest_framework.authentication.SessionAuthentication',
-    ]
+    ],
+    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema'
 }

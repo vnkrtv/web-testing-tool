@@ -122,10 +122,13 @@ def create_profile(request: HttpRequest, user: User) -> Profile:
     #     'name': '2017-3-08-kor',
     #     'web_url': 'https://gitwork.ru/ivan_korotaev'
     # }
+    buf = profile['name'].split('-')
     if user.groups.filter(name='lecturer'):
         admission_year, group, number = 0, 732, 0
+    elif len(buf) == 4:
+        admission_year, group, number, _ = buf
     else:
-        admission_year, group, number, _ = profile['name'].split('-')
+        admission_year, group, number = 0, 0, 0
     return Profile.objects.create(
         id=user.id,
         user=user,

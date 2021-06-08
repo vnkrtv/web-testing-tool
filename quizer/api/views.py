@@ -82,6 +82,11 @@ class TestAPI(APIView):
             tests = Test.objects.get_not_running()
         else:
             tests = Test.objects.all()
+
+        subject_id = request.query_params.get('subject_id', None)
+        if subject_id:
+            tests = tests.filter(subject__id=subject_id)
+
         serializer = TestSerializer(tests, many=True)
         return Response({
             'tests': serializer.data

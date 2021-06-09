@@ -442,63 +442,69 @@ def lecturer_students_list(request: HttpRequest) -> HttpResponse:
 @allowed_users(allowed_roles=['student'])
 def student_run_test(request: HttpRequest) -> HttpResponse:
     """Run test for student"""
-    try:
-        if request.method != 'POST':
-            return redirect(reverse('main:available_tests'))
+    # try:
+    if request.method != 'POST':
+        return redirect(reverse('main:available_tests'))
 
-        test_id = int(request.POST['test_id'])
-        test = Test.objects.filter(id=test_id).first()
-        if not test:
-            return redirect(reverse('main:available_tests'))
+    test_id = int(request.POST['test_id'])
+    test = Test.objects.filter(id=test_id).first()
+    if not test:
+        return redirect(reverse('main:available_tests'))
 
-        test_questions = list(Question.objects.filter(test__id=test_id))
-        if len(test_questions) < test.tasks_num:
-            return redirect(reverse('main:available_tests'))
+    test_questions = list(Question.objects.filter(test__id=test_id))
+    if len(test_questions) < test.tasks_num:
+        return redirect(reverse('main:available_tests'))
 
-        test_questions = random.sample(test_questions, k=test.tasks_num)
-        for question in test_questions:
-            random.shuffle(question.options)
+    test_questions = random.sample(test_questions, k=test.tasks_num)
+    for question in test_questions:
+        random.shuffle(question.options)
 
-        right_answers = []
-        for i, question in enumerate(test_questions):
-            if question.type == Question.Type.SEQUENCE or question.type == Question.Type.SEQUENCE_WITH_IMAGES:
-                right_options = copy.deepcopy(question.options)
-                right_options.sort(key=lambda option: int(option['num']))
-            else:
-                right_options = [option for option in question.options if option['is_true']]
-            right_answers.append({
-                'question_num': i + 1,
-                'right_options': right_options,
-                'question_id': str(question.object_id)
-            })
-        docs = RunningTestsAnswers.objects.filter(user__id=request.user.id)
-        for test_answers in docs:
-            result = utils.get_test_result(
-                request=request,
-                right_answers=test_answers.right_answers,
-                test_duration=test_answers.test_duration)
-            test_results = TestResult.objects.get(is_running=True, test__id=test.id)
-            test_results.results += result
-            test_results.save()
-        docs.delete()
-        RunningTestsAnswers.objects.create(
-            start_date=timezone.now(),
-            right_answers=right_answers,
-            test=test,
-            user=request.user,
-            test_duration=test.duration)
-        questions_list = utils.split_questions(test_questions)
-        context = {
-            'title': 'Тест',
-            'questions': test_questions,
-            'questions_list': questions_list,
-            'test_duration': test.duration,
-            'test_name': test.name,
-            'right_answers': right_answers,
-        }
-        return render(request, 'main/student/runTest.html', context)
-    except Exception as e:
-        logging.error(f'{request.user.username}: {e}')
+    right_answers = []
+    for i, question in enumerate(test_questions):
+        if question.type == Question.Type.SEQUENCE or question.type == Question.Type.SEQUENCE_WITH_IMAGES:
+            right_options = copy.deepcopy(question.options)
+            right_options.sort(key=lambda option: int(option['num']))
+        else:
+            right_options = [option for option in question.options if option['is_true']]
+        right_answers.append({
+            'question_num': i + 1,
+            'right_options': right_options,
+            'question_id': str(question.object_id)
+        })
+    docs = RunningTestsAnswers.objects.filter(user__id=request.user.id)
+    for test_answers in docs:
+        result = utils.get_test_result(
+            request=request,
+            right_answers=test_answers.right_answers,
+            test_duration=test_answers.test_duration)
+        test_results = TestResult.objects.get(is_running=True, test__id=test.id)
+        UserResult.objects.create(
+            testing_result=test_results,
+            user=result['user'],
+            time=result['time'],
+            tasks_num=result['tasks_num'],
+            right_answers_count=result['right_answers_count'],
+            questions=result['questions']
+        )
+    docs.delete()
+    RunningTestsAnswers.objects.create(
+        start_date=timezone.now(),
+        right_answers=right_answers,
+        test=test,
+        user=request.user,
+        test_duration=test.duration)
+    questions_list = utils.split_questions(test_questions)
+    context = {
+        'title': 'Тест',
+        'questions': test_questions,
+        'questions_list': questions_list,
+        'test_duration': test.duration,
+        'test_name': test.name,
+        'right_answers': right_answers,
+    }
+    return render(request, 'main/student/runTest.html', context)
+    # except Exception as e:
+    #     logging.error(f'{request.user.username}: {e}')
 
 
 @unauthenticated_user

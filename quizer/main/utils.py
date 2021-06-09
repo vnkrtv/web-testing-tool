@@ -169,7 +169,7 @@ def get_group_results(subject_id: str, group: str, course: str) -> str:
 
     results = UserResult.objects.filter(
         user__profile__group=group,
-        # user__profile__admission_year=now.year - int(course) + add_course,
+        user__profile__admission_year=now.year - int(course) + add_course,
         right_answers_count__gt=0,
         testing_result__subject__id=subject_id)
     results_dict = {

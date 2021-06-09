@@ -12,6 +12,7 @@ import bson
 from operator import itemgetter
 
 import requests
+from django.core.files.temp import NamedTemporaryFile
 from django.core.management import call_command
 from jwt import DecodeError
 
@@ -395,14 +396,25 @@ class StudentsView(View):
             add_course = 1 if now.month >= 9 else 0
 
             filepath = pathlib.Path(
-                f'{settings.DATABASE_DUMP_ROOT}/quizer_results_{timezone.now().strftime("%d-%m-%y_%H-%M")}.csv')
+                f'/tmp/group-{group}_course-{course}_results_{timezone.now().strftime("%d-%m-%y_%H-%M")}.csv')
             with open(filepath, 'w') as dump_file:
+                tests = Test.objects.filter(subject__id=subject_id)
+                tests_list = [
+                    [test.name, int(re.findall(r'\d', test.name)[0])]
+                    for test in tests
+                ]
+                tests_list.sort(key=itemgetter(1))
+                dump_file.write('Fullname,Номер по списку,')
+                for test in tests_list[:-1]:
+                    dump_file.write(f'{test[0]},')
+                dump_file.write(f'{tests_list[-1][0]}\n')
+
                 results = UserResult.objects.filter(
                     user__profile__group=group,
                     user__profile__admission_year=now.year - int(course) - add_course,
                     right_answers_count__gt=0,
                     testing_result__subject__id=subject_id)
-                tests = Test.objects.filter(subject__id=subject_id)
+                # print(results)
                 results_dict = {
                     res['user_id']: [str(res['user__profile__name']), str(res['user__profile__number'])] + ['-'] * len(tests)
                     for res in results.values('user_id', 'user__profile__number', 'user__profile__name')
@@ -415,7 +427,6 @@ class StudentsView(View):
                             test_num = int(re.findall(r'\d', test.name)[0])
                             results_dict[res.user.id][2 + test_num - 1] = f'{res.right_answers_count}/{res.tasks_num}'
                 results_list = list(results_dict.values())
-                print(results_list[0])
                 results_list.sort(key=lambda res: int(res[1]))
                 for row in results_list:
                     dump_file.write(','.join(row) + '\n')

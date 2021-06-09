@@ -368,7 +368,7 @@ class PassedTestView(View):
 
 
 class StudentsView(View):
-    """Displays page with all tests results"""
+    """Displays page with all students"""
     template = 'main/lecturer/students.html'
     title = 'Тесты'
     context = {}
@@ -376,7 +376,7 @@ class StudentsView(View):
 
     @method_decorator(decorators)
     def get(self, request: HttpRequest) -> HttpResponse:
-        """Displays page with all tests"""
+        """Displays page with all students"""
         self.context = {
             'title': 'Результаты тестирований',
             'subjects': Subject.objects.all(),
@@ -386,59 +386,67 @@ class StudentsView(View):
 
     @method_decorator(decorators)
     def post(self, request: HttpRequest) -> HttpResponse:
-        """Configuring tests"""
-        try:
-            subject_id = request.POST['exportSubject']
-            group = request.POST['exportGroup']
-            course = request.POST['exportCourse']
+        """Displays page with all students"""
+        return self.get(request)
 
-            now = datetime.now()
-            add_course = 1 if now.month >= 9 else 0
 
+@unauthenticated_user
+@allowed_users(allowed_roles=['lecturer'])
+def get_group_results(request: HttpRequest) -> HttpResponse:
+    if request.method == 'POST':
+        subject_id = request.POST['exportSubject']
+        group = request.POST['exportGroup']
+        course = request.POST['exportCourse']
+
+        now = datetime.now()
+        add_course = 1 if now.month >= 9 else 0
+
+        tests = Test.objects.filter(subject__id=subject_id)
+        tests_list = [
+            [test.name, int(re.findall(r'\d', test.name)[0])]
+            for test in tests
+        ]
+        tests_list.sort(key=itemgetter(1))
+        results_str = 'Fullname,Номер по списку,'
+        for test in tests_list[:-1]:
+            results_str += f'{test[0]},'
+        results_str += f'{tests_list[-1][0]}\n'
+
+        results = UserResult.objects.filter(
+            user__profile__group=group,
+            user__profile__admission_year=now.year - int(course) - add_course,
+            right_answers_count__gt=0,
+            testing_result__subject__id=subject_id)
+        results_dict = {
+            res['user_id']: [str(res['user__profile__name']), str(res['user__profile__number'])] + ['-'] * len(
+                tests)
+            for res in results.values('user_id', 'user__profile__number', 'user__profile__name')
+        }
+        for user_id in results_dict:
+            user_results = results.filter(user__id=user_id)
+            for res in user_results:
+                test = res.testing_result.test
+                if test in tests:
+                    test_num = int(re.findall(r'\d', test.name)[0])
+                    results_dict[res.user.id][2 + test_num - 1] = f'{res.right_answers_count}/{res.tasks_num}'
+        results_list = list(results_dict.values())
+        results_list.sort(key=lambda res: int(res[1]))
+        for row in results_list:
+            results_str += (','.join(row) + '\n')
+
+        if request.POST.get('csvFileFormat'):
             filepath = pathlib.Path(
                 f'/tmp/group-{group}_course-{course}_results_{timezone.now().strftime("%d-%m-%y_%H-%M")}.csv')
             with open(filepath, 'w') as dump_file:
-                tests = Test.objects.filter(subject__id=subject_id)
-                tests_list = [
-                    [test.name, int(re.findall(r'\d', test.name)[0])]
-                    for test in tests
-                ]
-                tests_list.sort(key=itemgetter(1))
-                dump_file.write('Fullname,Номер по списку,')
-                for test in tests_list[:-1]:
-                    dump_file.write(f'{test[0]},')
-                dump_file.write(f'{tests_list[-1][0]}\n')
-
-                results = UserResult.objects.filter(
-                    user__profile__group=group,
-                    user__profile__admission_year=now.year - int(course) - add_course,
-                    right_answers_count__gt=0,
-                    testing_result__subject__id=subject_id)
-                # print(results)
-                results_dict = {
-                    res['user_id']: [str(res['user__profile__name']), str(res['user__profile__number'])] + ['-'] * len(tests)
-                    for res in results.values('user_id', 'user__profile__number', 'user__profile__name')
-                }
-                for user_id in results_dict:
-                    user_results = results.filter(user__id=user_id)
-                    for res in user_results:
-                        test = res.testing_result.test
-                        if test in tests:
-                            test_num = int(re.findall(r'\d', test.name)[0])
-                            results_dict[res.user.id][2 + test_num - 1] = f'{res.right_answers_count}/{res.tasks_num}'
-                results_list = list(results_dict.values())
-                results_list.sort(key=lambda res: int(res[1]))
-                for row in results_list:
-                    dump_file.write(','.join(row) + '\n')
-
+                dump_file.write(results_str)
             with open(filepath, 'r') as dump_file:
                 response = HttpResponse(dump_file, content_type='application/force-download')
             response['Content-Disposition'] = 'attachment; filename=%s' % smart_str(filepath.name)
             response['X-Sendfile'] = smart_str(filepath)
             os.remove(filepath)
             return response
-        except:
-            logging.exception("Something awful happened!", stack_info=True)
+        return HttpResponse(results_str.replace('\n', '<br>'))
+    return redirect(reverse('main:available_tests'))
 
 
 @unauthenticated_user

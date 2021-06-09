@@ -14,6 +14,7 @@ urlpatterns = [
     path('questions/<test_id>', views.manage_questions, name='questions'),
     url(r'^tests_results/$', views.lecturer_all_tests_results, name='tests_results'),
     url(r'^students/$', views.StudentsView.as_view(), name='students'),
+    url(r'^get_group_results/$', views.get_group_results, name='get_group_results'),
     path('tests_results/<test_results_id>', views.lecturer_current_test_results, name='show_test_results'),
     path('user_results/<int:user_id>', views.student_tests_results, name='user_results'),
     url(r'^running_tests/$', views.get_running_tests, name='running_tests'),

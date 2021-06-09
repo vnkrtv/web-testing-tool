@@ -60,7 +60,7 @@
    <img class="modal__cross js-modal-close" src="{% close_icon %}">
    <h4>Получить таблицу с результатами</h4>
    <hr class="my hr4">
-   <form action="{% url 'main:students' %}" enctype="multipart/form-data" method='post'>
+   <form action="{% url 'main:get_group_results' %}" enctype="multipart/form-data" method='post'>
     {% csrf_token %}
     <div class="row">
         <div class="col-sm">
@@ -89,8 +89,9 @@
             </label>
         </div>
     </div>
-    <div class="custom-file">
-        
+    <div class="custom-control custom-checkbox my-1 mr-sm-2">
+        <input type="checkbox" class="custom-control-input" name="csvFileFormat" id="csvFileFormat" checked>
+        <label class="custom-control-label" for="csvFileFormat">В формате csv</label>
     </div>
      <div class="modal-footer">
         <div class="btn btn-primary js-modal-close"><img src="{% cancel_icon %}"> Закрыть</div>

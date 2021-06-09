@@ -386,45 +386,48 @@ class StudentsView(View):
     @method_decorator(decorators)
     def post(self, request: HttpRequest) -> HttpResponse:
         """Configuring tests"""
-        subject_id = request.POST['exportSubject']
-        group = request.POST['exportGroup']
-        course = request.POST['exportCourse']
+        try:
+            subject_id = request.POST['exportSubject']
+            group = request.POST['exportGroup']
+            course = request.POST['exportCourse']
 
-        now = datetime.now()
-        add_course = 1 if now.month >= 9 else 0
+            now = datetime.now()
+            add_course = 1 if now.month >= 9 else 0
 
-        filepath = pathlib.Path(
-            f'{settings.DATABASE_DUMP_ROOT}/quizer_results_{timezone.now().strftime("%d-%m-%y_%H-%M")}.csv')
-        with open(filepath, 'w') as dump_file:
-            results = UserResult.objects.filter(
-                user__profile__group=group,
-                user__profile__admission_year=now.year - int(course) - add_course,
-                right_answers_count__gt=0,
-                testing_result__subject__id=subject_id)
-            tests = Test.objects.filter(subject__id=subject_id)
-            results_dict = {
-                res['user_id']: [str(res['user__profile__name']), str(res['user__profile__number'])] + ['-'] * len(tests)
-                for res in results.values('user_id', 'user__profile__number', 'user__profile__name')
-            }
-            for user_id in results_dict:
-                user_results = results.filter(user__id=user_id)
-                for res in user_results:
-                    test = res.testing_result.test
-                    if test in tests:
-                        test_num = int(re.findall(r'\d', test.name)[0])
-                        results_dict[res.user.id][2 + test_num - 1] = f'{res.right_answers_count}/{res.tasks_num}'
-            results_list = list(results_dict.values())
-            print(results_list[0])
-            results_list.sort(key=lambda res: int(res[1]))
-            for row in results_list:
-                dump_file.write(','.join(row) + '\n')
+            filepath = pathlib.Path(
+                f'{settings.DATABASE_DUMP_ROOT}/quizer_results_{timezone.now().strftime("%d-%m-%y_%H-%M")}.csv')
+            with open(filepath, 'w') as dump_file:
+                results = UserResult.objects.filter(
+                    user__profile__group=group,
+                    user__profile__admission_year=now.year - int(course) - add_course,
+                    right_answers_count__gt=0,
+                    testing_result__subject__id=subject_id)
+                tests = Test.objects.filter(subject__id=subject_id)
+                results_dict = {
+                    res['user_id']: [str(res['user__profile__name']), str(res['user__profile__number'])] + ['-'] * len(tests)
+                    for res in results.values('user_id', 'user__profile__number', 'user__profile__name')
+                }
+                for user_id in results_dict:
+                    user_results = results.filter(user__id=user_id)
+                    for res in user_results:
+                        test = res.testing_result.test
+                        if test in tests:
+                            test_num = int(re.findall(r'\d', test.name)[0])
+                            results_dict[res.user.id][2 + test_num - 1] = f'{res.right_answers_count}/{res.tasks_num}'
+                results_list = list(results_dict.values())
+                print(results_list[0])
+                results_list.sort(key=lambda res: int(res[1]))
+                for row in results_list:
+                    dump_file.write(','.join(row) + '\n')
 
-        with open(filepath, 'r') as dump_file:
-            response = HttpResponse(dump_file, content_type='application/force-download')
-        response['Content-Disposition'] = 'attachment; filename=%s' % smart_str(filepath.name)
-        response['X-Sendfile'] = smart_str(filepath)
-        os.remove(filepath)
-        return response
+            with open(filepath, 'r') as dump_file:
+                response = HttpResponse(dump_file, content_type='application/force-download')
+            response['Content-Disposition'] = 'attachment; filename=%s' % smart_str(filepath.name)
+            response['X-Sendfile'] = smart_str(filepath)
+            os.remove(filepath)
+            return response
+        except:
+            logging.exception("Something awful happened!", stack_info=True)
 
 
 @unauthenticated_user

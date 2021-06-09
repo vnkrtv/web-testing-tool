@@ -326,7 +326,13 @@ def make_database_dump() -> pathlib.Path:
                 obj['fields']['options'] = options
 
             if obj['model'] == 'main.userresult':
-                obj['fields']['questions'] = eval(obj['fields']['questions'])
+                obj['fields']['questions'] = [dict(_) for _ in eval(obj['fields']['questions'])]
+
+            if obj['model'] == 'main.runningtestsanswers':
+                right_answers = eval(obj['fields']['right_answers'])
+                for right_answer in right_answers:
+                    right_answer['right_options'] = eval(right_answer['right_options'])
+                obj['fields']['right_answers'] = right_answers
 
     with open(dump_filename, 'w') as dump_file:
         json.dump(dump_obj, dump_file, indent=4)

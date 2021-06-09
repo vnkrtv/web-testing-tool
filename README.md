@@ -28,7 +28,7 @@ As a part of SMS microservices architecture the application provides the followi
 ### Deploying  
 
 As docker container:
-- ```git clone https://github.com/LeadNess/web-testing-tool.git```
+- ```git clone https://github.com/vnkrtv/web-testing-tool.git```
 - ```cd web-testing-tool```
 - ```docker build -t quizer .``` - create 'quizer' docker image with application 
 - ```docker run -p <HOST_PORT>:80 -e MONGO_HOST=<MONGO_HOST> -e MONGO_PORT=<MONGO_PORT> -e MONGO_DNNAME=<MONGO_DNNAME> -e DEMONSTRATION_VARIANT=<y> URL_PREFIX=<URL_PREFIX> --name testing-app quizer ```
@@ -39,7 +39,7 @@ Next it's possible to set up automatic application resume after server reboot. U
 - ```sudo systemctl start web-testing-tool```
 
 It's also possible to build a working application on the host system to be able to improve it. Required MongoDB and python3:
-- ```git clone https://github.com/LeadNess/web-testing-tool.git```
+- ```git clone https://github.com/vnkrtv/web-testing-tool.git```
 - ```cd web-testing-tool```
 - ```./deploy/build_for_linux``` or ```powershell .\deploy\build_for_win.ps1```
 - ```. ./venv/bin/activate``` or ```.\venv\Scripts\activate```

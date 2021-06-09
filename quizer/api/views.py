@@ -272,6 +272,14 @@ class UserResultAPI(APIView):
         if test_id:
             results = results.filter(testing_result__test__id=test_id)
 
+        non_zero = request.query_params.get('non_zero', None)
+        if non_zero:
+            results = results.filter(right_answers_count__gt=0)
+
+        course = request.query_params.get('course', None)
+        if course:
+            results = [res for res in results if str(res.user.profile.course) == course]
+
         serializer = UserResultSerializer(results, many=True)
         return Response({
             'results': serializer.data

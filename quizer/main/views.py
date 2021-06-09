@@ -5,8 +5,11 @@ import logging
 import os
 import random
 import copy
+import pathlib
+import re
 from datetime import datetime
 import bson
+from operator import itemgetter
 
 import requests
 from django.core.management import call_command
@@ -16,6 +19,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth import login, logout
 from django.shortcuts import render, redirect, reverse
 from django.utils.decorators import method_decorator
+from django.conf import settings
 from django.http import JsonResponse, HttpResponse, HttpRequest
 from django.views import View
 from django.utils import timezone
@@ -362,6 +366,67 @@ class PassedTestView(View):
         return render(request, self.template, self.context)
 
 
+class StudentsView(View):
+    """Displays page with all tests results"""
+    template = 'main/lecturer/students.html'
+    title = 'Тесты'
+    context = {}
+    decorators = [unauthenticated_user, allowed_users(allowed_roles=['lecturer'])]
+
+    @method_decorator(decorators)
+    def get(self, request: HttpRequest) -> HttpResponse:
+        """Displays page with all tests"""
+        self.context = {
+            'title': 'Результаты тестирований',
+            'subjects': Subject.objects.all(),
+            'lecturers': User.objects.filter(groups__name='lecturer')
+        }
+        return render(request, self.template, self.context)
+
+    @method_decorator(decorators)
+    def post(self, request: HttpRequest) -> HttpResponse:
+        """Configuring tests"""
+        subject_id = request.POST['exportSubject']
+        group = request.POST['exportGroup']
+        course = request.POST['exportCourse']
+
+        now = datetime.now()
+        add_course = 1 if now.month >= 9 else 0
+
+        filepath = pathlib.Path(
+            f'{settings.DATABASE_DUMP_ROOT}/quizer_results_{timezone.now().strftime("%d-%m-%y_%H-%M")}.csv')
+        with open(filepath, 'w') as dump_file:
+            results = UserResult.objects.filter(
+                user__profile__group=group,
+                user__profile__admission_year=now.year - int(course) - add_course,
+                right_answers_count__gt=0,
+                testing_result__subject__id=subject_id)
+            tests = Test.objects.filter(subject__id=subject_id)
+            results_dict = {
+                res['user_id']: [str(res['user__profile__name']), str(res['user__profile__number'])] + ['-'] * len(tests)
+                for res in results.values('user_id', 'user__profile__number', 'user__profile__name')
+            }
+            for user_id in results_dict:
+                user_results = results.filter(user__id=user_id)
+                for res in user_results:
+                    test = res.testing_result.test
+                    if test in tests:
+                        test_num = int(re.findall(r'\d', test.name)[0])
+                        results_dict[res.user.id][2 + test_num - 1] = f'{res.right_answers_count}/{res.tasks_num}'
+            results_list = list(results_dict.values())
+            print(results_list[0])
+            results_list.sort(key=lambda res: int(res[1]))
+            for row in results_list:
+                dump_file.write(','.join(row) + '\n')
+
+        with open(filepath, 'r') as dump_file:
+            response = HttpResponse(dump_file, content_type='application/force-download')
+        response['Content-Disposition'] = 'attachment; filename=%s' % smart_str(filepath.name)
+        response['X-Sendfile'] = smart_str(filepath)
+        os.remove(filepath)
+        return response
+
+
 @unauthenticated_user
 @allowed_users(allowed_roles=['lecturer'])
 def get_running_tests(request: HttpRequest) -> HttpResponse:
@@ -399,18 +464,6 @@ def stop_running_test(request: HttpRequest) -> HttpResponse:
 
 @unauthenticated_user
 @allowed_users(allowed_roles=['lecturer'])
-def lecturer_all_tests_results(request: HttpRequest) -> HttpResponse:
-    """Displays page with all tests results"""
-    context = {
-        'title': 'Результаты тестирований',
-        'subjects': Subject.objects.all(),
-        'lecturers': User.objects.filter(groups__name='lecturer')
-    }
-    return render(request, 'main/lecturer/testsResults.html', context)
-
-
-@unauthenticated_user
-@allowed_users(allowed_roles=['lecturer'])
 def lecturer_current_test_results(request: HttpRequest, test_results_id: str) -> HttpResponse:
     """Displays page with testing results"""
     try:
@@ -430,19 +483,20 @@ def lecturer_current_test_results(request: HttpRequest, test_results_id: str) ->
 
 @unauthenticated_user
 @allowed_users(allowed_roles=['lecturer'])
-def lecturer_students_list(request: HttpRequest) -> HttpResponse:
-    """Displays page with all students"""
+def lecturer_all_tests_results(request: HttpRequest) -> HttpResponse:
+    """Displays page with all tests results"""
     context = {
-        'title': 'Слушатели'
+        'title': 'Результаты тестирований',
+        'subjects': Subject.objects.all(),
+        'lecturers': User.objects.filter(groups__name='lecturer')
     }
-    return render(request, 'main/lecturer/students.html', context)
+    return render(request, 'main/lecturer/testsResults.html', context)
 
 
 @unauthenticated_user
 @allowed_users(allowed_roles=['student'])
 def student_run_test(request: HttpRequest) -> HttpResponse:
     """Run test for student"""
-    # try:
     if request.method != 'POST':
         return redirect(reverse('main:available_tests'))
 
@@ -503,8 +557,6 @@ def student_run_test(request: HttpRequest) -> HttpResponse:
         'right_answers': right_answers,
     }
     return render(request, 'main/student/runTest.html', context)
-    # except Exception as e:
-    #     logging.error(f'{request.user.username}: {e}')
 
 
 @unauthenticated_user

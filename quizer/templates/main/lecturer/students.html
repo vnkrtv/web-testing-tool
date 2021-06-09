@@ -6,11 +6,16 @@
 
 {% load main_extras %}
 
+<link rel="stylesheet" href="{% static 'main/css/modal-window.css' %}">
+
 <div class='jumbotron'>
     <h2>Слушатели</h2><br>
     <div>
         <p>Здесь отображаются все слушатели, зарегестрированные в системе. <br>Чтобы посмотреть все тесты, пройденные
             слушателем, нажмите кнопку "Перейти к результатам"</p>
+        <div class="btn-group mr-2">
+            <button class="btn btn-success js-open-modal" href="#" data-modal="export-results-modal"><img src='{% export_icon %}'> Получить результат по группе</button>
+        </div>
         <hr>
         <div class="row">
             <div class="col-sm">
@@ -31,6 +36,7 @@
             </div>
         </div>
     </div>
+    
     <hr>
     <input class="form-control" type="text" placeholder="Искать..." id="search"
            onkeyup='tableSearch("search", "table")'>
@@ -49,8 +55,54 @@
         <tbody id='tableBody'></tbody>
     </table>
 </div>
+
+<div class="modal-window" data-modal="export-results-modal">
+   <img class="modal__cross js-modal-close" src="{% close_icon %}">
+   <h4>Получить таблицу с результатами</h4>
+   <hr class="my hr4">
+   <form action="{% url 'main:students' %}" enctype="multipart/form-data" method='post'>
+    {% csrf_token %}
+    <div class="row">
+        <div class="col-sm">
+            <label class="my-1 mr-2">Предмет
+                <select class="custom-select my-1 mr-sm-2" name="exportSubject" id="exportSubject" required="required">
+                    {% for subject in subjects %}
+                    <option value="{{ subject.id }}" selected>{{ subject.name }}</option>                            
+                    {% endfor %}
+                </select>
+            </label>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm">
+            <label class="my-1 mr-2">Курс
+                <select class="custom-select my-1 mr-sm-2" name="exportCourse" id="exportCourse" required="required">
+                </select>
+            </label>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm">
+            <label class="my-1 mr-2">Группа
+                <select class="custom-select my-1 mr-sm-2" name="exportGroup" id="exportGroup" required="required">
+                </select>
+            </label>
+        </div>
+    </div>
+    <div class="custom-file">
+        
+    </div>
+     <div class="modal-footer">
+        <div class="btn btn-primary js-modal-close"><img src="{% cancel_icon %}"> Закрыть</div>
+        <button class="btn btn-success js-modal-close"><img src='{% import_icon %}'> Скачать таблицу</button>
+     </div>
+    </form>
+</div>
+<div id="overlay" class="overlay js-overlay-modal"></div>
+
 <script src="{% static 'main/js/table.js' %}"></script>
 <script src="{% static 'main/js/usersResults.js' %}"></script>
+<script src="{% static 'main/js/modalWindow.js' %}"></script>
 <script src="{% static 'main/js/jquery-3.5.1.js' %}"></script>
 <script type="text/javascript">
     const usersAPIUrl = "{% url 'api:users_api' %}";
@@ -58,6 +110,8 @@
     const tableBody = document.getElementById('tableBody');
     const courseSelect = document.getElementById("course");
     const groupSelect = document.getElementById("group");
+    const exportCourseSelect = document.getElementById("exportCourse");
+    const exportGroupSelect = document.getElementById("exportGroup");
 
     let users = [];
     let courses = new Set();
@@ -74,12 +128,14 @@
                 opt.value = course;
                 opt.innerHTML = course;
                 courseSelect.appendChild(opt);
+                exportCourseSelect.appendChild(opt);
             }
             for (let group of groups) {
                 let opt = document.createElement('option');
                 opt.value = group;
                 opt.innerHTML = group;
                 groupSelect.appendChild(opt);
+                exportGroup.appendChild(opt);
             }
 
             renderUsers();

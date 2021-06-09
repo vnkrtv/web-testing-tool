@@ -125,18 +125,26 @@
                 groups.add(user.group);
             }
             for (let course of courses) {
-                let opt = document.createElement('option');
-                opt.value = course;
-                opt.innerHTML = course;
-                courseSelect.appendChild(opt);
-                exportCourseSelect.appendChild(opt);
+                let opt1 = document.createElement('option');
+                opt1.value = course;
+                opt1.innerHTML = course;
+                courseSelect.appendChild(opt1);
+
+                let opt2 = document.createElement('option');
+                opt2.value = course;
+                opt2.innerHTML = course;
+                exportCourseSelect.appendChild(opt2);
             }
             for (let group of groups) {
-                let opt = document.createElement('option');
-                opt.value = group;
-                opt.innerHTML = group;
-                groupSelect.appendChild(opt);
-                exportGroup.appendChild(opt);
+                let opt1 = document.createElement('option');
+                opt1.value = group;
+                opt1.innerHTML = group;
+                groupSelect.appendChild(opt1);
+
+                let opt2 = document.createElement('option');
+                opt2.value = group;
+                opt2.innerHTML = group;
+                exportGroup.appendChild(opt2);
             }
 
             renderUsers();

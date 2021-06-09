@@ -398,45 +398,15 @@ def get_group_results(request: HttpRequest) -> HttpResponse:
         group = request.POST['exportGroup']
         course = request.POST['exportCourse']
 
-        now = datetime.now()
-        add_course = 1 if now.month >= 9 else 0
-
-        tests = Test.objects.filter(subject__id=subject_id)
-        tests_list = [
-            [test.name, int(re.findall(r'\d', test.name)[0])]
-            for test in tests
-        ]
-        tests_list.sort(key=itemgetter(1))
-        results_str = 'Fullname,Номер по списку,'
-        for test in tests_list[:-1]:
-            results_str += f'{test[0]},'
-        results_str += f'{tests_list[-1][0]}\n'
-
-        results = UserResult.objects.filter(
-            user__profile__group=group,
-            user__profile__admission_year=now.year - int(course) - add_course,
-            right_answers_count__gt=0,
-            testing_result__subject__id=subject_id)
-        results_dict = {
-            res['user_id']: [str(res['user__profile__name']), str(res['user__profile__number'])] + ['-'] * len(
-                tests)
-            for res in results.values('user_id', 'user__profile__number', 'user__profile__name')
-        }
-        for user_id in results_dict:
-            user_results = results.filter(user__id=user_id)
-            for res in user_results:
-                test = res.testing_result.test
-                if test in tests:
-                    test_num = int(re.findall(r'\d', test.name)[0])
-                    results_dict[res.user.id][2 + test_num - 1] = f'{res.right_answers_count}/{res.tasks_num}'
-        results_list = list(results_dict.values())
-        results_list.sort(key=lambda res: int(res[1]))
-        for row in results_list:
-            results_str += (','.join(row) + '\n')
+        results_str = utils.get_group_results(subject_id, group, course)
 
         if request.POST.get('csvFileFormat'):
             filepath = pathlib.Path(
-                f'/tmp/group-{group}_course-{course}_results_{timezone.now().strftime("%d-%m-%y_%H-%M")}.csv')
+                f'results_'
+                f'group-{course}{group}_'
+                f'subject_id-{subject_id}_'
+                f'date-{timezone.now().strftime("%d-%m-%y")}.csv'
+            )
             with open(filepath, 'w') as dump_file:
                 dump_file.write(results_str)
             with open(filepath, 'r') as dump_file:

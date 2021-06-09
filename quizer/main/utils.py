@@ -6,8 +6,10 @@ import json
 import math
 import os
 import pathlib
+import re
 from datetime import datetime
 from collections import OrderedDict
+from operator import itemgetter
 from typing import List, Dict, Tuple, Any, Union
 
 import bson
@@ -20,7 +22,7 @@ from django.http import HttpRequest
 from django.utils import timezone
 from django.conf import settings
 
-from .models import Test, Subject, Question, Profile
+from .models import Test, Subject, Question, Profile, UserResult
 
 
 class EmptyOptionsError(Exception):
@@ -138,6 +140,56 @@ def create_profile(request: HttpRequest, user: User) -> Profile:
         group=int(group),
         admission_year=int(admission_year),
         number=int(number))
+
+
+def get_group_results(subject_id: str, group: str, course: str) -> str:
+    """
+    Getting string with group testing results
+
+    :param subject_id: id of current subject
+    :param group: group number
+    :param course: group course
+    :return: string with results in CSV format
+    """
+    now = datetime.now()
+    add_course = 1 if now.month >= 9 else 0
+
+    tests = Test.objects.filter(subject__id=subject_id)
+    tests_list = [
+        [test.name, int((re.findall(r'\d', test.name) + ['0'])[0])]
+        for test in tests
+    ]
+    tests_list.sort(key=itemgetter(1))
+    test_position = {test[0]: 2 + pos for pos, test in enumerate(tests_list)}
+
+    results_str = 'Fullname,Номер по списку,'
+    for test in tests_list[:-1]:
+        results_str += f'{test[0]},'
+    results_str += f'{tests_list[-1][0]}\n'
+
+    results = UserResult.objects.filter(
+        user__profile__group=group,
+        # user__profile__admission_year=now.year - int(course) + add_course,
+        right_answers_count__gt=0,
+        testing_result__subject__id=subject_id)
+    results_dict = {
+        res['user_id']: [str(res['user__profile__name']), str(res['user__profile__number'])] + ['-'] * len(
+            tests)
+        for res in results.values('user_id', 'user__profile__number', 'user__profile__name')
+    }
+    for user_id in results_dict:
+        user_results = results.filter(user__id=user_id)
+        for res in user_results:
+            test = res.testing_result.test
+            if test in tests:
+                test_pos = test_position[test.name]
+                results_dict[res.user.id][test_pos] = f'{res.right_answers_count}/{res.tasks_num}'
+
+    results_list = list(results_dict.values())
+    results_list.sort(key=lambda res: int(res[1]))
+    for row in results_list:
+        results_str += (','.join(row) + '\n')
+    return results_str
 
 
 def split_questions(questions: List[Dict[str, Any]]) -> List[Tuple[List[Dict[str, Any]], Union[int, float]]]:

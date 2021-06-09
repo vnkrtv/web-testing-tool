@@ -317,7 +317,11 @@ class QuestionAnalysisAPI(APIView):
         stats = {}
         for result in results.values('questions'):
             for question in result['questions']:
-                q_id, is_true = question['question_id'], question['is_true']
+                q_id = question['question_id']
+                if 'is_true' in question:
+                    is_true = question['is_true']
+                else:
+                    is_true = (question['selected_options'] == question['right_options'])
                 if q_id not in stats:
                     stats[q_id] = {
                         'true': 0,

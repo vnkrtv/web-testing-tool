@@ -7,7 +7,7 @@ app_name = 'api'
 schema_view = get_swagger_view(title='Quizer API')
 
 urlpatterns = [
-    path('swagger/', schema_view, name='swagger'),
+    path('documentation/', schema_view, name='documentation'),
     path('users/', views.UserAPI.as_view(), name='users_api'),
     path('subjects/', views.SubjectAPI.as_view(), name='subjects_api'),
     path('subjects/<subject_id>', views.SubjectAPI.as_view(), name='edit_subjects_api'),

@@ -135,7 +135,7 @@ def create_profile(user: User, fullname: str) -> Profile:
     return Profile.objects.create(
         id=user.id,
         user=user,
-        name=user.username,
+        name=fullname,
         group=int(group),
         admission_year=int(admission_year),
         number=int(number))

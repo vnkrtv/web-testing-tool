@@ -65,7 +65,7 @@ class LoginView(View):
                 fullname = form.cleaned_data['fullname']
                 password2 = form.cleaned_data['password2']
 
-                if not utils.is_available_user(username, fullname):
+                if not utils.is_available_user(username, fullname) or len(fullname) == 0:
                     context = {
                         'title': self.title,
                         'form': UserForm(),
@@ -81,8 +81,9 @@ class LoginView(View):
                     }
                     return render(request, self.template, context)
 
-                user = User(username=username, password=password)
+                user = User.objects.create_user(username=username, password=password)
                 user.save()
+                user.set_password(password)
                 user.groups.add(2)
                 utils.create_profile(user, fullname)
             else:

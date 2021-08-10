@@ -18,10 +18,10 @@ class BaseForm(forms.Form):
 
 
 class UserForm(BaseForm):
-    fullname = forms.CharField(label='Полное имя с gitlab', required=True)
+    fullname = forms.CharField(label='Полное имя с gitlab', required=False)
     username = forms.CharField(label='Имя', required=True)
     password = forms.CharField(label='Пароль', widget=forms.PasswordInput)
-    password2 = forms.CharField(label='Повторите пароль', widget=forms.PasswordInput)
+    password2 = forms.CharField(label='Повторите пароль', widget=forms.PasswordInput, required=False)
 
 
 class SubjectForm(BaseForm):

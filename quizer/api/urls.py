@@ -19,6 +19,5 @@ urlpatterns = [
     path('tests_results/', views.TestsResultAPI.as_view(), name='tests_results_api'),
     path('user_results/', views.UserResultAPI.as_view(), name='user_results_api'),
     path('running_tests/', views.RunningTestAPI.as_view(), name='get_running_tests'),
-    path('running_tests/', views.RunningTestAPI.as_view(), name='get_running_tests'),
     path('analysis/questions', views.QuestionAnalysisAPI.as_view(), name='question_analysis_api')
 ]

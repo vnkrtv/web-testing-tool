@@ -1,26 +1,20 @@
 # pylint: disable=import-error, line-too-long, relative-beyond-top-level
 """Quizer backend"""
-import json
 import logging
 import os
 import random
 import copy
 import pathlib
-import re
-from datetime import datetime
 import bson
-from operator import itemgetter
 
 import requests
-from django.core.files.temp import NamedTemporaryFile
 from django.core.management import call_command
 from jwt import DecodeError
 
 from django.contrib.auth.models import User
-from django.contrib.auth import login, logout
+from django.contrib.auth import login, logout, authenticate
 from django.shortcuts import render, redirect, reverse
 from django.utils.decorators import method_decorator
-from django.conf import settings
 from django.http import JsonResponse, HttpResponse, HttpRequest
 from django.views import View
 from django.utils import timezone
@@ -29,7 +23,7 @@ from django.utils.encoding import smart_str
 from . import utils
 from .decorators import unauthenticated_user, allowed_users, post_method
 from .models import Profile, Test, Subject, Question, TestResult, RunningTestsAnswers, UserResult
-from .forms import SubjectForm, TestForm
+from .forms import UserForm, SubjectForm, TestForm
 
 
 @unauthenticated_user
@@ -45,84 +39,69 @@ def manage_questions(request: HttpRequest, test_id: int) -> HttpResponse:
     return render(request, 'main/lecturer/managingQuestions.html', context)
 
 
-def login_page(request: HttpRequest) -> HttpResponse:
-    """Authorize user and redirect him to available_tests page"""
-    logout(request)
-    try:
-        # username, group = 'useruser', 'student'
-        username, group = utils.get_auth_data(request)
-        # username, group = 'ivan_korotaev', 'admin'
-    except DecodeError:
-        return HttpResponse("JWT decode error: chet polomalos'")
+class LoginView(View):
+    """Login view"""
+    template = 'main/login.html'
+    title = 'Войти в систему'
+    decorators = []
 
-    group2id = {
-        'admin': 1,
-        'teacher': 1,
-        'student': 2
-    }
+    def get(self, request: HttpRequest) -> HttpResponse:
+        logout(request)
+        context = {
+            'title': self.title,
+            'form': UserForm(),
+            'register': bool(request.GET.get('register', False))
+        }
+        return render(request, self.template, context)
 
-    # костыль на время разработки
-    if username == 'ivan_korotaev':
-        group = 'admin'
-    # костыль на время разработки
+    def post(self, request: HttpRequest) -> HttpResponse:
+        register = request.POST.get('register', None)
+        form = UserForm(request.POST)
+        if form.is_valid():
+            username = form.cleaned_data['username']
+            password = form.cleaned_data['password']
 
-    try:
-        user = User.objects.get(username=username)
-    except User.DoesNotExist:
-        if group in ['student', 'teacher']:
-            user = User(username=username, password='')
-        elif group in ['admin']:
-            user = User.objects.create_superuser(username=username, email='', password='')
-        else:
-            return HttpResponse('Incorrect group.')
-        user.save()
-        user.groups.add(group2id[group])
-        utils.create_profile(request, user)
+            if register:
+                fullname = form.cleaned_data['fullname']
+                password2 = form.cleaned_data['password2']
 
-    id2group = {
-        1: 'lecturer',
-        2: 'student'
-    }
-    if not user.groups.filter(name=id2group[group2id[group]]):
-        if group2id[group] != 1:
-            return HttpResponse("User with username '%s' already exist." % user.username)
-        else:
-            if user.groups.filter(name='student'):
-                user.groups.remove(2)
-            user.groups.add(group2id[group])
+                if not utils.is_available_user(username, fullname):
+                    context = {
+                        'title': self.title,
+                        'form': UserForm(),
+                        'error': 'На данный момент по вашему имени нельзя завести аккаунт в системе'
+                    }
+                    return render(request, self.template, context)
 
-    # костыль на время разработки
-    if username == 'ivan_korotaev':
-        if str(requests.get('https://vknews.vnkrtv.ru').content).find('502 Bad Gateway') != -1:
-            if user.groups.filter(name='lecturer'):
-                user.groups.remove(1)
-            if not user.groups.filter(name='student'):
+                if password != password2:
+                    context = {
+                        'title': self.title,
+                        'form': UserForm(),
+                        'error': 'Пароли не совпадают.'
+                    }
+                    return render(request, self.template, context)
+
+                user = User(username=username, password=password)
+                user.save()
                 user.groups.add(2)
-        else:
-            if user.groups.filter(name='student'):
-                user.groups.remove(2)
-            if not user.groups.filter(name='lecturer'):
-                user.groups.add(1)
-    # костыль на время разработки
-
-    try:
-        try:
-            if user.profile.group == 0:
-                Profile.objects.filter(user__id=user.id).delete()
-                utils.create_profile(request, user)
-        except Exception:
-            Profile.objects.filter(user__id=user.id).delete()
-            utils.create_profile(request, user)
-        # Profile.MultipleObjectsReturned User.profile.RelatedObjectDoesNotExist:
-
-        try:
+                utils.create_profile(user, fullname)
+            else:
+                user = authenticate(username=username, password=password)
+                if not user:
+                    context = {
+                        'title': self.title,
+                        'form': UserForm(),
+                        'error': 'Некорректные данные.'
+                    }
+                    return render(request, self.template, context)
             login(request, user)
-        except Exception as e:
-            logging.error(e)
-        finally:
             return redirect(reverse('main:available_tests'))
-    except Exception as e:
-        logging.error(e)
+        context = {
+            'title': self.title,
+            'form': UserForm(),
+            'error': 'Некорректные данные.'
+        }
+        return render(request, self.template, context)
 
 
 @unauthenticated_user

@@ -23,6 +23,7 @@ INSTALLED_APPS = [
     'rest_framework_swagger',
 
     'django.contrib.auth',
+    'django.contrib.admin',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',

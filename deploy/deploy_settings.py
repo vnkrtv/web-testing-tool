@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     'channels',
     'rest_framework_swagger',
 
+    'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',

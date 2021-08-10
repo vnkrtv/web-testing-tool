@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <!-- vnkrtv, 2020-2021 -->
+    <!-- https://github.com/vnkrtv/web-testing-tool -->
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'main/css/sidebar.css' %}">
+    <link rel="stylesheet" href="{% static 'main/css/bootstrap.min.css' %}">
+
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'favicon/favicon-32x32.png' %}">
+    <link rel="icon" type="image/png" sizes="96x96" href="{% static 'favicon/favicon-96x96.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'favicon/favicon-16x16.png' %}">
+
+    <title>Войти | Quizer</title>
+</head>
+<body>
+
+<main class="login-form">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">Войти в систему</div>
+                    {% if error %}
+                    <div class="alert alert-danger" role="alert">
+                        {{ error }}
+                    </div>
+                    {% endif %}
+                    <div class="card-body">
+                        <form action="{% url 'main:login_page' %}" method="post">
+                            {% csrf_token %}
+                            <div>
+                                <label for="{{ form.username.id_for_label }}">{{ form.username.label }}</label>
+                                {{ form.username }}
+                            </div>
+                            {% if register %}
+                                <div>
+                                    <label for="{{ form.fullname.id_for_label }}">{{ form.fullname.label }}</label>
+                                    {{ form.fullname }}
+                                </div>
+                            {% endif %}
+                            <div>
+                                <label for="{{ form.password.id_for_label }}">{{ form.password.label }}</label>
+                                {{ form.password }}
+                            </div>
+                            {% if register %}
+                                <div>
+                                    <label for="{{ form.password2.id_for_label }}">{{ form.password2.label }}</label>
+                                    {{ form.password2 }}
+                                </div>
+                                <input type="hidden" name="register" value="y">
+                            {% endif %}
+                            <br>
+                            <div class="col-md-6 offset-md-4">
+                                <button type="submit" class="btn btn-primary">
+                                    Войти
+                                </button>
+                            </div>
+                            <a href="{% url 'main:login_page' %}?register=y">Зарегистрироваться</a>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+</body>
+</html>

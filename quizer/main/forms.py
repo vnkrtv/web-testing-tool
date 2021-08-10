@@ -17,6 +17,13 @@ class BaseForm(forms.Form):
             visible.field.widget.attrs['class'] = 'form-control'
 
 
+class UserForm(BaseForm):
+    fullname = forms.CharField(label='Полное имя с gitlab', required=True)
+    username = forms.CharField(label='Имя', required=True)
+    password = forms.CharField(label='Пароль', widget=forms.PasswordInput)
+    password2 = forms.CharField(label='Повторите пароль', widget=forms.PasswordInput)
+
+
 class SubjectForm(BaseForm):
     name = forms.CharField(label='Название предмета', max_length=100)
     description = forms.CharField(label='Описание', widget=forms.Textarea, required=False)

@@ -12,7 +12,6 @@ from collections import OrderedDict
 from operator import itemgetter
 from typing import List, Dict, Tuple, Any, Union
 
-import bson
 import jwt
 import requests
 
@@ -91,6 +90,24 @@ class SubjectParser:
         }.get(short_name, 200)
 
 
+def is_available_user(username: str, fullname: str) -> bool:
+    available_users = [
+        {'fullname': '', 'username': 'vnkrtv'},
+        {'fullname': '2019-4-16-sur', 'username': 'kekbek'},
+        {'fullname': '2019-4-20-chu', 'username': 'Dimario49'},
+        {'fullname': '2019-5-01-aga', 'username': 'krisya'},
+        {'fullname': '2019-5-11-kor', 'username': 'den4ik_006'},
+        {'fullname': '2019-5-08-iva', 'username': 'Dimon4ikk'},
+        {'fullname': '2019-5-10-kor', 'username': 'dentimp'},
+        {'fullname': '2019-5-24-kho', 'username': 'Khokh'},
+        {'fullname': '', 'username': 'dmitry.bosz'}
+    ]
+
+    fullnames = {user['fullname'] for user in available_users}
+    usernames = {user['username'] for user in available_users}
+    return username in usernames or fullname in fullnames
+
+
 def get_auth_data(request: HttpRequest) -> Tuple[str, str]:
     """
     Get user's username and group using 'user_jqt' cookies
@@ -107,24 +124,8 @@ def get_auth_data(request: HttpRequest) -> Tuple[str, str]:
     return username, group
 
 
-def create_profile(request: HttpRequest, user: User) -> Profile:
-    """
-    Get user's profile info using 'user_jqt' cookies
-
-    :param user: user which profile will be created
-    :param request: <HttpRequest>
-    :return: created profile
-    """
-    profile = requests.get(
-        url=settings.PROFILE_URL,
-        cookies=request.COOKIES
-    ).json()
-    # profile = {
-    #     'created_at': '2018-09-13T08:16:44.431Z',
-    #     'name': '2017-3-08-kor',
-    #     'web_url': 'https://gitwork.ru/ivan_korotaev'
-    # }
-    buf = profile['name'].split('-')
+def create_profile(user: User, fullname: str) -> Profile:
+    buf = fullname.split('-')
     if user.groups.filter(name='lecturer'):
         admission_year, group, number = 0, 732, 0
     elif len(buf) == 4:
@@ -134,12 +135,45 @@ def create_profile(request: HttpRequest, user: User) -> Profile:
     return Profile.objects.create(
         id=user.id,
         user=user,
-        created_at=datetime.strptime(profile['created_at'], "%Y-%m-%dT%H:%M:%S.%fZ"),
-        name=profile['name'],
-        web_url=profile['web_url'],
+        name=user.username,
         group=int(group),
         admission_year=int(admission_year),
         number=int(number))
+
+
+# def create_profile(request: HttpRequest, user: User) -> Profile:
+#     """
+#     Get user's profile info using 'user_jqt' cookies
+#
+#     :param user: user which profile will be created
+#     :param request: <HttpRequest>
+#     :return: created profile
+#     """
+#     profile = requests.get(
+#         url=settings.PROFILE_URL,
+#         cookies=request.COOKIES
+#     ).json()
+#     # profile = {
+#     #     'created_at': '2018-09-13T08:16:44.431Z',
+#     #     'name': '2017-3-08-kor',
+#     #     'web_url': 'https://gitwork.ru/ivan_korotaev'
+#     # }
+#     buf = profile['name'].split('-')
+#     if user.groups.filter(name='lecturer'):
+#         admission_year, group, number = 0, 732, 0
+#     elif len(buf) == 4:
+#         admission_year, group, number, _ = buf
+#     else:
+#         admission_year, group, number = 0, 0, 0
+#     return Profile.objects.create(
+#         id=user.id,
+#         user=user,
+#         created_at=datetime.strptime(profile['created_at'], "%Y-%m-%dT%H:%M:%S.%fZ"),
+#         name=profile['name'],
+#         web_url=profile['web_url'],
+#         group=int(group),
+#         admission_year=int(admission_year),
+#         number=int(number))
 
 
 def get_group_results(subject_id: str, group: str, course: str) -> str:

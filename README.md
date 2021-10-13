@@ -4,6 +4,11 @@
 ![Docker](https://github.com/vnkrtv/web-testing-tool/workflows/Docker/badge.svg)
 ![Ubuntu](https://github.com/vnkrtv/web-testing-tool/workflows/Ubuntu/badge.svg)
 
+## Fast deployment
+
+`docker-compose up -d` - run app on 8080 port
+
+
 ### Description
 Testing tool implemented on Django. Data storage is implemented in the DBMS MongoDB.  
 Implemented system features:

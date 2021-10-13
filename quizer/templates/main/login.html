@@ -38,6 +38,10 @@
                                 {{ form.username }}
                             </div>
                             {% if register %}
+                                <br>
+                                Формат fullname:<br>
+                                <год поступления>-<номер группы>-<номер по журналу>-< 3 буквы фамилии на латинице><br>
+                                Например: 2017-3-09-kor<br><br>
                                 <div>
                                     <label for="{{ form.fullname.id_for_label }}">{{ form.fullname.label }}</label>
                                     {{ form.fullname }}

@@ -65,11 +65,11 @@ class LoginView(View):
                 fullname = form.cleaned_data['fullname']
                 password2 = form.cleaned_data['password2']
 
-                if not utils.is_available_user(username, fullname) or len(fullname) == 0:
+                if len(fullname) == 0:
                     context = {
                         'title': self.title,
                         'form': UserForm(),
-                        'error': 'На данный момент по вашему имени нельзя завести аккаунт в системе'
+                        'error': 'Некорректный username'
                     }
                     return render(request, self.template, context)
 

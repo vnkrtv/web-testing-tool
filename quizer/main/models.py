@@ -26,7 +26,6 @@ class Profile(models.Model):
     group = models.IntegerField(default=0)
     admission_year = models.IntegerField(default=0)
     number = models.IntegerField(default=0)
-    objects = models.DjongoManager()
 
     @property
     def course(self) -> int:

@@ -1,3 +1,5 @@
+import os
+
 from django.conf.urls import url
 from channels.routing import ProtocolTypeRouter, URLRouter
 from channels.auth import AuthMiddlewareStack
@@ -10,7 +12,7 @@ application = ProtocolTypeRouter({
         AuthMiddlewareStack(
             URLRouter(
                 [
-                    url(r'^available_tests/$', RunningTestsConsumer.as_asgi()),
+                    url(os.getenv('URL_PREFIX', '') + r'^available_tests/$', RunningTestsConsumer.as_asgi()),
                 ]
             )
         )

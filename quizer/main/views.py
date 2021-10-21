@@ -9,7 +9,6 @@ import bson
 
 import requests
 from django.core.management import call_command
-from jwt import DecodeError
 
 from django.contrib.auth.models import User
 from django.contrib.auth import login, logout, authenticate

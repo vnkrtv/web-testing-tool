@@ -77,11 +77,11 @@ TEMPLATES = [
 DATABASES = {
     'default': {
         'ENGINE': 'djongo',
-        'NAME': 'quizer',
-        'HOST': 'localhost',
-        'PORT': 27017,
+        'NAME': os.environ.get('MONGO_DBNAME', 'quizer'),
+        'HOST': os.environ.get('MONGO_HOST', 'localhost'),
+        'PORT': int(os.environ.get('MONGO_PORT', 27017)),
         'TEST': {
-            'NAME': 'test_quizer'
+            'NAME': 'test_' + os.environ.get('MONGO_DBNAME', 'quizer')
         }
     }
 }
@@ -115,14 +115,14 @@ USE_L10N = True
 
 USE_TZ = True
 
-STATIC_URL = '/static/'
+STATIC_URL = os.getenv('URL_PREFIX', ' ')[:-1] + '/static/'
 STATIC_ROOT = ''
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static')
 ]
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-MEDIA_URL = '/media/'
+MEDIA_URL = os.getenv('URL_PREFIX', ' ')[:-1] + '/media/'
 
 DATABASE_DUMP_ROOT = os.path.join(BASE_DIR, 'dumps')
 

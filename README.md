@@ -4,9 +4,9 @@
 ![Docker](https://github.com/vnkrtv/web-testing-tool/workflows/Docker/badge.svg)
 ![Ubuntu](https://github.com/vnkrtv/web-testing-tool/workflows/Ubuntu/badge.svg)
 
-## Fast deployment
+### Fast deployment
 
-`docker-compose up -d` - run app on 8080 port
+`docker-compose up -d` - run app on 8000 port
 
 
 ### Description
@@ -85,17 +85,20 @@ Run all tests with coverage by running (venv must be activated):
 - ```coverage run quizer/manage.py test main```
 
 ```
-Name                                      Stmts   Miss  Cover
--------------------------------------------------------------
-quizer/main/decorators.py                    29      3    90%
-quizer/main/forms.py                         17      0   100%
-quizer/main/models.py                        30      1    97%
-quizer/main/mongo.py                        141     41    71%
-quizer/main/templatetags/main_extras.py      60      8    87%
-quizer/main/utils.py                        140     63    55%
-quizer/main/views.py                        338    115    66%
--------------------------------------------------------------
-TOTAL                                       755    231    69%
+Name                               Stmts   Miss  Cover
+------------------------------------------------------
+api/permissions.py                    13      0   100%
+api/serializers.py                   168     23    86%
+api/views.py                         204     66    68%
+main/consumers.py                     16     16     0%
+main/decorators.py                    33      9    73%
+main/forms.py                         22      3    86%
+main/models.py                       146     14    90%
+main/templatetags/main_extras.py      66     24    64%
+main/utils.py                        216    146    32%
+main/views.py                        304    195    36%
+------------------------------------------------------
+TOTAL                               1188    496    58%
 ```
 For detailed report run:
 - ```coverage report```  

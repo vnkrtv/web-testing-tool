@@ -3,40 +3,22 @@
 cd /usr/share/python3/quizer
 . /usr/share/python3/venv/bin/activate
 
+# fix buf with dns in djongo
 if [[ ! -z "${MONGO_HOST}" ]]; then
   file="$(echo "$(cat /usr/share/python3/venv/lib/python3.7/site-packages/pymongo/mongo_client.py)")"
   echo "${file}" | sed "s/HOST = \"localhost\"/HOST = \"${MONGO_HOST}\"/" > /usr/share/python3/venv/lib/python3.7/site-packages/pymongo/mongo_client.py
 fi
 
+# run migrations
 python manage.py makemigrations
 python manage.py migrate
 echo yes | python manage.py collectstatic
 
+# add default groups and users
 echo 'from django.contrib.auth.models import Group; l = Group(id=1, name="lecturer"); l.save()' | python manage.py shell
 echo 'from django.contrib.auth.models import Group; s = Group(id=2, name="student"); s.save()' | python manage.py shell
+echo 'from django.contrib.auth.models import User; u = User.objects.create_superuser("admin", "", "admin"); u.groups.add(1)' | python manage.py shell
 
-if [[ ! -z "${WORKERS_NUM}" ]]; then
-  WORKERS_NUM="${WORKERS_NUM}"
-else
-  WORKERS_NUM=4
-fi
-
-SETTINGS="$(echo "$(cat ./quizer/settings.py)")"
-
-if [[ ! -z "${URL_PREFIX}" ]]; then
-  URLS="$(echo "$(cat ./quizer/urls.py)")"
-  URLS="${URLS/\'api\/\'/\'${URL_PREFIX}\/api/\'}"
-  URLS="${URLS//\'\'/\'${URL_PREFIX}\/\'}"
-  echo "${URLS}" > ./quizer/urls.py
-
-  ROUTING="$(echo "$(cat ./quizer/routing.py)")"
-  ROUTING="${ROUTING/available_tests/${URL_PREFIX}\/available_tests}"
-  echo "${ROUTING}" > ./quizer/routing.py
-
-  SETTINGS="${SETTINGS//\'\/static\/\'/\'\/static\/${URL_PREFIX}\/\'}"
-  SETTINGS="${SETTINGS//\'\/media\/\'/\'\/media\/${URL_PREFIX}\/\'}"
-fi
-
-echo "${SETTINGS}" > ./quizer/settings.py
+WORKERS_NUM="${WORKERS_NUM:-2}"
 
 gunicorn -w ${WORKERS_NUM} -k uvicorn.workers.UvicornWorker  -b 0.0.0.0:80 quizer.asgi:application

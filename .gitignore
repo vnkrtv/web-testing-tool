@@ -3,7 +3,6 @@ venv/
 quizer/media/
 quizer/dumps
 htmlcov/
-quizer/main/migrations/
 *.pyc
 *.coverage
 quizer/.coveragerc

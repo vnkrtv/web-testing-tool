@@ -10,7 +10,6 @@ from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.conf import settings
 from django.utils import timezone
-from django.db import models as django_models
 from djongo import models
 
 DEFAULT_AUTHOR_ID = 0
@@ -18,7 +17,7 @@ DEFAULT_TEST_ID = 0
 TZ_TIMEDELTA = timezone.now() - datetime.now(timezone.utc)
 
 
-class Profile(django_models.Model):
+class Profile(models.Model):
     id = models.IntegerField(primary_key=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(default=timezone.now)
@@ -53,8 +52,7 @@ def save_user_profile(sender, instance, **kwargs):
         Profile.objects.create(id=instance.id, user=instance)
 
 
-class Subject(django_models.Model):
-    id = models.IntegerField(primary_key=True, auto_created=True)
+class Subject(models.Model):
     name = models.CharField('Название дисциплины', max_length=50)
     description = models.TextField('Описание дисциплины', default="")
     objects = models.DjongoManager()
@@ -77,8 +75,7 @@ class TestManager(models.DjongoManager):
         return super().get_queryset().exclude(id__in=running_test_ids)
 
 
-class Test(django_models.Model):
-    id = models.IntegerField(primary_key=True, auto_created=True)
+class Test(models.Model):
     subject = models.ForeignKey(
         Subject,
         verbose_name='Предмет',

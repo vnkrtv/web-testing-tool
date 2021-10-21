@@ -7,8 +7,6 @@ services:
     restart: unless-stopped
     env_file:
       - .env
-    ports:
-      - "27034:27017"
     networks:
       - backend
 
@@ -17,7 +15,7 @@ services:
     container_name: quizer
     restart: unless-stopped
     ports:
-      - "0.0.0.0:8080:80"
+      - 8000:80
     depends_on:
       - mongo
     env_file:

@@ -177,7 +177,7 @@ class QuestionSerializer(serializers.Serializer):
                 options.append(
                     {
                         "option": str(path),
-                        "is_true": request.data.get(file_name) == "true",
+                        "is_true": json.loads(request.POST.get(file_name)),
                     }
                 )
             question.options = options

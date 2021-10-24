@@ -7,14 +7,19 @@ from channels.security.websocket import AllowedHostsOriginValidator
 
 from main.consumers import RunningTestsConsumer
 
-application = ProtocolTypeRouter({
-    'websocket': AllowedHostsOriginValidator(
-        AuthMiddlewareStack(
-            URLRouter(
-                [
-                    url(os.getenv('URL_PREFIX', '') + r'^available_tests/$', RunningTestsConsumer.as_asgi()),
-                ]
+application = ProtocolTypeRouter(
+    {
+        "websocket": AllowedHostsOriginValidator(
+            AuthMiddlewareStack(
+                URLRouter(
+                    [
+                        url(
+                            os.getenv("URL_PREFIX", "") + r"^available_tests/$",
+                            RunningTestsConsumer.as_asgi(),
+                        ),
+                    ]
+                )
             )
         )
-    )
-})
+    }
+)

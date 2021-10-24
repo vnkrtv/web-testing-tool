@@ -3,12 +3,6 @@
 cd /usr/share/python3/quizer
 . /usr/share/python3/venv/bin/activate
 
-# fix buf with dns in djongo
-if [[ ! -z "${MONGO_HOST}" ]]; then
-  file="$(echo "$(cat /usr/share/python3/venv/lib/python3.7/site-packages/pymongo/mongo_client.py)")"
-  echo "${file}" | sed "s/HOST = \"localhost\"/HOST = \"${MONGO_HOST}\"/" > /usr/share/python3/venv/lib/python3.7/site-packages/pymongo/mongo_client.py
-fi
-
 # run migrations
 python manage.py makemigrations
 python manage.py migrate

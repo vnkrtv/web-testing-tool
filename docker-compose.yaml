@@ -1,9 +1,9 @@
 version: '3'
 
 services:
-  mongo:
-    image: mongo:latest
-    container_name: quizer-mongo
+  db:
+    image: postgres:latest
+    container_name: quizer-postgres
     restart: unless-stopped
     env_file:
       - .env
@@ -12,12 +12,12 @@ services:
 
   web:
     build: .
-    container_name: quizer
+    container_name: quizer-web
     restart: unless-stopped
     ports:
       - 8000:80
     depends_on:
-      - mongo
+      - db
     env_file:
       - .env
     networks:

@@ -5,9 +5,10 @@ import sys
 
 
 def main():
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'quizer.settings')
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "quizer.settings")
     try:
         from django.core.management import execute_from_command_line
+
         execute_from_command_line(sys.argv)
     except ImportError as exc:
         raise ImportError(
@@ -17,5 +18,5 @@ def main():
         ) from exc
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

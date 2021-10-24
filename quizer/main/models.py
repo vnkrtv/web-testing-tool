@@ -10,7 +10,7 @@ from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.conf import settings
 from django.utils import timezone
-from djongo import models
+from django.db import models
 
 DEFAULT_AUTHOR_ID = 0
 DEFAULT_TEST_ID = 0
@@ -21,8 +21,8 @@ class Profile(models.Model):
     id = models.IntegerField(primary_key=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(default=timezone.now)
-    name = models.CharField(max_length=30, default='')
-    web_url = models.URLField(default='')
+    name = models.CharField(max_length=30, default="")
+    web_url = models.URLField(default="")
     group = models.IntegerField(default=0)
     admission_year = models.IntegerField(default=0)
     number = models.IntegerField(default=0)
@@ -53,20 +53,18 @@ def save_user_profile(sender, instance, **kwargs):
 
 
 class Subject(models.Model):
-    name = models.CharField('Название дисциплины', max_length=50)
-    description = models.TextField('Описание дисциплины', default="")
-    objects = models.DjongoManager()
+    name = models.CharField("Название дисциплины", max_length=50)
+    description = models.TextField("Описание дисциплины", default="")
 
     def __str__(self):
         return self.name
 
     class Meta:
-        verbose_name = 'Дисциплина'
-        verbose_name_plural = 'Дисциплины'
+        verbose_name = "Дисциплина"
+        verbose_name_plural = "Дисциплины"
 
 
-class TestManager(models.DjongoManager):
-
+class TestManager(models.Manager):
     def get_running(self):
         return super().get_queryset().filter(testing_results__is_running=True)
 
@@ -77,28 +75,27 @@ class TestManager(models.DjongoManager):
 
 class Test(models.Model):
     subject = models.ForeignKey(
-        Subject,
-        verbose_name='Предмет',
-        related_name='tests',
-        on_delete=models.CASCADE)
+        Subject, verbose_name="Предмет", related_name="tests", on_delete=models.CASCADE
+    )
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        verbose_name='Составитель',
-        related_name='tests',
+        verbose_name="Составитель",
+        related_name="tests",
         on_delete=models.CASCADE,
-        default=DEFAULT_AUTHOR_ID)
-    name = models.CharField('Тема теста', max_length=200)
-    description = models.TextField('Описание теста', default="")
-    tasks_num = models.IntegerField('Количество заданий в тесте', default=0)
-    duration = models.IntegerField('Длительность теста в секундах', default=300)
+        default=DEFAULT_AUTHOR_ID,
+    )
+    name = models.CharField("Тема теста", max_length=200)
+    description = models.TextField("Описание теста", default="")
+    tasks_num = models.IntegerField("Количество заданий в тесте", default=0)
+    duration = models.IntegerField("Длительность теста в секундах", default=300)
     objects = TestManager()
 
     def __str__(self):
         return self.name
 
     class Meta:
-        verbose_name = 'Тест'
-        verbose_name_plural = 'Тесты'
+        verbose_name = "Тест"
+        verbose_name_plural = "Тесты"
 
 
 class QuestionOption(models.Model):
@@ -111,19 +108,18 @@ class QuestionOption(models.Model):
 
 
 class Question(models.Model):
-    _id = models.ObjectIdField()
-    formulation = models.CharField('Формулировка вопроса', max_length=1_000)
-    multiselect = models.BooleanField('Вопрос с мультивыбором')
-    tasks_num = models.IntegerField('Число вариантов ответа')
+    formulation = models.CharField("Формулировка вопроса", max_length=1_000)
+    multiselect = models.BooleanField("Вопрос с мультивыбором")
+    tasks_num = models.IntegerField("Число вариантов ответа")
     test = models.ForeignKey(
         Test,
-        verbose_name='Тест',
-        related_name='questions',
+        verbose_name="Тест",
+        related_name="questions",
         on_delete=models.CASCADE,
-        default=DEFAULT_TEST_ID)
-    options = models.ArrayField(model_container=QuestionOption)
-    type = models.CharField('Тип вопроса', max_length=50)
-    objects = models.DjongoManager()
+        default=DEFAULT_TEST_ID,
+    )
+    options = models.JSONField()
+    type = models.CharField("Тип вопроса", max_length=50)
 
     @property
     def object_id(self):
@@ -133,25 +129,27 @@ class Question(models.Model):
     def parse_options(cls, options: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         return [
             {
-                'option': option['option'],
-                'is_true': option['is_true'],
-                'num': option.get('num')
-            } for option in options
+                "option": option["option"],
+                "is_true": option["is_true"],
+                "num": option.get("num"),
+            }
+            for option in options
         ]
 
     class Type:
         """
         Class for storing various questions types
         """
-        REGULAR = ''
-        WITH_IMAGES = 'image'
-        SEQUENCE = 'sequence'
-        SEQUENCE_WITH_IMAGES = 'sequence-image'
+
+        REGULAR = ""
+        WITH_IMAGES = "image"
+        SEQUENCE = "sequence"
+        SEQUENCE_WITH_IMAGES = "sequence-image"
 
     class Meta:
-        db_table = 'questions'
-        verbose_name = 'Вопрос'
-        verbose_name_plural = 'Вопросы'
+        db_table = "questions"
+        verbose_name = "Вопрос"
+        verbose_name_plural = "Вопросы"
 
 
 class QuestionRightAnswer(models.Model):
@@ -164,25 +162,25 @@ class QuestionRightAnswer(models.Model):
 
 
 class RunningTestsAnswers(models.Model):
-    _id = models.ObjectIdField()
-    test_duration = models.IntegerField('Длительность теста')
-    start_date = models.DateTimeField('Время запуска теста', default=timezone.now)
+    test_duration = models.IntegerField("Длительность теста")
+    start_date = models.DateTimeField("Время запуска теста", default=timezone.now)
     test = models.ForeignKey(
         Test,
         null=True,
-        verbose_name='Запущенный тест',
-        related_name='right_answers',
+        verbose_name="Запущенный тест",
+        related_name="right_answers",
         on_delete=models.SET_NULL,
-        default=DEFAULT_TEST_ID)
+        default=DEFAULT_TEST_ID,
+    )
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         null=True,
-        verbose_name='Пользователь, проходящий тест',
-        related_name='right_answers',
+        verbose_name="Пользователь, проходящий тест",
+        related_name="right_answers",
         on_delete=models.SET_NULL,
-        default=DEFAULT_AUTHOR_ID)
-    right_answers = models.ArrayField(model_container=QuestionRightAnswer)
-    objects = models.DjongoManager()
+        default=DEFAULT_AUTHOR_ID,
+    )
+    right_answers = models.JSONField()
 
     @property
     def time_left(self) -> float:
@@ -190,68 +188,65 @@ class RunningTestsAnswers(models.Model):
         return self.test_duration - delta.total_seconds()
 
     class Meta:
-        db_table = 'main_running_tests_answers'
-        verbose_name = 'Ответы за запущенные тесты'
-        verbose_name_plural = 'Ответы за запущенные тесты'
+        db_table = "main_running_tests_answers"
+        verbose_name = "Ответы за запущенные тесты"
+        verbose_name_plural = "Ответы за запущенные тесты"
 
 
 class TestResult(models.Model):
-    _id = models.ObjectIdField()
-    is_running = models.BooleanField('Тест еще запущен')
-    comment = models.TextField('Комментарий преподавателя', default='')
-    date = models.DateTimeField('Время запуска тестирования', default=timezone.now)
+    is_running = models.BooleanField("Тест еще запущен")
+    comment = models.TextField("Комментарий преподавателя", default="")
+    date = models.DateTimeField("Время запуска тестирования", default=timezone.now)
     launched_lecturer = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         null=True,
-        verbose_name='Пользователь, запустивный тест',
-        related_name='testing_results',
-        on_delete=models.SET_NULL)
+        verbose_name="Пользователь, запустивный тест",
+        related_name="testing_results",
+        on_delete=models.SET_NULL,
+    )
     test = models.ForeignKey(
         Test,
         null=True,
-        verbose_name='Тест',
-        related_name='testing_results',
-        on_delete=models.SET_NULL)
+        verbose_name="Тест",
+        related_name="testing_results",
+        on_delete=models.SET_NULL,
+    )
     subject = models.ForeignKey(
         Subject,
         null=True,
-        verbose_name='Предмет',
-        related_name='testing_results',
-        on_delete=models.SET_NULL)
-    objects = models.DjongoManager()
-
-    @property
-    def object_id(self):
-        return self._id
+        verbose_name="Предмет",
+        related_name="testing_results",
+        on_delete=models.SET_NULL,
+    )
 
     class Meta:
-        db_table = 'main_tests_results'
-        verbose_name = 'Результат тестирования'
-        verbose_name_plural = 'Результаты тестирований'
+        db_table = "main_tests_results"
+        verbose_name = "Результат тестирования"
+        verbose_name_plural = "Результаты тестирований"
 
 
 class UserResult(models.Model):
-    _id = models.ObjectIdField()
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         null=True,
-        verbose_name='Прошедший тестирование',
-        related_name='results',
-        on_delete=models.SET_NULL)
+        verbose_name="Прошедший тестирование",
+        related_name="results",
+        on_delete=models.SET_NULL,
+    )
     testing_result = models.ForeignKey(
         TestResult,
         null=True,
-        verbose_name='Результаты тестирования',
-        related_name='results',
-        on_delete=models.SET_NULL)
-    time = models.IntegerField('Продолжительность тестирования')
-    tasks_num = models.IntegerField('Число заданий в тесте')
-    right_answers_count = models.IntegerField('Число правильных ответов')
-    date = models.DateTimeField('Время прохождения тестирования', default=timezone.now)
+        verbose_name="Результаты тестирования",
+        related_name="results",
+        on_delete=models.SET_NULL,
+    )
+    time = models.IntegerField("Продолжительность тестирования")
+    tasks_num = models.IntegerField("Число заданий в тесте")
+    right_answers_count = models.IntegerField("Число правильных ответов")
+    date = models.DateTimeField("Время прохождения тестирования", default=timezone.now)
     questions = models.JSONField()
-    objects = models.DjongoManager()
 
     class Meta:
-        db_table = 'main_user_results'
-        verbose_name = 'Персональный результат тестирования'
-        verbose_name_plural = 'Персональные результаты тестирований'
+        db_table = "main_user_results"
+        verbose_name = "Персональный результат тестирования"
+        verbose_name_plural = "Персональные результаты тестирований"

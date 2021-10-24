@@ -10,7 +10,7 @@
 
 
 ### Description
-Testing tool implemented on Django. Data storage is implemented in the DBMS MongoDB.  
+Testing tool implemented on Django. Data storage is implemented in the DBMS PostgreSQL.  
 Implemented system features:
 - adding users and new study subjects using Django admin panel as superuser_only
 - separation of access rights for 2 groups - 'student' and 'lecturer'
@@ -35,8 +35,9 @@ As a part of SMS microservices architecture the application provides the followi
 As docker container:
 - ```git clone https://github.com/vnkrtv/web-testing-tool.git```
 - ```cd web-testing-tool```
-- ```docker build -t quizer .``` - create 'quizer' docker image with application 
-- ```docker run -p <HOST_PORT>:80 -e MONGO_HOST=<MONGO_HOST> -e MONGO_PORT=<MONGO_PORT> -e MONGO_DNNAME=<MONGO_DNNAME> -e DEMONSTRATION_VARIANT=<y> URL_PREFIX=<URL_PREFIX> --name testing-app quizer ```
+- ```docker build -t quizer .``` - create 'quizer' docker image with application
+- Set env vars in .env
+- ```docker run --env-file=.env --name testing-app quizer ```
 
 Next it's possible to set up automatic application resume after server reboot. Ubuntu solves this problem with the systemd initialization system:  
 - ```sudo cp ./deploy/web-testing-tool.service /etc/systemd/system/web-testing-tool.service```
@@ -53,21 +54,13 @@ It's also possible to build a working application on the host system to be able 
 Run app by command:   
 ```
 docker run -p <HOST_PORT>:80 \
-  -e MONGO_HOST=<MONGO_HOST> \
-  -e MONGO_PORT=<MONGO_PORT> \
-  -e MONGO_DBNAME=<MONGO_DBNAME> \
-  -e AUTH_URL=<AUTH_URL> \
-  -e URL_PREFIX=<URL_PREFIX> \
-  -e WORKERS_NUM=<WORKERS_NUM> \
+  --env-file=.env \
   --name testing-app quizer
 ```
 Container envs:  
-- MONGO_HOST - MongoDB host, default - "localhost"
-- MONGO_PORT - MongoDB port, default - 27017
-- MONGO_DBNAME - MongoDB database name for app, default - "quizer"
-- AUTH_URL - auth url for getting public key using JWT, default - "http://sms.gitwork.ru/auth/public_key/"
 - URL_PREFIX - prefix for all paths in app (for example, "quizer"), default - ""
 - WORKERS_NUM - number of async workers
+- PostgreSQL vars
  
 To run test, you need:
 - auth as user belong to group 'lecturer'

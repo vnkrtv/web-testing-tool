@@ -464,10 +464,8 @@ def lecturer_current_test_results(
     request: HttpRequest, test_results_id: str
 ) -> HttpResponse:
     """Displays page with testing results"""
-    try:
-        _id = bson.ObjectId(test_results_id)
-        test_results = TestResult.objects.get(_id=_id)
-    except bson.errors.InvalidId or TestResult.DoesNotExist:
+    test_results = TestResult.objects.get(id=test_results_id)
+    if not test_results:
         return redirect(reverse("main:available_tests"))
     context = {
         "title": "Результаты тестирования",

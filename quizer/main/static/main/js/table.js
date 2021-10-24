@@ -77,7 +77,7 @@ function fillErrorsModal(rowID) {
 
     for (let i in questions) {
         const questionLi = document.createElement("li");
-        let question = questionsMap.get(questions[i].question_id);
+        let question = questionsMap.get(parseInt(questions[i].question_id));
         questionLi.className = "list-group-item borderless question";
         questionLi.innerText = `${1 + parseInt(i)}. ${question.formulation}`;
         questionLi.style = 'border: 2px solid #FFF; border-radius: 5px;';
@@ -85,7 +85,6 @@ function fillErrorsModal(rowID) {
         const ul = document.createElement("ul");
         ul.className = "list-group list-group-flush ul-hover";
         questionLi.appendChild(ul);
-        console.log(questions[i]);
         for (let option of question.options) {
             const optionLi = document.createElement("li");
             optionLi.className = "list-group-item list-group-item-action";

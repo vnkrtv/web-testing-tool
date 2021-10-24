@@ -10,7 +10,7 @@ function getQuestionOption(i, value, isTrue) {
     optionLabel.innerHTML = `Вариант ${i + 1}`;
 
     const optionInput = document.createElement('input');
-    optionInput.className = "form-control option-input"
+    optionInput.className = "form-control option-input";
     optionInput.type = 'text';
     optionInput.id = `option_${i}`;
     optionInput.name = `option_${i}`;
@@ -24,7 +24,7 @@ function getQuestionOption(i, value, isTrue) {
     radioContainer.className = 'custom-control custom-checkbox my-1 mr-sm-2';
 
     const isTrueInput = document.createElement('input');
-    isTrueInput.className = "custom-control-input is-true-input"
+    isTrueInput.className = "custom-control-input is-true-input";
     isTrueInput.type = 'radio';
     isTrueInput.id = `is_true_${i}`;
     isTrueInput.name = `is_true`;
@@ -32,8 +32,7 @@ function getQuestionOption(i, value, isTrue) {
     isTrueInput.checked = (isTrue === true) ? 'checked' : '';
 
     const isTrueLabel = document.createElement('label');
-    isTrueLabel.className = 'custom-control-label'
-    isTrueLabel.htmlFor = `is_true_${i}`;
+    isTrueLabel.className = 'custom-control-label';    isTrueLabel.htmlFor = `is_true_${i}`;
     isTrueLabel.innerHTML = 'Верный ответ';
 
     radioContainer.appendChild(isTrueInput);
@@ -74,7 +73,7 @@ function getQuestionOptionWithImages(i, value, isTrue) {
     radioContainer.className = 'custom-control custom-checkbox my-1 mr-sm-2';
 
     const isTrueInput = document.createElement('input');
-    isTrueInput.className = "custom-control-input"
+    isTrueInput.className = "custom-control-input";
     isTrueInput.type = 'radio';
     isTrueInput.id = `is_true_${i}`;
     isTrueInput.name = `is_true`;
@@ -83,7 +82,7 @@ function getQuestionOptionWithImages(i, value, isTrue) {
     isTrueInput.disabled = 'disabled';
 
     const isTrueLabel = document.createElement('label');
-    isTrueLabel.className = 'custom-control-label'
+    isTrueLabel.className = 'custom-control-label';
     isTrueLabel.htmlFor = `is_true_${i}`;
     isTrueLabel.innerHTML = 'Верный ответ';
 
@@ -110,7 +109,7 @@ function getQuestionOptionWithMultiselect(i, value, isTrue) {
     optionLabel.innerHTML = `Вариант ${i + 1}`;
 
     const optionInput = document.createElement('input');
-    optionInput.className = "form-control option-input"
+    optionInput.className = "form-control option-input";
     optionInput.type = 'text';
     optionInput.id = `option_${i}`;
     optionInput.name = `option_${i}`;
@@ -124,14 +123,15 @@ function getQuestionOptionWithMultiselect(i, value, isTrue) {
     checkboxContainer.className = 'custom-control custom-checkbox my-1 mr-sm-2';
 
     const isTrueInput = document.createElement('input');
-    isTrueInput.className = "custom-control-input is-true-input"
+    isTrueInput.className = "custom-control-input is-true-input";
     isTrueInput.type = 'checkbox';
     isTrueInput.id = `is_true_${i}`;
     isTrueInput.name = `is_true_${i}`;
     isTrueInput.checked = (isTrue === true) ? 'checked' : '';
 
     const isTrueLabel = document.createElement('label');
-    isTrueLabel.className = 'custom-control-label'
+    isTrueLabel.className = 'custom-control-label';
+    isTrueLabel.className = 'custom-control-label';
     isTrueLabel.htmlFor = `is_true_${i}`;
     isTrueLabel.innerHTML = 'Верный ответ';
 
@@ -174,7 +174,7 @@ function getQuestionOptionWithMultiselectAndImages(i, value, isTrue) {
     checkboxContainer.className = 'custom-control custom-checkbox my-1 mr-sm-2';
 
     const isTrueInput = document.createElement('input');
-    isTrueInput.className = "custom-control-input"
+    isTrueInput.className = "custom-control-input";
     isTrueInput.type = 'checkbox';
     isTrueInput.id = `is_true_${i}`;
     isTrueInput.name = `is_true_${i}`;
@@ -182,7 +182,7 @@ function getQuestionOptionWithMultiselectAndImages(i, value, isTrue) {
     isTrueInput.disabled = 'disabled';
 
     const isTrueLabel = document.createElement('label');
-    isTrueLabel.className = 'custom-control-label'
+    isTrueLabel.className = 'custom-control-label';
     isTrueLabel.htmlFor = `is_true_${i}`;
     isTrueLabel.innerHTML = 'Верный ответ';
 
@@ -236,10 +236,10 @@ function fillQuestionModal(i) {
         }
     }
     const qstnIDInput = document.getElementById('edit-question-id');
-    qstnIDInput.value = question._id;
+    qstnIDInput.value = question.id;
 
     const delQstnBtn = document.getElementById('delete-question-button');
-    delQstnBtn.setAttribute('onclick', `fillDeleteQuestionModal('${question._id}', ${question.test_id})`);
+    delQstnBtn.setAttribute('onclick', `fillDeleteQuestionModal('${question.id}', ${question.test_id})`);
 }
 
 function fillDeleteQuestionModal(qstnID, testID) {
@@ -273,10 +273,10 @@ function renderQuestionsTable() {
                 'sequence-image': 'Последовательность с изображениями'
             }
             const getStat = (question) => {
-                if (!(question._id in questionsStats)) {
+                if (!(question.id in questionsStats)) {
                     return '-';
                 }
-                let stat = questionsStats[question._id];
+                let stat = questionsStats[question.id];
                 let aswCount = stat.true + stat.false;
                 return `${((stat.true  * 100) / (aswCount)).toFixed(2)}% (${stat.true}/${aswCount})`;
             };

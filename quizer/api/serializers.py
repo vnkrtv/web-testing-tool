@@ -128,6 +128,7 @@ class TestSerializer(serializers.Serializer):
 
 
 class QuestionSerializer(serializers.Serializer):
+    id = serializers.ReadOnlyField()
     test_id = serializers.IntegerField()
     formulation = serializers.CharField(max_length=1_000)
     multiselect = serializers.BooleanField()
@@ -149,12 +150,13 @@ class QuestionSerializer(serializers.Serializer):
     @classmethod
     def create_from_request(cls, request):
         test = Test.objects.get(id=request.data.get("test_id"))
-        if request.data.get("with_images"):
+        with_images = json.loads(request.data.get("with_images"))
+        if with_images:
             questions_type = Question.Type.WITH_IMAGES
             options = []
         else:
             questions_type = Question.Type.REGULAR
-            options = request.data.get("options")
+            options = json.loads(request.data.get("options"))
 
         question = Question.objects.create(
             formulation=request.data.get("formulation"),
@@ -166,7 +168,7 @@ class QuestionSerializer(serializers.Serializer):
         )
         question.save()
 
-        if questions_type == Question.Type.WITH_IMAGES:
+        if with_images:
             for i, file_name in enumerate(request.FILES):
                 path = pathlib.Path(
                     f'{test.subject.name}/{test.name}/{question.id}/{i}.{file_name.split(".")[-1]}'
@@ -188,9 +190,7 @@ class QuestionSerializer(serializers.Serializer):
         options = validated_data.get("options")
         if options:
             for option in options:
-                option["is_true"] = ("true" == option["is_true"]) or (
-                    option["is_true"] == True
-                )
+                option["is_true"] = ("true" == option["is_true"] or option["is_true"])
             instance.options = Question.parse_options(options)
         instance.save()
         return instance
@@ -201,6 +201,7 @@ class QuestionSerializer(serializers.Serializer):
 
 
 class UserResultSerializer(serializers.Serializer):
+    id = serializers.ReadOnlyField()
     user = UserSerializer()
     testing_result_id = serializers.CharField()
     time = serializers.IntegerField()
@@ -212,7 +213,7 @@ class UserResultSerializer(serializers.Serializer):
     def create(self, validated_data):
         user = User.objects.get(id=validated_data.get("user_id"))
         testing_result = TestResult.objects.get(
-            _id=validated_data.get("testing_result_id")
+            id=validated_data.get("testing_result_id")
         )
         return UserResult.objects.create(
             user=user,
@@ -233,6 +234,7 @@ class UserResultSerializer(serializers.Serializer):
 
 
 class TestResultSerializer(serializers.Serializer):
+    id = serializers.ReadOnlyField()
     is_running = serializers.BooleanField()
     comment = serializers.CharField()
     date = serializers.DateTimeField(format="%H:%M:%S  %d-%m-%y")

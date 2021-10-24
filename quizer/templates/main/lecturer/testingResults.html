@@ -107,7 +107,7 @@
     $.get(questionsAPIUrl).done(function (response) {
         questions = response['questions'];
         questions.forEach(function (question) {
-            questionsMap.set(question._id, question)
+            questionsMap.set(question.id, question)
         });
     });
     activateModalWindows();

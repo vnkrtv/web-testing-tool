@@ -112,7 +112,7 @@
 <script type="text/javascript">
     const mediaUrl = '{% media_url %}';
     const questionsAPIUrl = "{% url 'api:questions_api' test.id %}";
-    const questionsAnalysisAPIUrl = "{% url 'api:question_analysis_api' %}" + "?test_id={{test.id }}";
+    const questionsAnalysisAPIUrl = "{% url 'api:question_analysis_api' %}" + "?test_id={{ test.id }}";
     const csrfToken = '{{ csrf_token }}';
     const questionsTbody = document.getElementById('questionsTbody');
     let questions = [];

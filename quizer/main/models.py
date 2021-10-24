@@ -121,10 +121,6 @@ class Question(models.Model):
     options = models.JSONField()
     type = models.CharField("Тип вопроса", max_length=50)
 
-    @property
-    def object_id(self):
-        return self._id
-
     @classmethod
     def parse_options(cls, options: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         return [

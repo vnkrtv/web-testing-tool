@@ -351,33 +351,6 @@ def make_database_dump() -> pathlib.Path:
     with open(dump_filename, "w") as dump_file:
         call_command(command_name="dumpdata", format="json", indent=4, stdout=dump_file)
 
-    with open(dump_filename, "r") as dump_file:
-        dump_obj = json.load(dump_file)
-        for obj in dump_obj:
-
-            if obj["model"] == "main.question":
-                options = json.loads(obj["fields"]["options"])
-                for option in options:
-                    option["is_true"] = option["is_true"] == "True"
-                    option["num"] = (
-                        int(option["num"]) if option["num"] != "None" else None
-                    )
-                obj["fields"]["options"] = options
-
-            if obj["model"] == "main.userresult":
-                obj["fields"]["questions"] = [
-                    dict(_) for _ in eval(obj["fields"]["questions"])
-                ]
-
-            if obj["model"] == "main.runningtestsanswers":
-                right_answers = eval(obj["fields"]["right_answers"])
-                for right_answer in right_answers:
-                    right_answer["right_options"] = eval(right_answer["right_options"])
-                obj["fields"]["right_answers"] = right_answers
-
-    with open(dump_filename, "w") as dump_file:
-        json.dump(dump_obj, dump_file, indent=4)
-
     return dump_filename
 
 
@@ -391,53 +364,6 @@ def save_database_dump(file) -> pathlib.Path:
     if not dump_filename.exists():
         os.makedirs(dump_filename.parent, exist_ok=True)
     with open(dump_filename, "w") as dump_file:
-        # user_profiles = []
-        # user_results = []
-        # data = []
-        # for obj in json.loads(file.read()):
-        #     if obj['model'] == 'main.runningtestsanswers':
-        #         continue
-        #     elif obj['model'] == 'auth.user':
-        #         data.append({
-        #             'model': 'main.profile',
-        #             'pk': obj['pk'],
-        #             'fields': {
-        #                 'admission_year': 0,
-        #                 'created_at': '2018-09-13T05:16:44.431Z',
-        #                 'group': 0,
-        #                 "id": obj['pk'],
-        #                 "name": "",
-        #                 "number": 0,
-        #                 "user_id": obj['pk'],
-        #                 "web_url": "https://gitwork.ru/"
-        #             }
-        #         })
-        #     elif obj['model'] == 'main.testresult' and 'results' in obj['fields']:
-        #         results = obj['fields']['results']
-        #         obj['fields'] = {
-        #             'is_running': obj['fields']['is_running'],
-        #             'comment': obj['fields']['comment'],
-        #             'date': obj['fields']['date'],
-        #             'launched_lecturer_id': obj['fields']['launched_lecturer'],
-        #             'subject_id': obj['fields']['subject'],
-        #             'test_id': obj['fields']['test']
-        #         }
-        #         for result in results:
-        #             data.append({
-        #                 'model': 'main.userresult',
-        #                 'pk': str(bson.ObjectId()),
-        #                 'fields': {
-        #                     'user_id': result['user_id'],
-        #                     'time': result['time'],
-        #                     'tasks_num': result['tasks_num'],
-        #                     'testing_result_id': obj['pk'],
-        #                     'right_answers_count': result['right_answers_count'],
-        #                     'date': result['date'],
-        #                     'questions': result['questions']
-        #                 }
-        #             })
-        #     else:
-        #         data.append(obj)
         data = json.loads(file.read())
         json.dump(data, dump_file, indent=4)
     return dump_filename

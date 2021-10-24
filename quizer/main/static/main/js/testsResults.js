@@ -24,7 +24,7 @@ function getTrElement(counter, result) {
     const ref = document.createElement('a');
     ref.type = 'button';
     ref.className = 'btn btn-primary btn-sm';
-    ref.href = testsResultUrl + result['_id'];
+    ref.href = testsResultUrl + result['id'];
     ref.innerHTML = 'Посмотреть детальный результат &raquo;';
     refTd.appendChild(ref);
 

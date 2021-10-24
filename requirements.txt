@@ -62,7 +62,6 @@ tomli==1.2.1
 Twisted==20.3.0
 txaio==20.12.1
 typed-ast==1.4.3
-typing-extensions==3.7.4.3
 uritemplate==3.0.1
 urllib3==1.26.5
 uvicorn==0.13.3

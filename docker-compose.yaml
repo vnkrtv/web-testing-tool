@@ -20,6 +20,8 @@ services:
       - db
     env_file:
       - .env
+    environment:
+      - POSTGRES_HOST=db
     networks:
       - backend
 

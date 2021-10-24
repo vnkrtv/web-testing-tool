@@ -10,7 +10,6 @@ FROM snakepacker/python:3.7 as base
 
 COPY --from=builder /usr/share/python3/venv /usr/share/python3/venv
 COPY quizer /usr/share/python3/quizer
-COPY deploy/deploy_settings.py /usr/share/python3/quizer/quizer/settings.py
 
 COPY deploy/entrypoint /entrypoint
 ENTRYPOINT ["/entrypoint"]

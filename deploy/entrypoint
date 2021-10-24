@@ -3,8 +3,10 @@
 cd /usr/share/python3/quizer
 . /usr/share/python3/venv/bin/activate
 
+# Wait for db
+sleep 5
+
 # run migrations
-python manage.py makemigrations
 python manage.py migrate
 echo yes | python manage.py collectstatic
 

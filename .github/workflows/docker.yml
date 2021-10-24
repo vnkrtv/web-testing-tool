@@ -22,9 +22,9 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Run Mongo
+      - name: Run Postgres
         run: |
-          docker run --name mongodb -d mongo
+          docker run --env-file=.env -d postgres
       - name: Configure app
         run: |
           entrypoint="$(echo "$(cat deploy/entrypoint)")"
@@ -33,4 +33,4 @@ jobs:
         run: |
           MONGO_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' mongodb)
           docker build -t quizer .
-          docker run -e MONGO_HOST=$MONGO_IP quizer
+          docker run --env-file=.env quizer

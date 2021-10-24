@@ -156,7 +156,8 @@ class QuestionSerializer(serializers.Serializer):
             options = []
         else:
             questions_type = Question.Type.REGULAR
-            options = json.loads(request.data.get("options"))
+            options = request.data.get("options")
+            options = json.loads(options) if isinstance(options, str) else options
 
         question = Question.objects.create(
             formulation=request.data.get("formulation"),

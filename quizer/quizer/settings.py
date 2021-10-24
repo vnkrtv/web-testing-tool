@@ -71,7 +71,7 @@ DATABASES = {
         "PORT": int(os.environ.get("POSTGRES_PORT", 5432)),
         "USER": os.environ.get("POSTGRES_USER", "root"),
         "PASSWORD": os.environ.get("POSTGRES_PASSWORD", "password"),
-        "TEST": {"NAME": "test_" + os.environ.get("MONGO_DBNAME", "quizer")},
+        "TEST": {"NAME": "test_" + os.environ.get("POSTGRES_DB", "quizer")},
     }
 }
 

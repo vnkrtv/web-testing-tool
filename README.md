@@ -2,7 +2,6 @@
 
 [![Build Status](https://travis-ci.com/vnkrtv/web-testing-tool.svg?branch=master)](https://travis-ci.com/vnkrtv/web-testing-tool)
 ![Docker](https://github.com/vnkrtv/web-testing-tool/workflows/Docker/badge.svg)
-![Ubuntu](https://github.com/vnkrtv/web-testing-tool/workflows/Ubuntu/badge.svg)
 
 ### Fast deployment
 

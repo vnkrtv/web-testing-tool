@@ -80,17 +80,18 @@ Run all tests with coverage by running (venv must be activated):
 Name                               Stmts   Miss  Cover
 ------------------------------------------------------
 api/permissions.py                    13      0   100%
-api/serializers.py                   168     23    86%
-api/views.py                         204     66    68%
+api/serializers.py                   169     26    85%
+api/views.py                         192     58    70%
 main/consumers.py                     16     16     0%
 main/decorators.py                    33      9    73%
 main/forms.py                         22      3    86%
-main/models.py                       146     14    90%
+main/models.py                       133     13    90%
 main/templatetags/main_extras.py      66     24    64%
-main/utils.py                        216    146    32%
-main/views.py                        304    195    36%
+main/utils.py                        198    128    35%
+main/views.py                        302    154    49%
 ------------------------------------------------------
-TOTAL                               1188    496    58%
+TOTAL                               1144    431    62%
+
 ```
 For detailed report run:
 - ```coverage report```  

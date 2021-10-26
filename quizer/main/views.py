@@ -5,11 +5,9 @@ import os
 import random
 import copy
 import pathlib
-import bson
+import re
 
-import requests
 from django.core.management import call_command
-
 from django.contrib.auth.models import User
 from django.contrib.auth import login, logout, authenticate
 from django.shortcuts import render, redirect, reverse
@@ -20,9 +18,8 @@ from django.utils import timezone
 from django.utils.encoding import smart_str
 
 from . import utils
-from .decorators import unauthenticated_user, allowed_users, post_method
+from .decorators import auth_required, allowed_users, post_method
 from .models import (
-    Profile,
     Test,
     Subject,
     Question,
@@ -33,7 +30,7 @@ from .models import (
 from .forms import UserForm, SubjectForm, TestForm
 
 
-@unauthenticated_user
+@auth_required
 @allowed_users(allowed_roles=["lecturer"])
 def manage_questions(request: HttpRequest, test_id: int) -> HttpResponse:
     test = Test.objects.filter(id=test_id).first()
@@ -62,55 +59,52 @@ class LoginView(View):
     def post(self, request: HttpRequest) -> HttpResponse:
         register = request.POST.get("register", None)
         form = UserForm(request.POST)
-        if form.is_valid():
-            username = form.cleaned_data["username"]
-            password = form.cleaned_data["password"]
+        if not form.is_valid():
+            context = {
+                "title": self.title,
+                "form": UserForm(),
+                "error": "Некорректные данные",
+            }
+            return render(request, self.template, context)
 
-            if register:
-                fullname = form.cleaned_data["fullname"]
-                password2 = form.cleaned_data["password2"]
+        username = form.cleaned_data["username"]
+        password = form.cleaned_data["password"]
 
-                if len(fullname) == 0:
-                    context = {
-                        "title": self.title,
-                        "form": UserForm(),
-                        "error": "Некорректный username",
-                    }
-                    return render(request, self.template, context)
+        if register:
+            password2 = form.cleaned_data.get("password2")
+            group = form.cleaned_data.get("group", "")
 
-                if password != password2:
-                    context = {
-                        "title": self.title,
-                        "form": UserForm(),
-                        "error": "Пароли не совпадают.",
-                    }
-                    return render(request, self.template, context)
+            if not re.match(r'[\d]+', group):
+                context = {
+                    "title": self.title,
+                    "form": UserForm(),
+                    "error": "Некорректный номер группы",
+                }
+                return render(request, self.template, context)
 
-                user = User.objects.create_user(username=username, password=password)
-                user.save()
-                user.set_password(password)
-                user.groups.add(2)
-                utils.create_profile(user, fullname)
-            else:
-                user = authenticate(username=username, password=password)
-                if not user:
-                    context = {
-                        "title": self.title,
-                        "form": UserForm(),
-                        "error": "Некорректные данные.",
-                    }
-                    return render(request, self.template, context)
+            if password != password2:
+                context = {
+                    "title": self.title,
+                    "form": UserForm(),
+                    "error": "Пароли не совпадают",
+                }
+                return render(request, self.template, context)
+
+            utils.create_user(form_data=form.cleaned_data)
+
+        user = authenticate(username=username, password=password)
+        if user:
             login(request, user)
             return redirect(reverse("main:available_tests"))
         context = {
             "title": self.title,
             "form": UserForm(),
-            "error": "Некорректные данные.",
+            "error": "Некорректные данные",
         }
         return render(request, self.template, context)
 
 
-@unauthenticated_user
+@auth_required
 @allowed_users(allowed_roles=["lecturer"])
 def lecturer_run_test(request: HttpRequest, test_id: int) -> HttpResponse:
     """Running available test in test mode for lecturer"""
@@ -164,7 +158,7 @@ def lecturer_run_test(request: HttpRequest, test_id: int) -> HttpResponse:
     return render(request, "main/lecturer/runTest.html", context)
 
 
-@unauthenticated_user
+@auth_required
 @allowed_users(allowed_roles=["admin"])
 def get_db_dump(request: HttpRequest) -> HttpResponse:
     filepath = utils.make_database_dump()
@@ -184,7 +178,7 @@ class AdministrationView(View):
     template = "main/admin/administration.html"
     title = "Данные системы"
     context = {}
-    decorators = [unauthenticated_user, allowed_users(allowed_roles=["admin"])]
+    decorators = [auth_required, allowed_users(allowed_roles=["admin"])]
 
     @method_decorator(decorators)
     def get(self, request: HttpRequest) -> HttpResponse:
@@ -213,7 +207,7 @@ class AvailableTestsView(View):
     student_template = "main/student/availableTests.html"
     title = "Доступные тесты"
     context = {}
-    decorators = [unauthenticated_user]
+    decorators = [auth_required]
 
     @method_decorator(decorators)
     def get(self, request: HttpRequest) -> HttpResponse:
@@ -277,7 +271,7 @@ class SubjectsView(View):
 
     template = "main/admin/subjects.html"
     title = "Учебные предметы"
-    decorators = [unauthenticated_user, allowed_users(allowed_roles=["lecturer"])]
+    decorators = [auth_required, allowed_users(allowed_roles=["lecturer"])]
 
     @method_decorator(decorators)
     def get(self, request: HttpResponse) -> HttpResponse:
@@ -297,7 +291,7 @@ class TestsView(View):
     template = "main/lecturer/tests.html"
     title = "Тесты"
     context = {}
-    decorators = [unauthenticated_user, allowed_users(allowed_roles=["lecturer"])]
+    decorators = [auth_required, allowed_users(allowed_roles=["lecturer"])]
 
     @method_decorator(decorators)
     def get(self, request: HttpRequest) -> HttpResponse:
@@ -320,7 +314,7 @@ class PassedTestView(View):
 
     template = "main/student/testingResult.html"
     context = {}
-    decorators = [unauthenticated_user, allowed_users(allowed_roles=["student"])]
+    decorators = [auth_required, allowed_users(allowed_roles=["student"])]
 
     @method_decorator(decorators)
     def get(self, _) -> HttpResponse:
@@ -373,7 +367,7 @@ class StudentsView(View):
     template = "main/lecturer/students.html"
     title = "Тесты"
     context = {}
-    decorators = [unauthenticated_user, allowed_users(allowed_roles=["lecturer"])]
+    decorators = [auth_required, allowed_users(allowed_roles=["lecturer"])]
 
     @method_decorator(decorators)
     def get(self, request: HttpRequest) -> HttpResponse:
@@ -391,7 +385,7 @@ class StudentsView(View):
         return self.get(request)
 
 
-@unauthenticated_user
+@auth_required
 @allowed_users(allowed_roles=["lecturer"])
 def get_group_results(request: HttpRequest) -> HttpResponse:
     if request.method == "POST":
@@ -424,7 +418,7 @@ def get_group_results(request: HttpRequest) -> HttpResponse:
     return redirect(reverse("main:available_tests"))
 
 
-@unauthenticated_user
+@auth_required
 @allowed_users(allowed_roles=["lecturer"])
 def get_running_tests(request: HttpRequest) -> HttpResponse:
     """Displays page with running lecturer's tests"""
@@ -435,7 +429,7 @@ def get_running_tests(request: HttpRequest) -> HttpResponse:
 
 
 @post_method
-@unauthenticated_user
+@auth_required
 @allowed_users(allowed_roles=["lecturer"])
 def stop_running_test(request: HttpRequest) -> HttpResponse:
     """Displays page with results of passing stopped test"""
@@ -458,7 +452,7 @@ def stop_running_test(request: HttpRequest) -> HttpResponse:
     return render(request, "main/lecturer/testingResults.html", context)
 
 
-@unauthenticated_user
+@auth_required
 @allowed_users(allowed_roles=["lecturer"])
 def lecturer_current_test_results(
     request: HttpRequest, test_results_id: str
@@ -477,7 +471,7 @@ def lecturer_current_test_results(
     return render(request, "main/lecturer/testingResults.html", context)
 
 
-@unauthenticated_user
+@auth_required
 @allowed_users(allowed_roles=["lecturer"])
 def lecturer_all_tests_results(request: HttpRequest) -> HttpResponse:
     """Displays page with all tests results"""
@@ -489,7 +483,7 @@ def lecturer_all_tests_results(request: HttpRequest) -> HttpResponse:
     return render(request, "main/lecturer/testsResults.html", context)
 
 
-@unauthenticated_user
+@auth_required
 @allowed_users(allowed_roles=["student"])
 def student_run_test(request: HttpRequest) -> HttpResponse:
     """Run test for student"""
@@ -562,7 +556,7 @@ def student_run_test(request: HttpRequest) -> HttpResponse:
     return render(request, "main/student/runTest.html", context)
 
 
-@unauthenticated_user
+@auth_required
 def student_tests_results(request: HttpRequest, user_id: int) -> HttpResponse:
     """All students tests results"""
     is_lecturer = request.user.groups.filter(name="lecturer")
@@ -579,7 +573,7 @@ def student_tests_results(request: HttpRequest, user_id: int) -> HttpResponse:
     return redirect(reverse("main:available_tests"))
 
 
-@unauthenticated_user
+@auth_required
 def game(request: HttpRequest) -> HttpResponse:
     """Rest room"""
     is_lecturer = request.user.groups.filter(name="lecturer")

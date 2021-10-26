@@ -42,10 +42,7 @@ class ProfileSerializer(serializers.ModelSerializer):
             "username",
             "course",
             "created_at",
-            "name",
-            "web_url",
             "group",
-            "admission_year",
             "number",
         )
 

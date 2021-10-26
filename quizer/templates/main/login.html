@@ -24,7 +24,13 @@
         <div class="row justify-content-center">
             <div class="col-md-8">
                 <div class="card">
-                    <div class="card-header">Войти в систему</div>
+                    <div class="card-header">
+                        {% if not register %}
+                        Войти в систему
+                        {% else %}
+                        Регистрация
+                        {% endif %}
+                    </div>
                     {% if error %}
                     <div class="alert alert-danger" role="alert">
                         {{ error }}
@@ -36,15 +42,13 @@
                             <div>
                                 <label for="{{ form.username.id_for_label }}">{{ form.username.label }}</label>
                                 {{ form.username }}
+                                <p class="text-secondary small">{{ form.username.help_text }}</p>
                             </div>
                             {% if register %}
-                                <br>
-                                Формат fullname:<br>
-                                <год поступления>-<номер группы>-<номер по журналу>-< 3 буквы фамилии на латинице><br>
-                                Например: 2017-3-09-kor<br><br>
                                 <div>
-                                    <label for="{{ form.fullname.id_for_label }}">{{ form.fullname.label }}</label>
-                                    {{ form.fullname }}
+                                    <label for="{{ form.group.id_for_label }}">{{ form.group.label }}</label>
+                                    {{ form.group }}
+                                    <p class="text-secondary small">{{ form.group.help_text }}</p>
                                 </div>
                             {% endif %}
                             <div>
@@ -64,7 +68,9 @@
                                     Войти
                                 </button>
                             </div>
+                            {% if not register %}
                             <a href="{% url 'main:login_page' %}?register=y">Зарегистрироваться</a>
+                            {% endif %}
                         </form>
                     </div>
                 </div>

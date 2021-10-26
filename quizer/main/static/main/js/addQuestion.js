@@ -10,7 +10,7 @@ function getQuestionOption(i) {
     optionLabel.innerHTML = `Вариант ${i + 1}`;
 
     const optionInput = document.createElement('input');
-    optionInput.className = "form-control option-input"
+    optionInput.className = "form-control option-input";
     optionInput.type = 'text';
     optionInput.id = `option_${i}`;
     optionInput.name = `option_${i}`;
@@ -23,7 +23,7 @@ function getQuestionOption(i) {
     radioContainer.className = 'custom-control custom-checkbox my-1 mr-sm-2';
 
     const isTrueInput = document.createElement('input');
-    isTrueInput.className = "custom-control-input is-true-input"
+    isTrueInput.className = "custom-control-input is-true-input";
     isTrueInput.type = 'radio';
     isTrueInput.id = `is_true_${i}`;
     isTrueInput.name = `is_true`;
@@ -61,12 +61,12 @@ function getQuestionOptionWithImages(i) {
     optionLabel.innerHTML = `Вариант ${i + 1}`;
 
     const optionInput = document.createElement('input');
-    optionInput.className = "form-control-file option-input"
+    optionInput.className = "form-control-file option-input";
     optionInput.type = 'file';
     optionInput.id = `option_${i}`;
     optionInput.name = `option_${i}`;
     optionInput.required = 'required';
-    optionInput.accept = "image/*"
+    optionInput.accept = "image/*";
 
     fileContainer.appendChild(optionLabel);
     fileContainer.appendChild(optionInput);
@@ -75,14 +75,14 @@ function getQuestionOptionWithImages(i) {
     radioContainer.className = 'custom-control custom-checkbox my-1 mr-sm-2';
 
     const isTrueInput = document.createElement('input');
-    isTrueInput.className = "custom-control-input is-true-input"
+    isTrueInput.className = "custom-control-input is-true-input";
     isTrueInput.type = 'radio';
     isTrueInput.id = `is_true_${i}`;
     isTrueInput.name = `is_true`;
     isTrueInput.value = `${i}`;
 
     const isTrueLabel = document.createElement('label');
-    isTrueLabel.className = 'custom-control-label'
+    isTrueLabel.className = 'custom-control-label';
     isTrueLabel.htmlFor = `is_true_${i}`;
     isTrueLabel.innerHTML = 'Верный ответ';
 
@@ -109,7 +109,7 @@ function getQuestionOptionWithMultiselect(i) {
     optionLabel.innerHTML = `Вариант ${i + 1}`;
 
     const optionInput = document.createElement('input');
-    optionInput.className = "form-control option-input"
+    optionInput.className = "form-control option-input";
     optionInput.type = 'text';
     optionInput.id = `option_${i}`;
     optionInput.name = `option_${i}`;
@@ -122,13 +122,13 @@ function getQuestionOptionWithMultiselect(i) {
     checkboxContainer.className = 'custom-control custom-checkbox my-1 mr-sm-2';
 
     const isTrueInput = document.createElement('input');
-    isTrueInput.className = "custom-control-input is-true-input"
+    isTrueInput.className = "custom-control-input is-true-input";
     isTrueInput.type = 'checkbox';
     isTrueInput.id = `is_true_${i}`;
     isTrueInput.name = `is_true_${i}`;
 
     const isTrueLabel = document.createElement('label');
-    isTrueLabel.className = 'custom-control-label'
+    isTrueLabel.className = 'custom-control-label';
     isTrueLabel.htmlFor = `is_true_${i}`;
     isTrueLabel.innerHTML = 'Верный ответ';
 
@@ -159,12 +159,12 @@ function getQuestionOptionWithMultiselectAndImages(i) {
     option_label.innerHTML = `Вариант ${i + 1}`;
 
     const optionInput = document.createElement('input');
-    optionInput.className = "form-control-file option-input"
+    optionInput.className = "form-control-file option-input";
     optionInput.type = 'file';
     optionInput.id = `option_${i}`;
     optionInput.name = `option_${i}`;
     optionInput.required = 'required';
-    optionInput.accept = "image/*"
+    optionInput.accept = "image/*";
 
     fileContainer.appendChild(option_label);
     fileContainer.appendChild(optionInput);
@@ -174,13 +174,13 @@ function getQuestionOptionWithMultiselectAndImages(i) {
     checkboxContainer.className = 'custom-control custom-checkbox my-1 mr-sm-2';
 
     const isTrueInput = document.createElement('input');
-    isTrueInput.className = "custom-control-input is-true-input"
+    isTrueInput.className = "custom-control-input is-true-input";
     isTrueInput.type = 'checkbox';
     isTrueInput.id = `is_true_${i}`;
     isTrueInput.name = `is_true_${i}`;
 
     const isTrueLabel = document.createElement('label');
-    isTrueLabel.className = 'custom-control-label'
+    isTrueLabel.className = 'custom-control-label';
     isTrueLabel.htmlFor = `is_true_${i}`;
     isTrueLabel.innerHTML = 'Верный ответ';
 

@@ -18,12 +18,9 @@ TZ_TIMEDELTA = timezone.now() - datetime.now(timezone.utc)
 
 
 class Profile(models.Model):
-    id = models.IntegerField(primary_key=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(default=timezone.now)
-    name = models.CharField(max_length=30, default="")
-    web_url = models.URLField(default="")
-    group = models.IntegerField(default=0)
+    group = models.TextField(default="")
     admission_year = models.IntegerField(default=0)
     number = models.IntegerField(default=0)
 

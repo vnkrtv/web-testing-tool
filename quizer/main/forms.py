@@ -17,8 +17,12 @@ class BaseForm(forms.Form):
 
 
 class UserForm(BaseForm):
-    fullname = forms.CharField(label="Полное имя с gitlab", required=False)
-    username = forms.CharField(label="Имя", required=True)
+    username = forms.CharField(label="ФИО", help_text="Фамилия И.О", required=True)
+    group = forms.CharField(
+        label="Номер группы",
+        help_text="Для слушателей также указать год поступления в формате: <номер группы>_<год поступления>",
+        required=False
+    )
     password = forms.CharField(label="Пароль", widget=forms.PasswordInput)
     password2 = forms.CharField(
         label="Повторите пароль", widget=forms.PasswordInput, required=False

@@ -8,20 +8,17 @@ import os
 import pathlib
 import re
 from datetime import datetime
-from collections import OrderedDict
 from operator import itemgetter
 from typing import List, Dict, Tuple, Any, Union
 
-import jwt
-import requests
-
 from django.contrib.auth.models import User
 from django.core.management import call_command
+from django.db import transaction
 from django.http import HttpRequest
 from django.utils import timezone
 from django.conf import settings
 
-from .models import Test, Subject, Question, Profile, UserResult
+from .models import Test, Subject, Question, UserResult
 
 
 class EmptyOptionsError(Exception):
@@ -90,91 +87,30 @@ class SubjectParser:
         }.get(short_name, 200)
 
 
-def is_available_user(username: str, fullname: str) -> bool:
-    available_users = [
-        {"fullname": "", "username": "vnkrtv"},
-        {"fullname": "2019-4-16-sur", "username": "kekbek"},
-        {"fullname": "2019-4-20-chu", "username": "Dimario49"},
-        {"fullname": "2019-5-01-aga", "username": "krisya"},
-        {"fullname": "2019-5-11-kor", "username": "den4ik_006"},
-        {"fullname": "2019-5-08-iva", "username": "Dimon4ikk"},
-        {"fullname": "2019-5-10-kor", "username": "dentimp"},
-        {"fullname": "2019-5-24-kho", "username": "Khokh"},
-        {"fullname": "", "username": "dmitry.bosz"},
-    ]
+def create_user(form_data: Dict[str, Any]) -> User:
+    username = form_data["username"]
+    password = form_data["password"]
 
-    fullnames = {user["fullname"] for user in available_users}
-    usernames = {user["username"] for user in available_users}
-    return username in usernames or fullname in fullnames
+    with transaction.atomic():
+        user = User.objects.create_user(username=username)
+        user.set_password(password)
+        user.groups.add(2)
+        user.save()
 
+        profile = user.profile
 
-def get_auth_data(request: HttpRequest) -> Tuple[str, str]:
-    """
-    Get user's username and group using 'user_jqt' cookies
+        if re.match(r'^[\d]+_[\d]{4}$', form_data["group"]):
+            # Student
+            group, admission_year = [int(_) for _ in form_data["group"].split("_")]
+        else:
+            group, admission_year = int(form_data["group"]), 0
 
-    :param request: <HttpRequest>
-    :return: tuple(username: str, group: str)
-    """
-    user_jwt = request.COOKIES.get("user_jwt", "")
-    key_id = jwt.get_unverified_header(user_jwt).get("kid")
-    public_key = requests.get(settings.AUTH_URL + key_id).text
-    decoded_jwt = jwt.decode(user_jwt, public_key, algorithms="RS256")
-    username = decoded_jwt.get("username", "")
-    group = decoded_jwt.get("group", "")
-    return username, group
+        profile.group = group
+        profile.admission_year = admission_year
 
+        profile.save(update_fields=["group", "admission_year"])
 
-def create_profile(user: User, fullname: str) -> Profile:
-    buf = fullname.split("-")
-    if user.groups.filter(name="lecturer"):
-        admission_year, group, number = 0, 732, 0
-    elif len(buf) == 4:
-        admission_year, group, number, _ = buf
-    else:
-        admission_year, group, number = 0, 0, 0
-    return Profile.objects.create(
-        id=user.id,
-        user=user,
-        name=fullname,
-        group=int(group),
-        admission_year=int(admission_year),
-        number=int(number),
-    )
-
-
-# def create_profile(request: HttpRequest, user: User) -> Profile:
-#     """
-#     Get user's profile info using 'user_jqt' cookies
-#
-#     :param user: user which profile will be created
-#     :param request: <HttpRequest>
-#     :return: created profile
-#     """
-#     profile = requests.get(
-#         url=settings.PROFILE_URL,
-#         cookies=request.COOKIES
-#     ).json()
-#     # profile = {
-#     #     'created_at': '2018-09-13T08:16:44.431Z',
-#     #     'name': '2017-3-08-kor',
-#     #     'web_url': 'https://gitwork.ru/ivan_korotaev'
-#     # }
-#     buf = profile['name'].split('-')
-#     if user.groups.filter(name='lecturer'):
-#         admission_year, group, number = 0, 732, 0
-#     elif len(buf) == 4:
-#         admission_year, group, number, _ = buf
-#     else:
-#         admission_year, group, number = 0, 0, 0
-#     return Profile.objects.create(
-#         id=user.id,
-#         user=user,
-#         created_at=datetime.strptime(profile['created_at'], "%Y-%m-%dT%H:%M:%S.%fZ"),
-#         name=profile['name'],
-#         web_url=profile['web_url'],
-#         group=int(group),
-#         admission_year=int(admission_year),
-#         number=int(number))
+    return user
 
 
 def get_group_results(subject_id: str, group: str, course: str) -> str:

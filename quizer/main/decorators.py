@@ -5,7 +5,7 @@ Decorators for differentiate user rights
 from django.shortcuts import redirect, reverse
 
 
-def unauthenticated_user(view_func):
+def auth_required(view_func):
     """
     Checked if user is authorized
     """

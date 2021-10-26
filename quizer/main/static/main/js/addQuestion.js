@@ -29,7 +29,7 @@ function getQuestionOption(i) {
     isTrueInput.value = `${i}`;
 
     const isTrueLabel = document.createElement('label');
-    isTrueLabel.className = 'custom-control-label'
+    isTrueLabel.className = 'custom-control-label';
     isTrueLabel.htmlFor = `is_true_${i}`;
     isTrueLabel.innerHTML = 'Верный ответ';
 
@@ -152,9 +152,9 @@ function getQuestionOptionWithMultiselectAndImages(i) {
     const fileContainer = document.createElement('div');
     fileContainer.className = 'form-group';
 
-    const option_label = document.createElement('label');
-    option_label.htmlFor = `option_${i}`;
-    option_label.innerHTML = `Вариант ${i + 1}`;
+    const optionLabel = document.createElement('label');
+    optionLabel.htmlFor = `option_${i}`;
+    optionLabel.innerHTML = `Вариант ${i + 1}`;
 
     const optionInput = document.createElement('input');
     optionInput.className = "form-control-file option-input";
@@ -164,9 +164,8 @@ function getQuestionOptionWithMultiselectAndImages(i) {
     optionInput.required = 'required';
     optionInput.accept = "image/*";
 
-    fileContainer.appendChild(option_label);
+    fileContainer.appendChild(optionLabel);
     fileContainer.appendChild(optionInput);
-
 
     const checkboxContainer = document.createElement('div');
     checkboxContainer.className = 'custom-control custom-checkbox my-1 mr-sm-2';
@@ -278,7 +277,6 @@ function addQuestion() {
             formData.append(file.name, file);
         }
     }
-
     $.ajax({
         url: questionsAPIUrl.replace('test_id', testID.toString()),
         type: 'post',

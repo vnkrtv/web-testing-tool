@@ -57,7 +57,7 @@
                             {% else %}
                             <div class="sortable-moves list-group-item list-group-item-action"><img
                                     src='{% media_url %}{{ option.option }}' alt="Server pribolel" height="341"
-                                    style="width: auto;">
+                                    style="max-width: 100%">
                                 <input type="hidden" id='{{ forloop.parentloop.counter }}_{{ forloop.counter }}'
                                        name='{{ forloop.parentloop.counter }}' value="{{ option.option }}"
                                        onclick='clickOption("{{ forloop.parentloop.counter }}_{{ forloop.counter }}")'>
@@ -80,7 +80,7 @@
                             <label for='{{ forloop.parentloop.counter }}_{{ forloop.counter }}'></label>
                             {% if question.type == 'image' %}
                             <img src='{% media_url %}{{ option.option }}' alt="Server pribolel" height="341"
-                                 style="width: auto;">
+                                 style="max-width: 100%">
                             {% else %}
                             {{ option.option }}
                             {% endif %}

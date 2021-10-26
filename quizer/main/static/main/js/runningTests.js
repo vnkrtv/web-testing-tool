@@ -48,7 +48,7 @@ function getRunningTestDiv(testResult, idx) {
 
     const infoP = document.createElement('p');
     infoP.innerHTML = `<img src='${refsDict.researchIcon}'> Количество заданий в тесте: ${testResult.test.tasks_num}<br>
-        <img src='${refsDict.clockIcon}'> Время на выполнение: ${testResult.test.duration} c<br>
+        <img src='${refsDict.clockIcon}'> Время на выполнение: ${testResult.test.duration / 60} мин<br>
         <span class="pointer" onclick='hideTable("search_${idx}", "table_${idx}")' title="Нажмите, чтобы скрыть результаты">
               <img src='${refsDict.teamIcon}'> Выполнило слушателей: ${testResult.results.length}
         </span>`;

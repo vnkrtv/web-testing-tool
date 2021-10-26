@@ -9,14 +9,13 @@ function getQuestionOption(i) {
     optionLabel.htmlFor = `option_${i}`;
     optionLabel.innerHTML = `Вариант ${i + 1}`;
 
-    const optionInput = document.createElement('input');
-    optionInput.className = "form-control option-input";
-    optionInput.type = 'text';
-    optionInput.id = `option_${i}`;
-    optionInput.name = `option_${i}`;
-    optionInput.required = 'required';
+    const optionTextarea = document.createElement('textarea');
+    optionTextarea.className = "form-control option-input";
+    optionTextarea.type = 'text';
+    optionTextarea.id = `option_${i}`;
+    optionTextarea.name = `option_${i}`;
 
-    optionLabel.appendChild(optionInput);
+    optionLabel.appendChild(optionTextarea);
 
 
     const radioContainer = document.createElement('div');
@@ -108,14 +107,13 @@ function getQuestionOptionWithMultiselect(i) {
     optionLabel.htmlFor = `option_${i}`;
     optionLabel.innerHTML = `Вариант ${i + 1}`;
 
-    const optionInput = document.createElement('input');
-    optionInput.className = "form-control option-input";
-    optionInput.type = 'text';
-    optionInput.id = `option_${i}`;
-    optionInput.name = `option_${i}`;
-    optionInput.required = 'required';
+    const optionTextarea = document.createElement('input');
+    optionTextarea.className = "form-control option-input";
+    optionTextarea.type = 'text';
+    optionTextarea.id = `option_${i}`;
+    optionTextarea.name = `option_${i}`;
 
-    optionLabel.appendChild(optionInput);
+    optionLabel.appendChild(optionTextarea);
 
 
     const checkboxContainer = document.createElement('div');
@@ -254,7 +252,7 @@ function addQuestion() {
     const tasksNum = getById("add-question-tasks-num").value;
     const withImages = getById("add-question-with-images").checked;
     const multiselect = getById("add-question-multiselect").checked;
-    const optionInputs = document.getElementsByClassName('option-input');
+    const optionTextareas = document.getElementsByClassName('option-input');
     const isTrueInputs = document.getElementsByClassName('is-true-input');
 
     let formData = new FormData();
@@ -266,16 +264,16 @@ function addQuestion() {
 
     if (!withImages) {
         let options = [];
-        for (let i = 0; i < optionInputs.length; i++) {
+        for (let i = 0; i < optionTextareas.length; i++) {
             options.push({
-                option: optionInputs[i].value,
+                option: optionTextareas[i].value,
                 is_true: isTrueInputs[i].checked
             });
         }
         formData.append('options', JSON.stringify(options));
     } else {
-        for (let i = 0; i < optionInputs.length; i++) {
-            let file = optionInputs[i].files[0];
+        for (let i = 0; i < optionTextareas.length; i++) {
+            let file = optionTextareas[i].files[0];
             formData.append(file.name, isTrueInputs[i].checked);
             formData.append(file.name, file);
         }

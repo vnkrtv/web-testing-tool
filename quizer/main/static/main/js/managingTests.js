@@ -30,7 +30,7 @@ function fillEditModal(testID) {
 
     const durationHiddenInput = document.getElementById(`test-duration-${testID}`);
     const durationInput = document.getElementById('edit-test-duration');
-    durationInput.value = durationHiddenInput.value;
+    durationInput.value = parseFloat(durationHiddenInput.value) / 60;
 }
 
 function fillDeleteModal(testID) {
@@ -64,11 +64,13 @@ function editTest() {
     const tasksNumInput = document.getElementById("edit-test-tasks-num");
     const durationInput = document.getElementById("edit-test-duration");
 
+    const testDurationInSeconds = parseFloat(durationInput.value) * 60;
+
     let formData = new FormData();
     formData.append('name', nameInput.value);
     formData.append('description', descriptionInput.value);
     formData.append('tasks_num', tasksNumInput.value);
-    formData.append('duration', durationInput.value);
+    formData.append('duration', testDurationInSeconds.toString());
 
     $.ajax({
         url: editTestsAPIUrl.replace('test_id', idInput.value),
@@ -90,11 +92,13 @@ function addTest() {
     const durationInput = document.getElementById("id_duration");
     const subjectSelect = document.getElementById("id_subject");
 
+    const testDurationInSeconds = parseFloat(durationInput.value) * 60;
+
     let formData = new FormData();
     formData.append('name', nameInput.value);
     formData.append('description', descriptionInput.value);
     formData.append('tasks_num', tasksNumInput.value);
-    formData.append('duration', durationInput.value);
+    formData.append('duration', testDurationInSeconds.toString());
     formData.append('subject_id', subjectSelect.options[subjectSelect.selectedIndex].value);
     formData.append('author_id', userID);
 
@@ -169,7 +173,7 @@ function getDivElement(test) {
     const infoP = document.createElement('p');
     infoP.innerHTML = `<img src='${staticUrl}main/images/subject.svg'> Предмет: ${test.subject.name}<br>
     <img src='${staticUrl}main/images/research.svg'> Количество заданий в тесте: ${test.tasks_num}<br>
-    <img src='${staticUrl}main/images/clock.svg'> Время на выполнение: ${test.duration} с<br>
+    <img src='${staticUrl}main/images/clock.svg'> Время на выполнение: ${test.duration / 60} мин<br>
     <img src='${staticUrl}main/images/database.svg'> Вопросов к тесту: ${test.questions_num}`;
 
     const btnCont1 = document.createElement('div');

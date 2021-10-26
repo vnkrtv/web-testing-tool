@@ -10,13 +10,13 @@ function getTestContainer(test) {
     const testNameH3 = document.createElement('h3');
     testNameH3.innerHTML = `${test.name}`;
 
-    const description_p = document.createElement('p');
-    description_p.innerHTML = `${test.description}`;
+    const descriptionP = document.createElement('p');
+    descriptionP.innerHTML = `${test.description}`;
 
     const infoP = document.createElement('p');
     infoP.innerHTML = `<img src='${staticUrl}main/images/subject.svg'> Предмет: ${test.subject.name}<br>
     <img src='${staticUrl}main/images/research.svg'> Количество заданий в тесте: ${test.tasks_num}<br>
-    <img src='${staticUrl}main/images/clock.svg'> Время на выполнение: ${test.duration} с`;
+    <img src='${staticUrl}main/images/clock.svg'> Время на выполнение: ${test.duration / 60} мин`;
 
     const btnCont1 = document.createElement('div');
     btnCont1.className = "btn-group mr-1";
@@ -40,7 +40,7 @@ function getTestContainer(test) {
     btnCont2.appendChild(runTestBtn);
 
     label.appendChild(testNameH3);
-    label.appendChild(description_p);
+    label.appendChild(descriptionP);
     label.appendChild(infoP);
     label.appendChild(btnCont1);
     label.appendChild(btnCont2);
@@ -135,7 +135,7 @@ function getAvailableTestDiv(test) {
     const infoP = document.createElement('p');
     infoP.innerHTML = `<img src='${refsDict.userIcon}'> Запустил: ${test.launched_lecturer.username}<br>
         <img src='${refsDict.researchIcon}'> Количество заданий в тесте: ${test.tasks_num}<br>
-        <img src='${refsDict.clockIcon}'> Время на выполнение: ${test.duration} c`;
+        <img src='${refsDict.clockIcon}'> Время на выполнение: ${test.duration / 60} мин`;
 
     const form = document.createElement('form');
     form.setAttribute('action', refsDict.formUrl);

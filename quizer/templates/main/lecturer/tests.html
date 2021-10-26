@@ -79,7 +79,7 @@
         </div>
         <div class="form-row">
             <div class="col-md-4 mb-3">
-                <label for="{{ form.duration.id_for_label }}">Длительность теста в секундах<br>
+                <label for="{{ form.duration.id_for_label }}">Длительность теста в минутах<br>
                     {{ form.duration }}
                 </label>
             </div>
@@ -121,7 +121,7 @@
     </div>
     <div class="form-row">
         <div class="col-md-4 mb-3">
-            <label>Длительность теста в секундах</label>
+            <label>Длительность теста в минутах</label>
             <input type="number" class="form-control" id="edit-test-duration" name="duration" min="1" value="" required>
         </div>
     </div>
@@ -156,7 +156,7 @@
     <div class="form-row">
         <div class="col-md-4 mb-3">
             <label>Формулировка вопроса
-                <input type="text" class="form-control" id="add-question-formulation" required>
+                <textarea type="text" class="form-control" id="add-question-formulation" required></textarea>
             </label>
             <div class="custom-control custom-checkbox my-1 mr-sm-2">
                 <input type="checkbox" class="custom-control-input" id="add-question-multiselect">

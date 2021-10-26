@@ -3,6 +3,8 @@
 cd /usr/share/python3/quizer
 . /usr/share/python3/venv/bin/activate
 
+mkdir media 2> /dev/null || echo "media folder already exist, skipping"
+
 # Wait for db
 sleep 5
 

@@ -1,4 +1,4 @@
-import bson
+import logging
 
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
@@ -24,6 +24,9 @@ from .serializers import (
     UserResultSerializer,
 )
 from .permissions import IsLecturer, TestAPIPermission
+
+
+logger = logging.getLogger(__name__)
 
 
 class UserAPI(APIView):
@@ -54,6 +57,9 @@ class SubjectAPI(APIView):
         serializer = SubjectSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
             new_subject = serializer.save()
+        logger.info(
+            "subject %s was added by %s", new_subject.name, request.user.username
+        )
         return Response(
             {"success": "Предмет '%s' успешно добавлен." % new_subject.name}
         )
@@ -65,6 +71,9 @@ class SubjectAPI(APIView):
         )
         if serializer.is_valid(raise_exception=True):
             updated_subject = serializer.save()
+        logger.info(
+            "subject %s was updated by %s", updated_subject.name, request.user.username
+        )
         return Response(
             {
                 "success": "Предмет '%s' был успешно отредактирован."
@@ -72,12 +81,13 @@ class SubjectAPI(APIView):
             }
         )
 
-    def delete(self, _, subject_id):
+    def delete(self, request, subject_id):
         subject = get_object_or_404(Subject.objects.all(), pk=subject_id)
         message = (
             "Учебный предмет '%s', а также все тесты и вопросы, "
             "относящиеся к нему, были успешно удалены." % subject.name
         )
+        logger.info("subject %s was deleted by %s", subject.name, request.user.username)
         subject.delete()
         return Response({"success": message})
 
@@ -105,6 +115,12 @@ class TestAPI(APIView):
         serializer = TestSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
             new_test = serializer.save()
+        logger.info(
+            "test %s for subject %s was added by %s",
+            new_test.name,
+            new_test.subject.name,
+            request.user.username,
+        )
         return Response(
             {
                 "success": "Тест '%s' по предмету '%s' успешно добавлен."
@@ -119,6 +135,12 @@ class TestAPI(APIView):
         )
         if serializer.is_valid(raise_exception=True):
             updated_test = serializer.save()
+        logger.info(
+            "test %s for subject %s was updated by %s",
+            updated_test.name,
+            updated_test.subject.name,
+            request.user.username,
+        )
         return Response(
             {
                 "success": "Тест '%s' по предмету '%s' был успешно отредактирован."
@@ -126,11 +148,17 @@ class TestAPI(APIView):
             }
         )
 
-    def delete(self, _, test_id):
+    def delete(self, request, test_id):
         test = get_object_or_404(Test.objects.all(), pk=test_id)
         message = (
             "Тест '%s' по предмету '%s', а также все "
             "вопросы к нему были успешно удалены." % (test.name, test.subject.name)
+        )
+        logger.info(
+            "test %s for subject %s was deleted by %s",
+            test.name,
+            test.subject.name,
+            request.user.username,
         )
         test.delete()
         return Response({"success": message})
@@ -156,6 +184,12 @@ class LaunchTestAPI(APIView):
             is_running=True,
             comment=request.data.get("comment", ""),
         )
+        logger.info(
+            "test %s for subject %s was launched by %s",
+            test.name,
+            test.subject.name,
+            request.user.username,
+        )
         message = "Тест '%s' запущен. Состояние его прохождения можно отследить во вкладке 'Запущенные тесты'."
         return Response({"ok": True, "message": message % test.name})
 
@@ -179,21 +213,45 @@ class QuestionAPI(APIView):
                 message = "Вопросы к тесту в количестве %d успешно добавлены." % len(
                     questions
                 )
+                logger.info(
+                    "%s questions was loaded by %s",
+                    len(questions),
+                    request.user.username,
+                )
                 return Response({"success": message})
             question = serializer.create_from_request(request)
             message = "Вопрос '%s' к тесту '%s' успешно добавлен."
+            logger.info(
+                "question %s for test %s, subject %s was loaded by %s",
+                question.formulation,
+                question.test.name,
+                question.test.subject.name,
+                request.user.username,
+            )
             return Response(
                 {"success": message % (question.formulation, question.test.name)}
             )
         except utils.EmptyOptionsError:
+            logger.error(
+                "error on adding new question by %s - empty options",
+                request.user.username,
+            )
             return Response(
                 {
                     "error": f"Вопрос не был добавлен, так как присутствуют пустые варианты ответов."
                 }
             )
         except UnicodeDecodeError:
+            logger.error(
+                "error on adding new question by %s - invalid text file format",
+                request.user.username,
+            )
             return Response({"error": f"Файл некорректного формата."})
         except utils.InvalidFileFormatError as e:
+            logger.error(
+                "error on adding new question by %s - invalid text file format",
+                request.user.username,
+            )
             return Response({"error": f"Вопросы не были загружены: {e}"})
 
     def put(self, request, test_id, question_id):
@@ -204,6 +262,13 @@ class QuestionAPI(APIView):
         if serializer.is_valid(raise_exception=True):
             updated_question = serializer.save()
         message = "Вопрос '%s' по тесту '%s' был успешно отредактирован."
+        logger.info(
+            "question %s for test %s, subject %s was updated by %s",
+            updated_question.formulation,
+            updated_question.test.name,
+            updated_question.test.subject.name,
+            request.user.username,
+        )
         return Response(
             {
                 "success": message
@@ -216,6 +281,13 @@ class QuestionAPI(APIView):
         message = "Вопрос '%s' по тесту '%s' был успешно удален." % (
             question.formulation,
             question.test.name,
+        )
+        logger.info(
+            "question %s for test %s, subject %s was deleted by %s",
+            question.formulation,
+            question.test.name,
+            question.test.subject.name,
+            request.user.username,
         )
         question.delete()
         return Response({"success": message})

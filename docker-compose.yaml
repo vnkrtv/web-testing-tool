@@ -2,7 +2,7 @@ version: '3'
 
 services:
   db:
-    image: postgres:latest
+    image: postgres:13.0
     container_name: quizer-postgres
     restart: unless-stopped
     env_file:

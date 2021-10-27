@@ -99,7 +99,7 @@ def create_user(form_data: Dict[str, Any]) -> User:
 
         profile = user.profile
 
-        if re.match(r'^[\d]+_[\d]{4}$', form_data["group"]):
+        if re.match(r"^[\d]+_[\d]{4}$", form_data["group"]):
             # Student
             group, admission_year = [int(_) for _ in form_data["group"].split("_")]
         else:

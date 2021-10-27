@@ -29,6 +29,8 @@ from .models import (
 )
 from .forms import UserForm, SubjectForm, TestForm
 
+logger = logging.getLogger(__name__)
+
 
 @auth_required
 @allowed_users(allowed_roles=["lecturer"])
@@ -74,7 +76,7 @@ class LoginView(View):
             password2 = form.cleaned_data.get("password2")
             group = form.cleaned_data.get("group", "")
 
-            if not re.match(r'[\d]+', group):
+            if not re.match(r"[\d]+", group):
                 context = {
                     "title": self.title,
                     "form": UserForm(),
@@ -90,11 +92,13 @@ class LoginView(View):
                 }
                 return render(request, self.template, context)
 
-            utils.create_user(form_data=form.cleaned_data)
+            user = utils.create_user(form_data=form.cleaned_data)
+            logger.info("new user %s was registered", user.username)
 
         user = authenticate(username=username, password=password)
         if user:
             login(request, user)
+            logger.info("user %s was logged in", user.username)
             return redirect(reverse("main:available_tests"))
         context = {
             "title": self.title,
@@ -169,6 +173,7 @@ def get_db_dump(request: HttpRequest) -> HttpResponse:
     )
     response["X-Sendfile"] = smart_str(filepath)
     os.remove(filepath)
+    logger.info("user %s loaded database dump", request.user.username)
     return response
 
 
@@ -197,6 +202,7 @@ class AdministrationView(View):
                 "message": "Данные успешно импортированы.",
             }
         }
+        logger.info("user %s imported new database dump", request.user.username)
         return self.get(request)
 
 
@@ -358,6 +364,9 @@ class PassedTestView(View):
             "message": "Число правильных ответов: %d/%d"
             % (result["right_answers_count"], result["tasks_num"]),
         }
+        logger.info(
+            "student %s passed test %s", request.user.username, test_results.test.name
+        )
         return render(request, self.template, self.context)
 
 
@@ -388,34 +397,41 @@ class StudentsView(View):
 @auth_required
 @allowed_users(allowed_roles=["lecturer"])
 def get_group_results(request: HttpRequest) -> HttpResponse:
-    if request.method == "POST":
-        subject_id = request.POST["exportSubject"]
-        group = request.POST["exportGroup"]
-        course = request.POST["exportCourse"]
+    if request.method != "POST":
+        return redirect(reverse("main:available_tests"))
 
-        results_str = utils.get_group_results(subject_id, group, course)
+    subject_id = request.POST["exportSubject"]
+    group = request.POST["exportGroup"]
+    course = request.POST["exportCourse"]
 
-        if request.POST.get("csvFileFormat"):
-            filepath = pathlib.Path(
-                f"results_"
-                f"group-{course}{group}_"
-                f"subject_id-{subject_id}_"
-                f'date-{timezone.now().strftime("%d-%m-%y")}.csv'
-            )
-            with open(filepath, "w") as dump_file:
-                dump_file.write(results_str)
-            with open(filepath, "r") as dump_file:
-                response = HttpResponse(
-                    dump_file, content_type="application/force-download"
-                )
-            response["Content-Disposition"] = "attachment; filename=%s" % smart_str(
-                filepath.name
-            )
-            response["X-Sendfile"] = smart_str(filepath)
-            os.remove(filepath)
-            return response
+    results_str = utils.get_group_results(subject_id, group, course)
+
+    if not request.POST.get("csvFileFormat"):
         return HttpResponse(results_str.replace("\n", "<br>"))
-    return redirect(reverse("main:available_tests"))
+
+    filepath = pathlib.Path(
+        f"results_"
+        f"group-{course}{group}_"
+        f"subject_id-{subject_id}_"
+        f'date-{timezone.now().strftime("%d-%m-%y")}.csv'
+    )
+    with open(filepath, "w") as dump_file:
+        dump_file.write(results_str)
+    with open(filepath, "r") as dump_file:
+        response = HttpResponse(dump_file, content_type="application/force-download")
+    response["Content-Disposition"] = "attachment; filename=%s" % smart_str(
+        filepath.name
+    )
+    response["X-Sendfile"] = smart_str(filepath)
+    os.remove(filepath)
+
+    logger.info(
+        "lecturer %s load tests results for group %s, course %s ",
+        request.user.username,
+        group,
+        course,
+    )
+    return response
 
 
 @auth_required
@@ -449,6 +465,7 @@ def stop_running_test(request: HttpRequest) -> HttpResponse:
         "test_results_id": str(test_results.id),
         "results": test_results.results.all(),
     }
+    logger.info("lecturer %s stop running test %s", request.user.username, test.name)
     return render(request, "main/lecturer/testingResults.html", context)
 
 
@@ -553,6 +570,7 @@ def student_run_test(request: HttpRequest) -> HttpResponse:
         "test_name": test.name,
         "right_answers": right_answers,
     }
+    logger.info("student %s start test %s", request.user.username, test.name)
     return render(request, "main/student/runTest.html", context)
 
 

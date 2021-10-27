@@ -21,7 +21,7 @@ class UserForm(BaseForm):
     group = forms.CharField(
         label="Номер группы",
         help_text="Для слушателей также указать год поступления в формате: <номер группы>_<год поступления>",
-        required=False
+        required=False,
     )
     password = forms.CharField(label="Пароль", widget=forms.PasswordInput)
     password2 = forms.CharField(

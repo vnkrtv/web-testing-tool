@@ -188,7 +188,7 @@ class QuestionSerializer(serializers.Serializer):
         options = validated_data.get("options")
         if options:
             for option in options:
-                option["is_true"] = ("true" == option["is_true"] or option["is_true"])
+                option["is_true"] = "true" == option["is_true"] or option["is_true"]
             instance.options = Question.parse_options(options)
         instance.save()
         return instance

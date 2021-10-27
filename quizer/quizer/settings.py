@@ -6,9 +6,11 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PROJECT_ROOT = os.path.dirname(__file__)
 sys.path.insert(0, os.path.join(PROJECT_ROOT, "quizer"))
 
-SECRET_KEY = os.getenv("SECRET_KEY", "6zwsi&z@g%c%=^+#6kh&w6!r=4_gk0ri-qw7@%7$&jxwhph1+v")
+SECRET_KEY = os.getenv(
+    "SECRET_KEY", "6zwsi&z@g%c%=^+#6kh&w6!r=4_gk0ri-qw7@%7$&jxwhph1+v"
+)
 
-DEBUG = True
+DEBUG = os.getenv("DEBUG")
 
 ALLOWED_HOSTS = ["*"]
 
@@ -138,5 +140,10 @@ LOGGING = {
     "root": {
         "handlers": ["console"],
         "level": "INFO",
+    },
+    "django": {
+        "handlers": ["console"],
+        "level": os.getenv("DJANGO_LOG_LEVEL", "INFO"),
+        "propagate": False,
     },
 }

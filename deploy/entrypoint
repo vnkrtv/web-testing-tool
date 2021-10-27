@@ -11,9 +11,9 @@ python manage.py migrate
 echo yes | python manage.py collectstatic
 
 # add default groups and users
-echo 'from django.contrib.auth.models import Group; l = Group(id=1, name="lecturer"); l.save()' | python manage.py shell
-echo 'from django.contrib.auth.models import Group; s = Group(id=2, name="student"); s.save()' | python manage.py shell
-echo 'from django.contrib.auth.models import User; u = User.objects.create_superuser("admin", "", "admin"); u.groups.add(1)' | python manage.py shell
+echo 'from django.contrib.auth.models import Group; l = Group(id=1, name="lecturer"); l.save()' | python manage.py shell 2> /dev/null
+echo 'from django.contrib.auth.models import Group; s = Group(id=2, name="student"); s.save()' | python manage.py shell 2> /dev/null
+echo 'from django.contrib.auth.models import User; u = User.objects.create_superuser("admin", "", "admin"); u.groups.add(1)' | python manage.py shell 2> /dev/null
 
 WORKERS_NUM="${WORKERS_NUM:-2}"
 

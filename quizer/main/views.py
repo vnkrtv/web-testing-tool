@@ -29,7 +29,8 @@ from .models import (
 )
 from .forms import UserForm, SubjectForm, TestForm
 
-logger = logging.getLogger(__name__)
+
+logger = utils.get_logger(__name__)
 
 
 @auth_required

@@ -3,6 +3,7 @@
 Some utils for views
 """
 import json
+import logging
 import math
 import os
 import pathlib
@@ -85,6 +86,20 @@ class SubjectParser:
             "finish": 3600,
             "parallel": 200,
         }.get(short_name, 200)
+
+
+def get_logger(name: str, level: int = logging.INFO):
+    logger = logging.getLogger(name)
+    logger.setLevel(level)
+
+    ch = logging.StreamHandler()
+    ch.setLevel(level)
+
+    formatter = logging.Formatter("%(asctime)s [%(levelname)]s %(message)s")
+    ch.setFormatter(formatter)
+    logger.addHandler(ch)
+
+    return logger
 
 
 def create_user(form_data: Dict[str, Any]) -> User:

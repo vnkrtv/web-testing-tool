@@ -10,15 +10,16 @@ services:
     networks:
       - backend
     volumes:
-      - web_testing_tool_db_data:/var/lib/postgresql/data/
+      - quizer_db_data:/var/lib/postgresql/data/
 
   web:
     build: .
+    image: web-testing-tool:1.0
     container_name: quizer-web
     restart: unless-stopped
     volumes:
-      - web_testing_tool_static_data:/usr/share/python3/quizer/static
-      - web_testing_tool_media_data:/usr/share/python3/quizer/media
+      - quizer_static_data:/usr/share/python3/quizer/static
+      - quizer_media_data:/usr/share/python3/quizer/media
     ports:
       - 8000:80
     depends_on:
@@ -35,6 +36,6 @@ networks:
     driver: bridge
 
 volumes:
-  web_testing_tool_db_data:
-  web_testing_tool_media_data:
-  web_testing_tool_static_data:
+  quizer_db_data:
+  quizer_media_data:
+  quizer_static_data:

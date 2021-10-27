@@ -107,8 +107,8 @@ USE_L10N = True
 USE_TZ = True
 
 STATIC_URL = os.getenv("URL_PREFIX", " ")[:-1] + "/static/"
-STATIC_ROOT = ""
-STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
+# STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
 
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 MEDIA_URL = os.getenv("URL_PREFIX", " ")[:-1] + "/media/"
@@ -136,14 +136,21 @@ LOGGING = {
         "console": {
             "class": "logging.StreamHandler",
         },
+        "file": {
+            "class": "logging.FileHandler",
+            "filename": "info.log",
+        },
     },
     "root": {
-        "handlers": ["console"],
+        "handlers": ["console", "file"],
         "level": "INFO",
     },
-    "django": {
-        "handlers": ["console"],
+    "django.db.backends¶": {
+        "handlers": ["console", "file"],
         "level": os.getenv("DJANGO_LOG_LEVEL", "INFO"),
-        "propagate": False,
+    },
+    "django.server¶": {
+        "handlers": ["console", "file"],
+        "level": os.getenv("DJANGO_LOG_LEVEL", "INFO"),
     },
 }

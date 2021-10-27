@@ -17,4 +17,4 @@ echo 'from django.contrib.auth.models import User; u = User.objects.create_super
 
 WORKERS_NUM="${WORKERS_NUM:-2}"
 
-gunicorn -w ${WORKERS_NUM} -k uvicorn.workers.UvicornWorker  -b 0.0.0.0:80 quizer.asgi:application
+gunicorn -w ${WORKERS_NUM} -k uvicorn.workers.UvicornWorker --capture-output -b 0.0.0.0:80 quizer.asgi:application

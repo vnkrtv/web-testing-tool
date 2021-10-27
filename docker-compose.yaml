@@ -9,11 +9,16 @@ services:
       - .env
     networks:
       - backend
+    volumes:
+      - web_testing_tool_db_data:/var/lib/postgresql/data/
 
   web:
     build: .
     container_name: quizer-web
     restart: unless-stopped
+    volumes:
+      - web_testing_tool_static_data:/usr/share/python3/quizer/static
+      - web_testing_tool_media_data:/usr/share/python3/quizer/media
     ports:
       - 8000:80
     depends_on:
@@ -28,3 +33,8 @@ services:
 networks:
   backend:
     driver: bridge
+
+volumes:
+  web_testing_tool_db_data:
+  web_testing_tool_media_data:
+  web_testing_tool_static_data:
